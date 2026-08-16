@@ -77,7 +77,18 @@ def init_db():
 
     c.execute("SELECT id FROM users WHERE username = 'admin'")
     if not c.fetchone():
-        pw_hash = hashlib.sha256("nPB5hKpCu3NnruO1".encode('utf-8')).hexdigest()
+        import os, string, random
+        admin_pass = os.environ.get("ADMIN_PASSWORD")
+        if not admin_pass:
+            try:
+                with open("admin_password.txt", "r") as pf:
+                    admin_pass = pf.read().strip()
+            except FileNotFoundError:
+                admin_pass = "".join(random.choices(string.ascii_letters + string.digits, k=12))
+                with open("admin_password.txt", "w") as pf:
+                    pf.write(admin_pass)
+                print(f"\n{'='*50}\n注意：已生成 admin 初始密码并保存至 admin_password.txt\n密码是: {admin_pass}\n{'='*50}\n")
+        pw_hash = hashlib.sha256(admin_pass.encode('utf-8')).hexdigest()
         c.execute("INSERT INTO users (username, password_hash, created_at) VALUES (?, ?, ?)",
                   ('admin', pw_hash, int(time.time())))
         conn.commit()
