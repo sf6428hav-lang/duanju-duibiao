@@ -1752,8 +1752,7 @@
         h += '</div>';
       }
       area.innerHTML = h;
-      let isAtBottom = area.scrollHeight - area.scrollTop <= area.clientHeight + 150;
-      if(isAtBottom) area.scrollTop = area.scrollHeight;
+      area.scrollTop = area.scrollHeight;
       rP();
     }
 
