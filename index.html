@@ -1021,7 +1021,7 @@
       showToast('✨ 已成功为您创建全新对话！');
     }
 
-    function swChat(id) {
+    async function swChat(id) {
       if (id === S.cid) return;
       var curC = CC();
       if (curC.msgs && curC.msgs.length) {
@@ -1035,6 +1035,21 @@
 
       S.cid = id;
       var targetC = CC();
+
+      var token = getToken();
+      if (token) {
+        try {
+          var r = await fetch(B + '/api/history/detail/' + id + '?token=' + encodeURIComponent(token), { headers: getAuthHeaders() });
+          var d = await r.json();
+          if (d.status === 'ok' && d.history) {
+            targetC.msgs = d.history;
+            if (d.history.length > 0) {
+              var f = d.history.find(function (m) { return m.role === 'user'; });
+              targetC.title = f ? f.content.replace(/[#*\[\]【】\s]/g, '').slice(0, 14) : '对话';
+            }
+          }
+        } catch(e) {}
+      }
       S.mode = targetC.mode || null;
       S.sd = targetC.sd || null;
       S.s4 = targetC.s4 || false;
@@ -2034,6 +2049,22 @@
             sel.innerHTML = d.sessions.map(function(s) {
               return '<option value="' + s.session_id + '">' + esc(s.title) + '</option>';
             }).join('');
+            
+            sel.value = S.cid;
+            if (sel.value !== S.cid) {
+               sel.value = d.sessions[0].session_id;
+            }
+            try {
+              var cidToFetch = sel.value || S.cid;
+              var r2 = await fetch(B + '/api/history/detail/' + cidToFetch + '?token=' + encodeURIComponent(token), { headers: getAuthHeaders() });
+              var d2 = await r2.json();
+              if (d2.status === 'ok' && d2.history) {
+                S.cid = cidToFetch;
+                var targetC = CC();
+                targetC.msgs = d2.history;
+                sv(); rf();
+              }
+            } catch(e) {}
           }
         }
       } catch(e) {}
