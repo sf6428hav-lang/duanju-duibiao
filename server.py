@@ -114,6 +114,24 @@ def get_user_session_dir(username: str, session_id: str) -> str:
     os.makedirs(path, exist_ok=True)
     return path, safe_session
 
+SCRIPT_FORMAT_RULE = '''
+【剧本正文格式规范与描写要求】：
+
+1. 必须严格遵循以下剧本排版格式输出正文：
+第X集
+X-X、场景 日/夜 内/外
+人物：该场景下出现的所有人物
+▲场景环境及动作描写。
+人物：（动作、表情）语言。
+人物（OS）：内心活动描写。
+人物（VO）：不出现在该场景中的画外音。
+
+2. 严禁出现“小说化”的描写（极度重要）：
+- 不要使用抒情、比喻、环境烘托等小说手法。
+- 描写必须是摄影机能拍到的“视觉动作”和“听觉声音”（例如：直接写“人物摔倒在地，眼角泛红”，而不是“他仿佛失去了全身的力气跌倒，心中充满了无尽的悲凉”）。
+- 所有情绪必须转化为具体的（动作、表情）或（OS）内心独白。
+'''
+
 OUTPUT_CLEAN_RULE = """
 【给 AI 的文件落盘规则】：
 
@@ -179,7 +197,7 @@ CREATE_PROMPT = r"""
   ]
 }
 [/TEMPLATEJSON]
-""" + OUTPUT_CLEAN_RULE
+""" + SCRIPT_FORMAT_RULE + OUTPUT_CLEAN_RULE
 
 BENCH_PROMPT = r"""
 你是顶级短剧对标与仿写智能体，擅长爆款短剧的结构拆解、套路分析、节奏把控与精准仿写。
@@ -203,7 +221,7 @@ BENCH_PROMPT = r"""
 === Step 6：大纲+小传+梗概 ===
 === Step 7：剧本格式确认 ===
 === Step 8：分批生成剧本（硬性要求）===
-""" + OUTPUT_CLEAN_RULE
+""" + SCRIPT_FORMAT_RULE + OUTPUT_CLEAN_RULE
 
 def extract_template_json(text: str):
     m = re.search(r'\[TEMPLATEJSON\]\s*(.*?)\s*\[/TEMPLATEJSON\]', text, re.DOTALL)
