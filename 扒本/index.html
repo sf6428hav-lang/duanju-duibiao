@@ -1,0 +1,1630 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎬 视频转剧本专业工作台 ✨ (多集连续提取与会话管理版)</title>
+  <!-- 引入 mammoth.js 用于读取解析 .docx 文件 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+  <!-- 引入 docx.js 用于生成和另存为 .docx 文件 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.umd.js"></script>
+  <style>
+    /* =========================================
+       🎨 35 套精致皮肤主题库 (含 mori-handbook 森系手帐卡片风)
+       ========================================= */
+    :root, [data-theme="mori-handbook"] {
+      --bg-style: #f0f2f5; --card-bg: #ffffff; --card-border: 1px solid #e4e7eb; --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+      --primary-color: #5c6b73; --accent-color: #95a5a6; --text-main: #2c3e50; --text-sub: #7f8c8d;
+      --input-bg: #f8f9fa; --input-border: 1px solid #dcdde1; --submit-btn-bg: #5c6b73; --script-output-bg: #ffffff;
+      --backdrop-blur: none;
+    }
+    [data-theme="mori-art"] {
+      --bg-style: #e4e7eb; --card-bg: rgba(255, 255, 255, 0.78); --card-border: 1px solid rgba(255, 255, 255, 0.9); --card-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+      --primary-color: #2c3e50; --accent-color: #7f8c8d; --text-main: #2c3e50; --text-sub: #7f8c8d;
+      --input-bg: rgba(255, 255, 255, 0.6); --input-border: 1px solid rgba(200, 205, 210, 0.6); --submit-btn-bg: #2c3e50; --script-output-bg: rgba(255, 255, 255, 0.85);
+      --backdrop-blur: blur(16px);
+    }
+    [data-theme="morandi"] {
+      --bg-style: #eef2f3; --card-bg: #f8fafc; --card-border: 1px solid #cbd5e1; --card-shadow: 0 10px 25px rgba(100, 116, 139, 0.1);
+      --primary-color: #475569; --accent-color: #94a3b8; --text-main: #334155; --text-sub: #64748b;
+      --input-bg: #e2e8f0; --input-border: 1px solid #cbd5e1; --submit-btn-bg: #1a73e8; --script-output-bg: #ffffff;
+      --backdrop-blur: none;
+    }
+    [data-theme="minimal-light"] {
+      --bg-style: #f8fafc; --card-bg: #ffffff; --card-border: 1px solid #e2e8f0; --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+      --primary-color: #0f172a; --accent-color: #475569; --text-main: #0f172a; --text-sub: #64748b;
+      --input-bg: #ffffff; --input-border: 1px solid #cbd5e1; --submit-btn-bg: #1a73e8; --script-output-bg: #f8fafc;
+      --backdrop-blur: none;
+    }
+    [data-theme="minimal-dark"] {
+      --bg-style: #0f172a; --card-bg: #1e293b; --card-border: 1px solid #334155; --card-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+      --primary-color: #38bdf8; --accent-color: #818cf8; --text-main: #f8fafc; --text-sub: #94a3b8;
+      --input-bg: #0f172a; --input-border: 1px solid #334155; --submit-btn-bg: #0284c7; --script-output-bg: #0f172a;
+      --backdrop-blur: none;
+    }
+    [data-theme="mint"] {
+      --bg-style: #f0fdf4; --card-bg: #ffffff; --card-border: 1.5px solid #bbf7d0; --card-shadow: 0 10px 30px rgba(34, 197, 94, 0.08);
+      --primary-color: #15803d; --accent-color: #059669; --text-main: #14532d; --text-sub: #4ade80;
+      --input-bg: #f0fdf4; --input-border: 1.5px solid #bbf7d0; --submit-btn-bg: #059669; --script-output-bg: #f7fee7;
+      --backdrop-blur: none;
+    }
+    [data-theme="cyberpunk"] {
+      --bg-style: #05050a; --card-bg: #0f0f1a; --card-border: 1.5px solid #ff007f; --card-shadow: 0 0 20px rgba(255, 0, 127, 0.2);
+      --primary-color: #00f0ff; --accent-color: #ff007f; --text-main: #f0f0f5; --text-sub: #a0a0c0;
+      --input-bg: #151525; --input-border: 1px solid #ff007f; --submit-btn-bg: #ff007f; --script-output-bg: #0a0a12;
+      --backdrop-blur: none;
+    }
+    [data-theme="latte"] {
+      --bg-style: #f5f0eb; --card-bg: #ffffff; --card-border: 1px solid #d4c5b9; --card-shadow: 0 8px 20px rgba(110, 80, 60, 0.08);
+      --primary-color: #6d4c41; --accent-color: #8d6e63; --text-main: #4e342e; --text-sub: #8d6e63;
+      --input-bg: #faf8f5; --input-border: 1px solid #d4c5b9; --submit-btn-bg: #6d4c41; --script-output-bg: #fcfbfa;
+      --backdrop-blur: none;
+    }
+    [data-theme="sakura"] {
+      --bg-style: #fff0f5; --card-bg: #ffffff; --card-border: 1px solid #ffb6c1; --card-shadow: 0 8px 20px rgba(255, 182, 193, 0.15);
+      --primary-color: #db7093; --accent-color: #ffb6c1; --text-main: #4a2e35; --text-sub: #9c6677;
+      --input-bg: #fff5f8; --input-border: 1px solid #ffb6c1; --submit-btn-bg: #db7093; --script-output-bg: #fffafc;
+      --backdrop-blur: none;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease; }
+    body { background: var(--bg-style); background-attachment: fixed; color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; padding: 15px 20px; }
+    .main-wrapper { width: 100%; max-width: 1280px; display: flex; flex-direction: column; gap: 12px; }
+
+    /* 本地后端状态指示条 */
+    .backend-status-banner {
+      background: rgba(240, 253, 244, 0.9);
+      border: 1px solid #bbf7d0;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 12.5px;
+      color: #166534;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    }
+    .backend-status-banner.error {
+      background: #fef2f2;
+      border-color: #fecaca;
+      color: #991b1b;
+    }
+
+    /* 顶部精简 API 设置与主题栏 */
+    .header-control-bar {
+      background: var(--card-bg);
+      backdrop-filter: var(--backdrop-blur);
+      -webkit-backdrop-filter: var(--backdrop-blur);
+      border: var(--card-border);
+      border-radius: 12px;
+      padding: 10px 20px;
+      box-shadow: var(--card-shadow);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .api-settings-btn {
+      background: var(--input-bg);
+      border: var(--input-border);
+      color: var(--text-main);
+      font-size: 13px;
+      font-weight: bold;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    }
+    .api-settings-btn:hover {
+      background: var(--primary-color);
+      color: #ffffff;
+    }
+    .status-dot {
+      width: 8px; height: 8px; border-radius: 50%; background: #22c55e; display: inline-block;
+    }
+    .status-dot.warn { background: #f59e0b; }
+    .model-badge {
+      background: rgba(0, 0, 0, 0.06);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--primary-color);
+    }
+    .theme-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12.5px;
+      font-weight: bold;
+      color: var(--text-sub);
+    }
+    .theme-group select {
+      padding: 6px 12px;
+      background: var(--input-bg);
+      border: var(--input-border);
+      border-radius: 6px;
+      color: var(--text-main);
+      font-size: 12px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* 侧边栏 + 主工作区 双栏布局 */
+    .app-layout {
+      display: flex;
+      width: 100%;
+      background: var(--card-bg);
+      backdrop-filter: var(--backdrop-blur);
+      -webkit-backdrop-filter: var(--backdrop-blur);
+      border-radius: 12px;
+      border: var(--card-border);
+      box-shadow: var(--card-shadow);
+      overflow: hidden;
+      min-height: 740px;
+    }
+
+    /* 左侧边栏 (包含历史对话与多选视频排布) */
+    .sidebar {
+      width: 320px;
+      flex-shrink: 0;
+      background: rgba(0, 0, 0, 0.015);
+      border-right: var(--card-border);
+      display: flex;
+      flex-direction: column;
+      padding: 16px;
+      gap: 16px;
+      overflow-y: auto;
+    }
+
+    .sidebar-block {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .sidebar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      font-weight: bold;
+      color: var(--primary-color);
+      padding-bottom: 6px;
+      border-bottom: 1px dashed var(--input-border);
+    }
+
+    .btn-action-mini {
+      background: var(--submit-btn-bg);
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: bold;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+    .btn-action-mini:hover { opacity: 0.9; transform: translateY(-1px); }
+
+    /* 历史对话列表 */
+    .session-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 180px;
+      overflow-y: auto;
+    }
+
+    .session-card {
+      background: var(--card-bg);
+      border: var(--input-border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .session-card:hover {
+      border-color: var(--primary-color);
+    }
+    .session-card.active {
+      border-color: var(--primary-color);
+      background: rgba(92, 107, 115, 0.08);
+      box-shadow: inset 2px 0 0 var(--primary-color);
+    }
+    .session-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      overflow: hidden;
+    }
+    .session-title {
+      font-size: 12px;
+      font-weight: bold;
+      color: var(--text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .session-meta {
+      font-size: 10.5px;
+      color: var(--text-sub);
+    }
+    .session-del-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-sub);
+      cursor: pointer;
+      padding: 4px;
+      font-size: 12px;
+      opacity: 0.6;
+    }
+    .session-del-btn:hover { color: #dc2626; opacity: 1; }
+
+    /* 本地视频多选队列 */
+    .video-dropzone {
+      background: var(--input-bg);
+      border: 1.5px dashed var(--input-border);
+      border-radius: 10px;
+      padding: 14px 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .video-dropzone:hover {
+      border-color: var(--primary-color);
+      background: rgba(92, 107, 115, 0.05);
+    }
+    .video-dropzone-text {
+      font-size: 12px;
+      font-weight: bold;
+      color: var(--primary-color);
+    }
+    .video-dropzone-sub {
+      font-size: 10.5px;
+      color: var(--text-sub);
+      margin-top: 2px;
+    }
+
+    .queue-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .queue-item {
+      background: var(--card-bg);
+      border: var(--input-border);
+      border-radius: 8px;
+      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+    .queue-item-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow: hidden;
+    }
+    .queue-item-idx {
+      background: var(--primary-color);
+      color: white;
+      font-size: 10px;
+      font-weight: bold;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .queue-item-details {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .queue-item-name {
+      font-size: 11.5px;
+      font-weight: bold;
+      color: var(--text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .queue-item-meta {
+      font-size: 10px;
+      color: var(--text-sub);
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .status-pill {
+      font-size: 9.5px;
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+    .status-pill.pending { background: #f3f4f6; color: #6b7280; }
+    .status-pill.processing { background: #e0f2fe; color: #0284c7; }
+    .status-pill.completed { background: #dcfce7; color: #15803d; }
+    .status-pill.error { background: #fee2e2; color: #b91c1c; }
+
+    .queue-item-del {
+      background: none;
+      border: none;
+      color: var(--text-sub);
+      cursor: pointer;
+      font-size: 12px;
+      padding: 2px 4px;
+    }
+    .queue-item-del:hover { color: #dc2626; }
+
+    /* 右侧工作区 */
+    .workstation { flex: 1; display: flex; flex-direction: column; overflow: hidden; padding: 22px 28px; }
+    .header { text-align: center; margin-bottom: 12px; flex-shrink: 0; }
+    .header h1 { font-size: 22px; color: var(--primary-color); margin-bottom: 4px; }
+    .header p { font-size: 13px; color: var(--text-sub); }
+
+    /* ⚙️ System Prompt 折叠盒 */
+    .prompt-collapse-box { margin-bottom: 12px; flex-shrink: 0; }
+    .prompt-collapse-box details { background: var(--input-bg); border: var(--input-border); border-radius: 8px; padding: 8px 12px; font-size: 12px; }
+    .prompt-collapse-box summary { font-weight: bold; cursor: pointer; color: var(--primary-color); outline: none; display: flex; justify-content: space-between; align-items: center; }
+    .prompt-collapse-box textarea { width: 100%; margin-top: 8px; padding: 8px; background: var(--card-bg); border: var(--input-border); border-radius: 6px; color: var(--text-main); font-size: 12px; resize: vertical; min-height: 100px; }
+    .preset-btn-group { display: flex; gap: 8px; margin-top: 6px; }
+    .preset-btn { background: var(--input-bg); border: var(--input-border); color: var(--text-main); font-size: 11px; font-weight: bold; padding: 3px 8px; border-radius: 4px; cursor: pointer; }
+    .preset-btn:hover { background: var(--primary-color); color: #fff; }
+
+    .control-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 12px; }
+    .slice-mode-group { display: flex; align-items: center; gap: 8px; }
+
+    button.primary-btn { flex: 1; padding: 12px; background-color: var(--submit-btn-bg); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; box-shadow: 0 3px 12px rgba(0,0,0,0.08); }
+    button.primary-btn:hover { opacity: 0.95; transform: translateY(-1px); }
+
+    .output-header-actions { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .output-btns { display: flex; gap: 8px; }
+    .copy-btn { padding: 6px 14px; background: var(--card-bg); border: var(--input-border); color: var(--primary-color); font-weight: bold; border-radius: 6px; font-size: 12px; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.03); }
+    .copy-btn:hover { background: var(--primary-color); color: #fff; }
+
+    #status { margin-bottom: 8px; font-weight: bold; font-size: 12.5px; color: var(--primary-color); }
+    
+    #output { 
+      padding: 20px; 
+      background: var(--script-output-bg); 
+      backdrop-filter: var(--backdrop-blur);
+      -webkit-backdrop-filter: var(--backdrop-blur);
+      border: 1.5px solid var(--card-border); 
+      border-radius: 12px; 
+      white-space: pre-wrap; 
+      font-family: "SimHei", "黑体", "STHeiti", "Microsoft YaHei", sans-serif; 
+      font-size: 12pt; 
+      font-weight: normal;
+      line-height: 1.6; 
+      flex: 1;
+      min-height: 380px; 
+      overflow-y: auto; 
+      color: #000000; 
+      word-break: break-all; 
+      box-shadow: inset 0 3px 10px rgba(0,0,0,0.04), 0 6px 20px rgba(0,0,0,0.03);
+    }
+
+    /* 弹窗 (Modal Popup) */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      animation: fadeIn 0.2s ease;
+    }
+    .modal-card {
+      background: var(--card-bg);
+      border: var(--card-border);
+      border-radius: 14px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+      width: 100%;
+      max-width: 500px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: modalSlide 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes modalSlide {
+      from { transform: translateY(15px) scale(0.97); opacity: 0; }
+      to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+    .modal-header {
+      padding: 14px 18px;
+      border-bottom: var(--input-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .modal-header h3 { font-size: 15px; color: var(--primary-color); }
+    .modal-close-btn { background: none; border: none; font-size: 20px; color: var(--text-sub); cursor: pointer; }
+    .modal-body { padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+    .modal-input-group { display: flex; flex-direction: column; gap: 4px; }
+    .modal-input-group label { font-size: 11.5px; font-weight: bold; color: var(--text-sub); display: flex; justify-content: space-between; align-items: center; }
+    .modal-input-group input { width: 100%; padding: 8px 12px; background: var(--input-bg); border: var(--input-border); border-radius: 6px; color: var(--text-main); font-size: 12.5px; outline: none; }
+    .modal-footer { padding: 12px 18px; border-top: var(--input-border); background: rgba(0, 0, 0, 0.015); display: flex; justify-content: flex-end; gap: 10px; }
+
+    /* Toast Notification */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+    }
+    .toast {
+      background: var(--card-bg);
+      border: var(--card-border);
+      border-left: 4px solid var(--primary-color);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 12.5px;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      pointer-events: auto;
+      transition: all 0.3s ease;
+    }
+    .toast.success { border-left-color: #10b981; }
+    .toast.error { border-left-color: #ef4444; }
+  
+    .auth-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(8px);
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .auth-card {
+      background: var(--card-bg, #ffffff);
+      border: var(--card-border, 1px solid #e2e8f0);
+      border-radius: 20px;
+      width: 400px;
+      max-width: 90vw;
+      padding: 24px 28px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    }
+    .auth-tabs {
+      display: flex;
+      margin-bottom: 20px;
+      border-bottom: 2px solid var(--card-border, #e2e8f0);
+    }
+    .auth-tab-btn {
+      flex: 1;
+      padding: 10px;
+      text-align: center;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--text-sub, #64748b);
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+    }
+    .auth-tab-btn.active {
+      color: var(--primary-color, #2563eb);
+      border-bottom-color: var(--primary-color, #2563eb);
+    }
+    .auth-input-group {
+      margin-bottom: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- 用户登录注册弹窗 -->
+  <div id="authModal" class="auth-overlay" style="display:none;">
+    <div class="auth-card">
+      <div style="text-align:center;margin-bottom:16px;">
+        <h3 style="font-size:20px;margin-bottom:4px;">🎬 扒本工作台 · 用户系统</h3>
+        <p style="font-size:12px;opacity:0.7;">登录统一账号，隔离保存您的扒本剧本历史</p>
+      </div>
+
+      <div class="auth-tabs">
+        <div id="authTabLogin" class="auth-tab-btn active" onclick="switchAuthTab('login')">🔑 账号登录</div>
+        <div id="authTabRegister" class="auth-tab-btn" onclick="switchAuthTab('register')">✨ 注册新账号</div>
+      </div>
+
+      <div id="authErrMsg" style="display:none;color:#ef4444;background:#fee2e2;padding:8px 12px;border-radius:8px;font-size:12px;margin-bottom:12px;"></div>
+
+      <div class="auth-input-group">
+        <label style="font-size:12px;">用户名 / 账号</label>
+        <input type="text" id="authUsername" class="api-modal-input" placeholder="请输入用户名 (如: admin)" autocomplete="off">
+      </div>
+
+      <div class="auth-input-group">
+        <label style="font-size:12px;">密码</label>
+        <input type="password" id="authPassword" class="api-modal-input" placeholder="请输入密码" autocomplete="off" onkeydown="if(event.key==='Enter') submitAuth()">
+      </div>
+
+      <button id="authSubmitBtn" class="btn-primary-gradient" style="width:100%;margin-top:16px;padding:10px;font-size:14px;" onclick="submitAuth()">🔑 立即登录</button>
+      <div style="text-align:center;margin-top:12px;font-size:12px;opacity:0.6;">默认初始账号: admin / nPB5hKpCu3NnruO1</div>
+    </div>
+  </div>
+
+
+<div class="main-wrapper">
+  <!-- 本地 Python 后端状态指示条 -->
+  <div class="backend-status-banner" id="backendBanner">
+    <span id="backendBannerText">🔍 正在连接后端 Python 服务...</span>
+    <span style="font-size: 11px; opacity: 0.8;" id="backendBannerSub">自动解决 CORS 跨域拦截与大视频传输限制</span>
+  </div>
+
+  <!-- 顶部 API 设置与主题栏 -->
+  <div class="header-control-bar">
+
+    <div id="userBadge" style="margin-right:12px;padding:4px 10px;background:var(--card-bg);border:var(--card-border);border-radius:8px;display:flex;align-items:center;gap:8px;">
+      <span id="userNameShow" style="font-size:12px;font-weight:600;">👤 未登录</span>
+      <button id="userAuthActionBtn" class="btn-action-mini" onclick="openAuthModal()">登录/注册</button>
+    </div>
+
+    <button class="api-settings-btn" id="openApiModalBtn">
+      <span class="status-dot" id="apiStatusDot"></span>
+      <span>⚙️ API 连接设置</span>
+      <span class="model-badge" id="currentModelBadge">gemini-3.1-pro-preview</span>
+    </button>
+    <div class="theme-group">
+      <span>🎨 主题风格：</span>
+      <select id="themeSelect" onchange="switchTheme(this.value)">
+        <optgroup label="🍃 特别定制：文艺森系手帐风">
+          <option value="mori-handbook">🌸 森系手帐卡片风 (图鉴同款)</option>
+          <option value="mori-art">☁️ 森系高级毛玻璃</option>
+        </optgroup>
+        <optgroup label="🌟 经典与炫彩主题">
+          <option value="morandi">莫兰迪雅致</option>
+          <option value="minimal-light">极简白天</option>
+          <option value="minimal-dark">极简黑夜</option>
+          <option value="mint">薄荷绿洲</option>
+          <option value="cyberpunk">赛博朋克</option>
+          <option value="latte">拿铁咖啡</option>
+          <option value="sakura">樱花粉黛</option>
+        </optgroup>
+      </select>
+    </div>
+  </div>
+
+  <!-- 侧边栏 + 主工作区 双栏布局 -->
+  <div class="app-layout" id="appLayout">
+    
+    <!-- 左侧边栏：历史窗口 + 多选视频排布 -->
+    <div class="sidebar">
+      
+      <!-- 历史对话/会话窗口 -->
+      <div class="sidebar-block">
+        <div class="sidebar-header">
+          <span>💬 历史对话窗口</span>
+          <button class="btn-action-mini" id="newSessionBtn" onclick="createNewSession(true)">➕ 新建对话</button>
+        </div>
+        <div class="session-list" id="sessionList">
+          <!-- 动态渲染历史对话列表 -->
+        </div>
+      </div>
+
+      <!-- 本地视频多选与队列排布 -->
+      
+      <!-- 📚 扒本历史与剧本库 -->
+      <div class="sidebar-block">
+        <div class="sidebar-header">
+          <span>📚 我的扒本历史</span>
+          <button class="btn-action-mini" onclick="loadBabenHistory()">🔄 刷新</button>
+        </div>
+        <div id="babenHistoryList" class="session-list" style="max-height:160px;overflow-y:auto;font-size:12px;">
+          <div style="padding:8px;opacity:0.6;">暂无扒本历史</div>
+        </div>
+      </div>
+
+<div class="sidebar-block" style="flex: 1; display: flex; flex-direction: column;">
+        <div class="sidebar-header">
+          <span>🎬 视频队列 (按顺序排布)</span>
+          <button class="btn-action-mini" style="background: transparent; color: var(--text-sub); border: 1px solid var(--input-border);" id="clearQueueBtn">🗑️ 清空队列</button>
+        </div>
+        
+        <div class="video-dropzone" id="dropzone">
+          <div class="video-dropzone-text">✨ 点击/拖拽多选本地视频</div>
+          <div class="video-dropzone-sub">自动在左侧排布并按顺序生成第1集、第2集...</div>
+          <input type="file" id="multiVideoInput" accept="video/*" multiple style="display: none;">
+        </div>
+
+        <div class="queue-list" id="videoQueueList" style="flex: 1; margin-top: 10px;">
+          <!-- 动态渲染视频队列 -->
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 右侧工作区 -->
+    <div class="workstation" id="workstation">
+      <div class="header">
+        <h1 id="pageTitle">🎬 视频转剧本专业工作台</h1>
+        <p id="pageSubtitle">1:1精准还原视频台词、动作与镜头细节 · 自动多视频连续剧集提炼</p>
+      </div>
+
+      <!-- ⚙️ 默认完全折叠的 System Prompt 规则规范面板 -->
+      <div class="prompt-collapse-box" id="promptCollapseBox">
+        <details>
+          <summary>⚙️ 当前技能 System Prompt 规则规范 (点击展开微调)</summary>
+          <textarea id="scriptTemplate" rows="8"># 角色与任务
+你是一位顶级影视编剧与 1:1 剧本拆解师。请学习人类专业剧本写法的思维逻辑，将视频内容 1:1 精准转写为规范、自然、有丰富现场情绪与影视戏剧张力的专业剧本。
+
+---
+
+## 🎭 标杆剧本现场丰富情绪与排版规范（人类编剧思维）
+
+1. **全面恢复并鼓励丰富高张力情绪（严禁机械化死板词）**：
+   - 括号内**必须丰富呈现人类现场的多样化情绪**（例：`（震惊）`、`（崩溃）`、`（抓狂）`、`（咬牙切齿）`、`（错愕）`、`（生无可恋）`、`（哭笑不得）`、`（破音大喊）`、`（委屈）`）！
+   - ❌ **绝对禁止复读机械套话**：严禁在每句台词前都套用 `倒吸凉气` 或 `难以置信`！情绪必须根据真实剧情与音轨多变呈现。
+
+2. **同角色的连贯台词保持完整（禁止过度剁碎）**：
+   - 同一个角色连续说的完整一句话（同一意图/同一气口），**必须保持整句完整，绝对禁止中途剁开**！更严禁在后半句丢掉括号出现 `角色名：` 裸名称！
+   - 正例：✅ `顾明礼（指着顾明珠）：你翻翻你的手，万一你也有呢？`
+   - 正例：✅ `顾明珠（震惊）：8亿两白银？我爹是和珅转世吗？`
+
+3. **括号绝对禁止内嵌在台词中间**：
+   - 括号 `（情绪/动作）` 只能且必须放在台词冒号前面！台词文本中间绝不能出现二次括号（例：❌ `给我的是宫斗爬龙床？（无奈叹气）妹啊...`）。
+
+4. **画面 ▲ 反碎片化**：
+   - 连续发生的相近动作合并写入同一条 ▲ 中，擦除脑补喝茶等过场碎动作。
+
+5. **格式标点标准化**：
+   - 场头统一标为 `1-1 日/内 房间`（擦除 `1-1、` 顿号）；画面统一标为 `▲ 画面描写`（擦除 `▲.` 句点）；句尾擦除 `第X集X-`！
+
+---
+
+## 一、 基础格式规范
+
+1. 全文从「第X集」开始，全程仅使用中文，严禁出现任何英文单词。
+2. 单场结构：
+
+第X集
+
+X-Y 日/外 场景名称
+人物：角色A（形态）、角色B
+
+▲ 画面动作描写。
+【特写：关键物品/文字】
+角色A（现场情绪/动作）：台词内容。
+角色B（现场情绪/动作）：台词内容。
+系统 VO（声音状态）：系统台词。
+
+---
+
+## ⚠️ 最终输出前的静默自查指令
+
+在输出前，你必须静默对比：恢复丰富多元的情绪颗粒度，擦除复读的倒吸凉气与难以置信！</textarea>
+          <div class="preset-btn-group">
+            <button class="preset-btn" id="loadChinese">🇨🇳 中文标准预设</button>
+            <button class="preset-btn" id="loadBilingual">🌐 海外中英双语预设</button>
+          </div>
+        </details>
+      </div>
+
+      <!-- 智能控制栏 -->
+      <div class="control-row">
+        
+        <button id="sendBtn" class="primary-btn" onclick="startSequentialAnalysis()">⚡️ 开始 AI 智能顺序解析并生成剧本</button>
+      </div>
+
+      <div id="status">等待操作并选择视频...</div>
+
+      <!-- 输出控制标题 -->
+      <div class="output-header-actions">
+        <label style="font-size: 14px; font-weight: bold; color: var(--text-main);">📜 AI 执行输出结果 (同窗口集数连续)：</label>
+        <div class="output-btns">
+          <button class="copy-btn" onclick="applyOneClickFormatting()">✨ 一键排版</button>
+          <button class="copy-btn" onclick="clearOutputContent()" style="color: #dc2626;">🗑️ 一键清空</button>
+          <button class="copy-btn" onclick="saveAsWord()">💾 另存为 Word 文件</button>
+        </div>
+      </div>
+
+      <div id="output">等待操作并生成...</div>
+
+    </div>
+  </div>
+</div>
+
+<!-- API 连接设置弹窗 -->
+<div class="modal-overlay" id="apiModal" style="display: none;">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>⚙️ API 连接设置 (本地记忆保存)</h3>
+      <button class="modal-close-btn" id="closeApiModalBtn">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-input-group">
+        <label>🔗 中转站 Base URL</label>
+        <input type="text" id="modalBaseUrl" value="https://yunwu.ai">
+      </div>
+      <div class="modal-input-group">
+        <label>🔑 中转站 API Key</label>
+        <input type="password" id="modalApiKey" value="sk-obXgybj0YsgmLeIhpzWrqerX0yUXetPQierxbCjkw6u629pm">
+      </div>
+      <div class="modal-input-group">
+        <label>
+          <span>🤖 驱动模型 (可手打或拉取)</span>
+          <button class="preset-btn" id="modalFetchModelsBtn" style="padding: 2px 6px;">🔄 拉取列表</button>
+        </label>
+        <input type="text" id="modalModel" list="modalModelListOptions" value="gemini-3.1-pro-preview" placeholder="输入或拉取模型...">
+        <datalist id="modalModelListOptions">
+          <option value="gemini-3.1-pro-preview">
+          <option value="claude-sonnet-4-6">
+          <option value="gemini-2.0-flash">
+          <option value="gemini-1.5-pro">
+          <option value="gpt-4o">
+        </datalist>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="preset-btn" id="cancelApiModalBtn" style="padding: 7px 14px;">取消</button>
+      <button class="btn-action-mini" id="saveApiModalBtn" style="padding: 7px 16px;">💾 保存 API 配置</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast 通知容器 -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+  const BACKEND_URL = window.location.origin;
+  let isBackendActive = false;
+
+  // 全局 API 配置对象 (带 localStorage 本地记忆)
+  const API_CONFIG = {
+    baseUrl: localStorage.getItem('scriptgenius_base_url') || 'https://yunwu.ai',
+    apiKey: localStorage.getItem('scriptgenius_api_key') || 'sk-obXgybj0YsgmLeIhpzWrqerX0yUXetPQierxbCjkw6u629pm',
+    model: localStorage.getItem('scriptgenius_model_name') || 'gemini-3.1-pro-preview'
+  };
+
+  // 全局 Session 会话管理 (新建对话与隔离记忆)
+  
+  function switchTheme(val) {
+    if (!val) return;
+    document.documentElement.setAttribute('data-theme', val);
+    if (document.body) document.body.setAttribute('data-theme', val);
+    localStorage.setItem('scriptgenius_theme', val);
+    const sel = document.getElementById('themeSelect');
+    if (sel && sel.value !== val) sel.value = val;
+  }
+
+  let sessions = [];
+  let activeSessionId = null;
+  let isProcessingQueue = false;
+
+  // 检查 Python 本地后端服务状态
+  async function checkBackendHealth() {
+    const banner = document.getElementById('backendBanner');
+    const bannerText = document.getElementById('backendBannerText');
+    const bannerSub = document.getElementById('backendBannerSub');
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/health`, { method: 'GET' });
+      if (res.ok) {
+        isBackendActive = true;
+        banner.className = "backend-status-banner";
+        bannerText.innerText = "🟢 后端 Python 服务运行正常 ()";
+        bannerSub.innerText = "✅ 彻底解决 CORS 跨域拦截 & 支持超大视频 FFmpeg 无损音画切片";
+        return;
+      }
+    } catch (e) {}
+    
+    isBackendActive = false;
+    banner.className = "backend-status-banner error";
+    bannerText.innerText = "🟡 无法连接到后端服务";
+    bannerSub.innerText = "提示: 双击运行 start.bat 或 python main.py 启动本地后端以解决 CORS 问题";
+  }
+
+  // Toast 消息弹框
+  function showToast(message, type = 'info') {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerText = message;
+    container.appendChild(toast);
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateX(100%)';
+      setTimeout(() => toast.remove(), 300);
+    }, 4000);
+  }
+
+  // API 弹窗控制与记忆加载
+  function updateApiUI() {
+    document.getElementById('currentModelBadge').innerText = API_CONFIG.model;
+    const dot = document.getElementById('apiStatusDot');
+    if (API_CONFIG.baseUrl && API_CONFIG.apiKey) {
+      dot.className = "status-dot";
+    } else {
+      dot.className = "status-dot warn";
+    }
+  }
+
+  function openApiModal() {
+    document.getElementById('modalBaseUrl').value = API_CONFIG.baseUrl;
+    document.getElementById('modalApiKey').value = API_CONFIG.apiKey;
+    document.getElementById('modalModel').value = API_CONFIG.model;
+    document.getElementById('apiModal').style.display = 'flex';
+  }
+
+  function closeApiModal() {
+    document.getElementById('apiModal').style.display = 'none';
+  }
+
+  function saveApiConfig() {
+    API_CONFIG.baseUrl = document.getElementById('modalBaseUrl').value.trim();
+    API_CONFIG.apiKey = document.getElementById('modalApiKey').value.trim();
+    API_CONFIG.model = document.getElementById('modalModel').value.trim();
+
+    localStorage.setItem('scriptgenius_base_url', API_CONFIG.baseUrl);
+    localStorage.setItem('scriptgenius_api_key', API_CONFIG.apiKey);
+    localStorage.setItem('scriptgenius_model_name', API_CONFIG.model);
+
+    updateApiUI();
+    closeApiModal();
+    showToast('🎉 API 配置已更新并自动写入本地存储！', 'success');
+  }
+
+  // 拉取模型列表
+  async function fetchModels() {
+    let baseUrl = document.getElementById('modalBaseUrl').value.trim();
+    const apiKey = document.getElementById('modalApiKey').value.trim();
+    const btn = document.getElementById('modalFetchModelsBtn');
+
+    if (!baseUrl || !apiKey) { alert('请先填写 Base URL 和 API Key！'); return; }
+
+    btn.innerText = '⏳ 拉取中...';
+    btn.disabled = true;
+
+    try {
+      if (baseUrl.endsWith('/')) baseUrl = baseUrl.slice(0, -1);
+      let fetchUrl = `${baseUrl}/v1/models`;
+      let headers = { 'Authorization': `Bearer ${apiKey}` };
+
+      if (isBackendActive) {
+        fetchUrl = `${BACKEND_URL}/api/models?base_url=${encodeURIComponent(baseUrl)}&api_key=${encodeURIComponent(apiKey)}`;
+        headers = {};
+      }
+
+      const response = await fetch(fetchUrl, { method: 'GET', headers: headers });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const data = await response.json();
+      const modelsList = data.data || [];
+      if (modelsList.length === 0) { alert('未能获取到模型列表'); return; }
+
+      const datalist = document.getElementById('modalModelListOptions');
+      datalist.innerHTML = '';
+      modelsList.forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m.id || m.name;
+        datalist.appendChild(opt);
+      });
+      showToast(`🎉 成功拉取到 ${modelsList.length} 个可用模型！`, 'success');
+    } catch (err) {
+      alert(`⚠️ 拉取模型失败: ${err.message}`);
+    } finally {
+      btn.innerText = '🔄 拉取列表';
+      btn.disabled = false;
+    }
+  }
+
+  // ==========================================
+  // 💬 会话 (Session) 管理逻辑：历史对话与独立记忆
+  // ==========================================
+  function loadSessionsFromStorage() {
+    try {
+      const saved = localStorage.getItem('video_script_sessions_v89');
+      if (saved) {
+        sessions = JSON.parse(saved);
+      }
+    } catch (e) {}
+
+    if (!sessions || sessions.length === 0) {
+      createNewSession(false);
+    } else {
+      activeSessionId = sessions[0].id;
+      renderSessionList();
+      renderActiveSessionData();
+    }
+  }
+
+  function saveSessionsToStorage() {
+    localStorage.setItem('video_script_sessions_v89', JSON.stringify(sessions));
+  }
+
+  function getActiveSession() {
+    return sessions.find(s => s.id === activeSessionId) || sessions[0];
+  }
+
+  function createNewSession(userTriggered = true) {
+    const newId = 'session_' + Date.now();
+    const newSession = {
+      id: newId,
+      title: `对话 ${sessions.length + 1}`,
+      createdAt: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }),
+      videoQueue: [],
+      fullScript: '',
+      episodeCount: 0,
+      extractedCharacters: '',
+      lastContextSummary: ''
+    };
+    sessions.unshift(newSession);
+    activeSessionId = newId;
+    saveSessionsToStorage();
+    renderSessionList();
+    renderActiveSessionData();
+
+    if (userTriggered) {
+      showToast('✨ 已新建独立对话！前后的剧本与记忆完全隔离', 'success');
+    }
+  }
+
+  function switchSession(id) {
+    if (isProcessingQueue) {
+      alert("正在提取视频中，请等待当前提取任务完成后再切换对话！");
+      return;
+    }
+    activeSessionId = id;
+    renderSessionList();
+    renderActiveSessionData();
+  }
+
+  function deleteSession(id, e) {
+    e.stopPropagation();
+    if (sessions.length <= 1) {
+      alert("至少保留一个对话窗口！");
+      return;
+    }
+    sessions = sessions.filter(s => s.id !== id);
+    if (activeSessionId === id) {
+      activeSessionId = sessions[0].id;
+    }
+    saveSessionsToStorage();
+    renderSessionList();
+    renderActiveSessionData();
+    showToast('🗑️ 已删除该对话历史', 'info');
+  }
+
+  function renderSessionList() {
+    const listEl = document.getElementById('sessionList');
+    listEl.innerHTML = '';
+    sessions.forEach(s => {
+      const card = document.createElement('div');
+      card.className = `session-card ${s.id === activeSessionId ? 'active' : ''}`;
+      card.onclick = () => switchSession(s.id);
+
+      const videoCount = s.videoQueue ? s.videoQueue.length : 0;
+      card.innerHTML = `
+        <div class="session-info">
+          <span class="session-title">${escapeHtml(s.title)} (${videoCount}个视频)</span>
+          <span class="session-meta">${s.createdAt} · 已提炼 ${s.episodeCount || 0} 集</span>
+        </div>
+        <button class="session-del-btn" title="删除对话" onclick="deleteSession('${s.id}', event)">&times;</button>
+      `;
+      listEl.appendChild(card);
+    });
+  }
+
+  function renderActiveSessionData() {
+    const session = getActiveSession();
+    renderVideoQueue(session);
+    const outputEl = document.getElementById('output');
+    if (session.fullScript && session.fullScript.trim()) {
+      outputEl.innerText = cleanMarkdownStars(session.fullScript);
+    } else {
+      outputEl.innerText = "等待操作并生成...";
+    }
+    const statusEl = document.getElementById('status');
+    statusEl.style.color = "var(--primary-color)";
+    statusEl.innerText = session.videoQueue.length > 0 ? `当前窗口共 ${session.videoQueue.length} 个视频，等待提取...` : "请添加视频文件...";
+  }
+
+  // ==========================================
+  // 🎬 本地多选视频排布与队列逻辑
+  // ==========================================
+  function handleMultiVideoAdd(files) {
+    if (!files || files.length === 0) return;
+    const session = getActiveSession();
+
+    let rebindCount = 0;
+    let newCount = 0;
+
+    Array.from(files).forEach((file) => {
+      const existing = session.videoQueue.find(v => v.name === file.name);
+      if (existing) {
+        existing.fileObj = file;
+        if (existing.status === 'error') existing.status = 'pending';
+        rebindCount++;
+      } else {
+        session.videoQueue.push({
+          id: 'v_' + Math.random().toString(36).substr(2, 9),
+          name: file.name,
+          size: (file.size / 1024 / 1024).toFixed(1) + 'MB',
+          fileObj: file,
+          status: 'pending',
+          episodeNum: session.videoQueue.length + 1
+        });
+        newCount++;
+      }
+    });
+
+    if (session.videoQueue.length > 0) {
+      session.title = `对话 ${sessions.findIndex(s => s.id === session.id) + 1} (${session.videoQueue[0].name.slice(0,6)}...)`;
+    }
+    saveSessionsToStorage();
+    renderSessionList();
+    renderVideoQueue(session);
+
+    if (rebindCount > 0 && newCount === 0) {
+      showToast(`✅ 已重新装载 ${rebindCount} 个视频文件，可随时开始解析！`, 'success');
+    } else {
+      showToast(`成功添加 ${newCount} 个新视频到队列`, 'success');
+    }
+  }
+
+  function removeVideoFromQueue(vId, e) {
+    e.stopPropagation();
+    const session = getActiveSession();
+    session.videoQueue = session.videoQueue.filter(v => v.id !== vId);
+    // 重新排序集数
+    session.videoQueue.forEach((v, idx) => {
+      v.episodeNum = idx + 1;
+    });
+    saveSessionsToStorage();
+    renderVideoQueue(session);
+  }
+
+  function clearQueue() {
+    const session = getActiveSession();
+    session.videoQueue = [];
+    saveSessionsToStorage();
+    renderVideoQueue(session);
+    showToast('已清空视频队列', 'info');
+  }
+
+  function renderVideoQueue(session) {
+    const queueEl = document.getElementById('videoQueueList');
+    queueEl.innerHTML = '';
+
+    if (!session.videoQueue || session.videoQueue.length === 0) {
+      queueEl.innerHTML = `<div style="font-size: 11.5px; color: var(--text-sub); text-align: center; padding: 15px;">暂无视频，请在上方添加 (*v_*)</div>`;
+      return;
+    }
+
+    session.videoQueue.forEach((v, idx) => {
+      const item = document.createElement('div');
+      item.className = 'queue-item';
+      
+      let statusText = "等待";
+      let statusClass = "pending";
+      if (v.status === 'processing') { statusText = "解析中"; statusClass = "processing"; }
+      else if (v.status === 'completed') { statusText = "已完成"; statusClass = "completed"; }
+      else if (v.status === 'error') { statusText = "失败"; statusClass = "error"; }
+
+      item.innerHTML = `
+        <div class="queue-item-left">
+          <div class="queue-item-idx">第${idx + 1}集</div>
+          <div class="queue-item-details">
+            <span class="queue-item-name" title="${escapeHtml(v.name)}">${escapeHtml(v.name)}</span>
+            <span class="queue-item-meta">${v.size} · <span class="status-pill ${statusClass}">${statusText}</span></span>
+          </div>
+        </div>
+        <button class="queue-item-del" onclick="removeVideoFromQueue('${v.id}', event)">&times;</button>
+      `;
+      queueEl.appendChild(item);
+    });
+  }
+
+  // ==========================================
+  // ⚡ 顺序提取剧本逻辑 (保证男女主名字继承与集数连续)
+  // ==========================================
+  async function startSequentialAnalysis() {
+    const session = getActiveSession();
+    if (!session.videoQueue || session.videoQueue.length === 0) {
+      alert("当前窗口没有视频！请先在左侧添加视频文件。");
+      return;
+    }
+
+    await checkBackendHealth();
+    if (!isBackendActive) {
+      alert("⚠️ 未检测到本地 Python 后端 (当前服务地址)！\n请先运行 start.bat 或 python main.py 启动后端。");
+      return;
+    }
+
+    const pendingVideos = session.videoQueue.filter(v => v.status !== 'completed');
+    if (pendingVideos.length === 0) {
+      if (confirm("当前队列中所有视频已提炼完成，是否重新全部提炼？")) {
+        session.videoQueue.forEach(v => v.status = 'pending');
+        session.fullScript = '';
+        session.episodeCount = 0;
+        session.extractedCharacters = '';
+        session.lastContextSummary = '';
+        renderVideoQueue(session);
+      } else {
+        return;
+      }
+    }
+
+    isProcessingQueue = true;
+    const sendBtn = document.getElementById('sendBtn');
+    sendBtn.disabled = true;
+    const statusEl = document.getElementById('status');
+
+    try {
+      for (let i = 0; i < session.videoQueue.length; i++) {
+        const item = session.videoQueue[i];
+        if (item.status === 'completed') continue;
+
+        if (!item.fileObj || !(item.fileObj instanceof File)) {
+          alert(`⚠️ 视频 "${item.name}" 的本地文件在页面刷新后已被浏览器安全防护机制释放。\n\n解决办法：请点击左侧“✨ 点击/拖拽多选本地视频”重新选择选中该视频即可继续解析！`);
+          item.status = 'error';
+          renderVideoQueue(session);
+          break;
+        }
+
+        item.status = 'processing';
+        renderVideoQueue(session);
+
+        const currentEpNum = i + 1;
+        statusEl.innerText = `🎬 正在解析第 ${currentEpNum}/${session.videoQueue.length} 集: ${item.name}...`;
+
+        await analyzeSingleVideo(session, item, currentEpNum);
+
+        item.status = 'completed';
+        session.episodeCount = currentEpNum;
+        saveSessionsToStorage();
+        renderVideoQueue(session);
+        renderSessionList();
+      }
+
+      statusEl.style.color = "#059669";
+      statusEl.innerText = "✅ 当前窗口所有视频集数提炼完成！";
+      showToast("🎉 全部视频顺序提炼完成！剧本连贯性与人名已成功对接", "success");
+      showDesktopNotification("视频转剧本工作台", "🎬 视频队列提炼任务已全部完成！");
+
+    } catch (err) {
+      statusEl.style.color = "#dc2626";
+      let errMsg = err.message || "网络请求中断";
+      if (errMsg === 'Failed to fetch' || errMsg.includes('network error') || errMsg.includes('NetworkError')) {
+        errMsg = "与 Python 本地后端连接中断（端口 8080 超时或连接重置）。请检查中转站 API Key/URL 配置，并确认 start.bat 正常运行。";
+      }
+      statusEl.innerText = `❌ 提取中断: ${errMsg}`;
+      showToast(`解析中断: ${errMsg}`, 'error');
+    } finally {
+      isProcessingQueue = false;
+      sendBtn.disabled = false;
+    }
+  }
+
+  async function analyzeSingleVideo(session, videoItem, epNum) {
+    const promptText = document.getElementById('scriptTemplate').value.trim() + "\n\n【最高铁律】：绝对严禁输出任何英文单词、英文思考过程！必须直接输出正文！";
+    const noSliceVal = "false";
+
+    const formData = new FormData();
+    formData.append('video', videoItem.fileObj);
+    formData.append('base_url', API_CONFIG.baseUrl);
+    formData.append('api_key', API_CONFIG.apiKey);
+    formData.append('model', API_CONFIG.model);
+    formData.append('prompt', promptText);
+    formData.append('no_slice', noSliceVal);
+    formData.append('episode_num', epNum.toString());
+    formData.append('prev_characters', session.extractedCharacters || '');
+    formData.append('prev_context', session.lastContextSummary || '');
+
+    const response = await fetch(`${BACKEND_URL}/api/upload_and_analyze`, {
+      method: 'POST',
+      body: formData
+    });
+
+    if (!response.ok) throw new Error(`后端响应异常 (HTTP ${response.status})`);
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder('utf-8');
+    let singleVideoBuffer = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const chunkText = decoder.decode(value, { stream: true });
+      const lines = chunkText.split('\n');
+
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          try {
+            const evt = JSON.parse(line.slice(6));
+            if (evt.type === 'progress') {
+              document.getElementById('status').innerText = `🚀 第${epNum}集: ${evt.msg}`;
+            } else if (evt.type === 'chunk') {
+              singleVideoBuffer += (singleVideoBuffer ? "\n\n" : "") + evt.content;
+              updateSessionScript(session, epNum, singleVideoBuffer);
+            } else if (evt.type === 'done') {
+              if (evt.full_script) singleVideoBuffer = evt.full_script;
+              updateSessionScript(session, epNum, singleVideoBuffer, true);
+            } else if (evt.type === 'error') {
+              throw new Error(evt.message);
+            }
+          } catch (e) {
+            if (e.message && !e.message.includes('JSON')) throw e;
+          }
+        }
+      }
+    }
+
+    // 提炼本集中的角色名字与结尾，供下一集继承
+    parseCharactersAndSummary(session, singleVideoBuffer);
+  }
+
+  function updateSessionScript(session, epNum, chunkText, isDone = false) {
+    // 按集数划分，合并到 session.fullScript 中
+    const epHeader = `第${epNum}集`;
+    let script = session.fullScript || "";
+
+    if (!script.includes(epHeader)) {
+      script += (script.trim() ? "\n\n" : "") + chunkText;
+    } else {
+      const parts = script.split(epHeader);
+      script = parts[0] + epHeader + "\n" + chunkText;
+    }
+
+    session.fullScript = script;
+    if (activeSessionId === session.id) {
+      const output = document.getElementById('output');
+      output.innerText = cleanMarkdownStars(session.fullScript);
+      output.scrollTop = output.scrollHeight;
+    }
+  }
+
+  function parseCharactersAndSummary(session, videoScript) {
+    if (!videoScript) return;
+    const charMatch = videoScript.match(/人物[：:]\s*(.+)/);
+    if (charMatch && charMatch[1]) {
+      const chars = charMatch[1].trim();
+      if (!session.extractedCharacters) {
+        session.extractedCharacters = chars;
+      } else {
+        // 合并去重
+        const existing = session.extractedCharacters.split(/[、,，\s]+/);
+        const newly = chars.split(/[、,，\s]+/);
+        const combined = Array.from(new Set([...existing, ...newly])).join('、');
+        session.extractedCharacters = combined;
+      }
+    }
+
+    const lines = videoScript.split('\n').map(l => l.trim()).filter(l => l);
+    if (lines.length > 0) {
+      session.lastContextSummary = lines[lines.length - 1].slice(0, 100);
+    }
+  }
+
+  // ==========================================
+  // ✨ 一键规范排版功能 (清除无用标记与美化格式)
+  // ==========================================
+  function applyOneClickFormatting() {
+    const outputEl = document.getElementById('output');
+    let text = outputEl.innerText;
+
+    if (!text || text.trim() === "" || text === "等待操作并生成...") {
+      alert("当前没有剧本文本！");
+      return;
+    }
+
+    const formatted = formatScriptOneClick(text);
+    outputEl.innerText = formatted;
+
+    const session = getActiveSession();
+    session.fullScript = formatted;
+    saveSessionsToStorage();
+
+    showToast("🎉 已完成剧本一键规范排版！", "success");
+  }
+
+  // 🧹 一键清空功能
+  function clearOutputContent() {
+    const outputEl = document.getElementById('output');
+    if (!outputEl.innerText || outputEl.innerText === "等待操作并生成...") {
+      showToast("文本框已经是空的了", "info");
+      return;
+    }
+
+    if (confirm("确定要清空当前窗口的剧本文本框内容吗？")) {
+      outputEl.innerText = "等待操作并生成...";
+      const session = getActiveSession();
+      session.fullScript = "";
+      saveSessionsToStorage();
+      showToast("🧹 已清空输出文本框内容", "info");
+    }
+  }
+
+  function formatScriptOneClick(text) {
+    if (!text) return "";
+    let cleaned = text.replace(/<think>[\s\S]*?<\/think>/gi, "");
+    cleaned = cleaned.replace(/<\/?[^>]+(>|$)/g, "");
+    cleaned = cleaned.replace(/\*\*/g, "").replace(/\*/g, "").replace(/`/g, "").replace(/^#+\s*/gm, "");
+
+    const rawLines = cleaned.split('\n');
+    const mergedLines = [];
+
+    // 第一步：合并被意外断行的断句文本（如句子被分成两行）
+    for (let i = 0; i < rawLines.length; i++) {
+      let line = rawLines[i].trim();
+      if (!line) continue;
+
+      const isHeaderOrPrefix = /^第\s*\d+\s*集/.test(line) ||
+                               /^\d+-\d+/.test(line) ||
+                               line.startsWith('人物：') || line.startsWith('人物:') ||
+                               line.startsWith('▲') ||
+                               line.startsWith('【') ||
+                               /^([^\(（:：]+)(?:[\(（]([^）\)]+)[\）\)])?\s*[:：]/.test(line);
+
+      if (!isHeaderOrPrefix && mergedLines.length > 0) {
+        const prev = mergedLines[mergedLines.length - 1];
+        if (!prev.startsWith('第') && !prev.startsWith('1-') && !prev.startsWith('人物：')) {
+          mergedLines[mergedLines.length - 1] = prev + line;
+          continue;
+        }
+      }
+      mergedLines.push(line);
+    }
+
+    // 第二步：清洗每行格式，消除动作与台词之间所有的空行
+    const formattedLines = [];
+
+    for (let i = 0; i < mergedLines.length; i++) {
+      let line = mergedLines[i].trim();
+      if (!line) continue;
+
+      // 集数标头规范 (仅在集数前留一个空行)
+      const epMatch = line.match(/^第\s*(\d+)\s*集/);
+      if (epMatch) {
+        const epNum = parseInt(epMatch[1], 10);
+        if (formattedLines.length > 0 && formattedLines[formattedLines.length - 1] !== "") {
+          formattedLines.push("");
+        }
+        formattedLines.push(`第${epNum}集`);
+        formattedLines.push("");
+        continue;
+      }
+
+      // 场次标头规范 (仅在场次前留一个空行)
+      const sceneMatch = line.match(/^(\d+-\d+)\s*[、,，:：\s]\s*(.+)/);
+      if (sceneMatch) {
+        if (formattedLines.length > 0 && formattedLines[formattedLines.length - 1] !== "") {
+          formattedLines.push("");
+        }
+        formattedLines.push(`${sceneMatch[1]}、${sceneMatch[2]}`);
+        continue;
+      }
+
+      // 人物列表规范
+      if (line.startsWith('人物：') || line.startsWith('人物:')) {
+        let charText = line.replace(/^人物[：:]\s*/, '');
+        formattedLines.push(`人物：${charText}`);
+        continue;
+      }
+
+      // 动作神态规范: ▲.动作描写 (紧凑无空行)
+      if (line.startsWith('▲')) {
+        let actText = line.substring(1).replace(/^[.\s、]+/, '');
+        formattedLines.push(`▲.${actText}`);
+        continue;
+      }
+
+      // 特写/闪回格式规范: 【特写：...】 或 【闪回：...】 (紧凑无空行)
+      if (line.startsWith('【') || line.includes('闪回') || line.includes('特写')) {
+        let innerText = line.replace(/^[【\[]?\s*/, '').replace(/[】\]]$/, '').trim();
+        formattedLines.push(`【${innerText}】`);
+        continue;
+      }
+
+      // 对话格式规范：人物（情绪）：台词 (紧凑无空行)
+      const diaMatch = line.match(/^([^\(（:：]+)(?:[\(（]([^）\)]+)[\）\)])?\s*[:：]\s*(.+)/);
+      if (diaMatch && !line.startsWith('1-')) {
+        const speaker = diaMatch[1].trim();
+        const emotion = diaMatch[2] ? diaMatch[2].trim() : '';
+        const dialogue = diaMatch[3].trim();
+        if (emotion) {
+          formattedLines.push(`${speaker}（${emotion}）：${dialogue}`);
+        } else {
+          formattedLines.push(`${speaker}：${dialogue}`);
+        }
+        continue;
+      }
+
+      formattedLines.push(line);
+    }
+
+    // 过滤掉连续的多余空行，确保仅集数/场次上方保留一行分隔
+    const result = [];
+    for (let i = 0; i < formattedLines.length; i++) {
+      if (formattedLines[i] === "") {
+        if (result.length > 0 && result[result.length - 1] !== "") {
+          result.push("");
+        }
+      } else {
+        result.push(formattedLines[i]);
+      }
+    }
+
+    return result.join('\n').trim();
+  }
+
+  // ==========================================
+  // 💾 Word 导出功能
+  // ==========================================
+  async function saveAsWord() {
+    const outputBox = document.getElementById('output');
+    let textContent = outputBox ? outputBox.innerText : "";
+
+    if (!textContent || textContent === "等待操作并生成...") {
+      alert("当前没有可保存的生成结果！");
+      return;
+    }
+
+    const cleanText = cleanMarkdownStars(textContent);
+    const session = getActiveSession();
+    const defaultName = `${session.title.replace(/[\\/:*?"<>|]/g, '_')}_专业剧本.docx`;
+
+    try {
+      if (window.showSaveFilePicker) {
+        const handle = await window.showSaveFilePicker({
+          suggestedName: defaultName,
+          types: [{
+            description: 'Word 文档 (*.docx)',
+            accept: { 'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'] },
+          }],
+        });
+        const doc = new docx.Document({
+          sections: [{
+            properties: {},
+            children: cleanText.split('\n').map(line => new docx.Paragraph({
+              children: [new docx.TextRun({ text: line, size: 24, font: "宋体" })],
+              spacing: { after: 120 }
+            }))
+          }]
+        });
+
+        const blob = await docx.Packer.toBlob(doc);
+        const writable = await handle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        alert("🎉 Word 文件已成功保存！");
+        showDesktopNotification("任务完成通知", "您的 Word 文件已成功保存到指定文件夹！");
+      } else {
+        const doc = new docx.Document({
+          sections: [{
+            properties: {},
+            children: cleanText.split('\n').map(line => new docx.Paragraph({
+              children: [new docx.TextRun({ text: line, size: 24, font: "宋体" })],
+              spacing: { after: 120 }
+            }))
+          }]
+        });
+        const blob = await docx.Packer.toBlob(doc);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = defaultName;
+        a.click();
+        URL.revokeObjectURL(url);
+        showDesktopNotification("任务完成通知", "您的 Word 文件已下载完成！");
+      }
+    } catch (err) {
+      if (err.name !== 'AbortError') {
+        alert("保存文件出错: " + err.message);
+      }
+    }
+  }
+
+  function cleanMarkdownStars(text) {
+    if (!text) return "";
+    let cleaned = text.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+    const firstChineseIdx = cleaned.search(/[\u4e00-\u9fa5]/);
+    if (firstChineseIdx > 0 && firstChineseIdx < 1500) {
+      cleaned = cleaned.substring(firstChineseIdx);
+    }
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = cleaned;
+    let plain = tempDiv.textContent || tempDiv.innerText || cleaned;
+    return plain.replace(/<\/?[^>]+(>|$)/g, "").replace(/\*\*/g, "").replace(/\*/g, "");
+  }
+
+  function showDesktopNotification(title, bodyText) {
+    if (!("Notification" in window)) return;
+    if (Notification.permission === "granted") {
+      new Notification(title, { body: bodyText, icon: "🎬" });
+    } else if (Notification.permission !== "denied") {
+      Notification.requestPermission().then(p => {
+        if (p === "granted") new Notification(title, { body: bodyText, icon: "🎬" });
+      });
+    }
+  }
+
+  function escapeHtml(str) {
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  // ==========================================
+  // 事件绑定与初始化
+  // ==========================================
+  const defaultChinesePrompt = "# \u89d2\u8272\u4e0e\u4efb\u52a1\n\u4f60\u662f\u4e00\u4f4d\u9876\u7ea7\u5f71\u89c6\u7f16\u5267\u4e0e 1:1 \u5267\u672c\u62c6\u89e3\u5e08\u3002\u8bf7\u5b66\u4e60\u4eba\u7c7b\u4e13\u4e1a\u5267\u672c\u5199\u6cd5\u7684\u601d\u7ef4\u903b\u8f91\uff0c\u5c06\u89c6\u9891\u5185\u5bb9 1:1 \u7cbe\u51c6\u8f6c\u5199\u4e3a\u89c4\u8303\u3001\u81ea\u7136\u3001\u6709\u4e30\u5bcc\u73b0\u573a\u60c5\u7eea\u4e0e\u5f71\u89c6\u620f\u5267\u5f20\u529b\u7684\u4e13\u4e1a\u5267\u672c\u3002\n\n---\n\n## \ud83c\udfad \u6807\u6746\u5267\u672c\u73b0\u573a\u4e30\u5bcc\u60c5\u7eea\u4e0e\u6392\u7248\u89c4\u8303\uff08\u4eba\u7c7b\u7f16\u5267\u601d\u7ef4\uff09\n\n1. **\u5168\u9762\u6062\u590d\u5e76\u9f13\u52b1\u4e30\u5bcc\u9ad8\u5f20\u529b\u60c5\u7eea\uff08\u4e25\u7981\u673a\u68b0\u5316\u6b7b\u677f\u8bcd\uff09**\uff1a\n   - \u62ec\u53f7\u5185**\u5fc5\u987b\u4e30\u5bcc\u5448\u73b0\u4eba\u7c7b\u73b0\u573a\u7684\u591a\u6837\u5316\u60c5\u7eea**\uff08\u4f8b\uff1a`\uff08\u9707\u60ca\uff09`\u3001`\uff08\u5d29\u6e83\uff09`\u3001`\uff08\u6293\u72c2\uff09`\u3001`\uff08\u54ac\u7259\u5207\u9f7f\uff09`\u3001`\uff08\u9519\u6115\uff09`\u3001`\uff08\u751f\u65e0\u53ef\u604b\uff09`\u3001`\uff08\u54ed\u7b11\u4e0d\u5f97\uff09`\u3001`\uff08\u7834\u97f3\u5927\u558a\uff09`\u3001`\uff08\u59d4\u5c48\uff09`\uff09\uff01\n   - \u274c **\u7edd\u5bf9\u7981\u6b62\u590d\u8bfb\u673a\u68b0\u5957\u8bdd**\uff1a\u4e25\u7981\u5728\u6bcf\u53e5\u53f0\u8bcd\u524d\u90fd\u5957\u7528 `\u5012\u5438\u51c9\u6c14` \u6216 `\u96be\u4ee5\u7f6e\u4fe1`\uff01\u60c5\u7eea\u5fc5\u987b\u6839\u636e\u771f\u5b9e\u5267\u60c5\u4e0e\u97f3\u8f68\u591a\u53d8\u5448\u73b0\u3002\n\n2. **\u540c\u89d2\u8272\u7684\u8fde\u8d2f\u53f0\u8bcd\u4fdd\u6301\u5b8c\u6574\uff08\u7981\u6b62\u8fc7\u5ea6\u5241\u788e\uff09**\uff1a\n   - \u540c\u4e00\u4e2a\u89d2\u8272\u8fde\u7eed\u8bf4\u7684\u5b8c\u6574\u4e00\u53e5\u8bdd\uff08\u540c\u4e00\u610f\u56fe/\u540c\u4e00\u6c14\u53e3\uff09\uff0c**\u5fc5\u987b\u4fdd\u6301\u6574\u53e5\u5b8c\u6574\uff0c\u7edd\u5bf9\u7981\u6b62\u4e2d\u9014\u5241\u5f00**\uff01\u66f4\u4e25\u7981\u5728\u540e\u534a\u53e5\u4e22\u6389\u62ec\u53f7\u51fa\u73b0 `\u89d2\u8272\u540d\uff1a` \u88f8\u540d\u79f0\uff01\n   - \u6b63\u4f8b\uff1a\u2705 `\u987e\u660e\u793c\uff08\u6307\u7740\u987e\u660e\u73e0\uff09\uff1a\u4f60\u7ffb\u7ffb\u4f60\u7684\u624b\uff0c\u4e07\u4e00\u4f60\u4e5f\u6709\u5462\uff1f`\n   - \u6b63\u4f8b\uff1a\u2705 `\u987e\u660e\u73e0\uff08\u9707\u60ca\uff09\uff1a8\u4ebf\u4e24\u767d\u94f6\uff1f\u6211\u7239\u662f\u548c\u73c5\u8f6c\u4e16\u5417\uff1f`\n\n3. **\u62ec\u53f7\u7edd\u5bf9\u7981\u6b62\u5185\u5d4c\u5728\u53f0\u8bcd\u4e2d\u95f4**\uff1a\n   - \u62ec\u53f7 `\uff08\u60c5\u7eea/\u52a8\u4f5c\uff09` \u53ea\u80fd\u4e14\u5fc5\u987b\u653e\u5728\u53f0\u8bcd\u5192\u53f7\u524d\u9762\uff01\u53f0\u8bcd\u6587\u672c\u4e2d\u95f4\u7edd\u4e0d\u80fd\u51fa\u73b0\u4e8c\u6b21\u62ec\u53f7\uff08\u4f8b\uff1a\u274c `\u7ed9\u6211\u7684\u662f\u5bab\u6597\u722c\u9f99\u5e8a\uff1f\uff08\u65e0\u5948\u53f9\u6c14\uff09\u59b9\u554a...`\uff09\u3002\n\n4. **\u753b\u9762 \u25b2 \u53cd\u788e\u7247\u5316**\uff1a\n   - \u8fde\u7eed\u53d1\u751f\u7684\u76f8\u8fd1\u52a8\u4f5c\u5408\u5e76\u5199\u5165\u540c\u4e00\u6761 \u25b2 \u4e2d\uff0c\u64e6\u9664\u8111\u8865\u559d\u8336\u7b49\u8fc7\u573a\u788e\u52a8\u4f5c\u3002\n\n5. **\u683c\u5f0f\u6807\u70b9\u6807\u51c6\u5316**\uff1a\n   - \u573a\u5934\u7edf\u4e00\u6807\u4e3a `1-1 \u65e5/\u5185 \u623f\u95f4`\uff08\u64e6\u9664 `1-1\u3001` \u987f\u53f7\uff09\uff1b\u753b\u9762\u7edf\u4e00\u6807\u4e3a `\u25b2 \u753b\u9762\u63cf\u5199`\uff08\u64e6\u9664 `\u25b2.` \u53e5\u70b9\uff09\uff1b\u53e5\u5c3e\u64e6\u9664 `\u7b2cX\u96c6X-`\uff01\n\n---\n\n## \u4e00\u3001 \u57fa\u7840\u683c\u5f0f\u89c4\u8303\n\n1. \u5168\u6587\u4ece\u300c\u7b2cX\u96c6\u300d\u5f00\u59cb\uff0c\u5168\u7a0b\u4ec5\u4f7f\u7528\u4e2d\u6587\uff0c\u4e25\u7981\u51fa\u73b0\u4efb\u4f55\u82f1\u6587\u5355\u8bcd\u3002\n2. \u5355\u573a\u7ed3\u6784\uff1a\n\n\u7b2cX\u96c6\n\nX-Y \u65e5/\u5916 \u573a\u666f\u540d\u79f0\n\u4eba\u7269\uff1a\u89d2\u8272A\uff08\u5f62\u6001\uff09\u3001\u89d2\u8272B\n\n\u25b2 \u753b\u9762\u52a8\u4f5c\u63cf\u5199\u3002\n\u3010\u7279\u5199\uff1a\u5173\u952e\u7269\u54c1/\u6587\u5b57\u3011\n\u89d2\u8272A\uff08\u73b0\u573a\u60c5\u7eea/\u52a8\u4f5c\uff09\uff1a\u53f0\u8bcd\u5185\u5bb9\u3002\n\u89d2\u8272B\uff08\u73b0\u573a\u60c5\u7eea/\u52a8\u4f5c\uff09\uff1a\u53f0\u8bcd\u5185\u5bb9\u3002\n\u7cfb\u7edf VO\uff08\u58f0\u97f3\u72b6\u6001\uff09\uff1a\u7cfb\u7edf\u53f0\u8bcd\u3002\n\n---\n\n## \u26a0\ufe0f \u6700\u7ec8\u8f93\u51fa\u524d\u7684\u9759\u9ed8\u81ea\u67e5\u6307\u4ee4\n\n\u5728\u8f93\u51fa\u524d\uff0c\u4f60\u5fc5\u987b\u9759\u9ed8\u5bf9\u6bd4\uff1a\u6062\u590d\u4e30\u5bcc\u591a\u5143\u7684\u60c5\u7eea\u9897\u7c92\u5ea6\uff0c\u64e6\u9664\u590d\u8bfb\u7684\u5012\u5438\u51c9\u6c14\u4e0e\u96be\u4ee5\u7f6e\u4fe1\uff01";
+
+  const bilingualPrompt = `你是一位资深影视拉片师与专业编剧。请根据我提供的海外视频/英文文本素材，严格按照以下【剧本基本格式】与【硬性执行规则】，将画面和台词 1:1 精准还原为纯专业的双语剧本。`;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    checkBackendHealth();
+    updateApiUI();
+    loadSessionsFromStorage();
+
+    document.getElementById('scriptTemplate').value = defaultChinesePrompt;
+
+    document.getElementById('loadChinese').addEventListener('click', () => {
+      document.getElementById('scriptTemplate').value = defaultChinesePrompt;
+    });
+    document.getElementById('loadBilingual').addEventListener('click', () => {
+      document.getElementById('scriptTemplate').value = bilingualPrompt;
+    });
+
+    const themeSelect = document.getElementById('themeSelect');
+    themeSelect.addEventListener('change', (e) => {
+      document.documentElement.setAttribute('data-theme', e.target.value);
+    });
+    switchTheme(localStorage.getItem('scriptgenius_theme') || 'mori-handbook');
+
+    // 弹窗按钮事件
+    document.getElementById('openApiModalBtn').addEventListener('click', openApiModal);
+    document.getElementById('closeApiModalBtn').addEventListener('click', closeApiModal);
+    document.getElementById('cancelApiModalBtn').addEventListener('click', closeApiModal);
+    document.getElementById('saveApiModalBtn').addEventListener('click', saveApiConfig);
+    document.getElementById('modalFetchModelsBtn').addEventListener('click', fetchModels);
+
+    // 新建对话
+    document.getElementById('newSessionBtn').addEventListener('click', () => createNewSession(true));
+
+    // 视频拖拽与选择
+    const dropzone = document.getElementById('dropzone');
+    const multiVideoInput = document.getElementById('multiVideoInput');
+
+    dropzone.addEventListener('click', () => multiVideoInput.click());
+    multiVideoInput.addEventListener('change', (e) => handleMultiVideoAdd(e.target.files));
+
+    dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.style.borderColor = "var(--primary-color)"; });
+    dropzone.addEventListener('dragleave', (e) => { e.preventDefault(); dropzone.style.borderColor = "var(--input-border)"; });
+    dropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropzone.style.borderColor = "var(--input-border)";
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        handleMultiVideoAdd(e.dataTransfer.files);
+      }
+    });
+
+    document.getElementById('clearQueueBtn').addEventListener('click', clearQueue);
+  });
+</script>
+</body>
+</html>
