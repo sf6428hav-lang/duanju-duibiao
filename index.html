@@ -1784,13 +1784,13 @@
     function rgn(idx) {
       var c = CC();
       c.msgs = c.msgs.slice(0, idx);
-      var uM = c.msgs.slice().reverse().find(function (m) { return m.role === 'user'; });
       sv(); rd();
-      if (uM) { E('chatInput').value = uM.content; sendMsg(); }
+      sendMsg(true);
     }
 
     // ====== 发送消息与 done 强制检测逻辑 ======
-    async function sendMsg() {
+    async function sendMsg(isRegen) {
+      if (typeof isRegen !== 'boolean') isRegen = false;
       var inp = E('chatInput'), txt = inp.value.trim();
       
       var chat = CC();
@@ -1799,17 +1799,19 @@
         S.gen = false;
       }
 
-      if (!txt || S.gen) return;
+      if ((!txt && !isRegen) || S.gen) return;
 
       if (S.mode === '剧本创作') {
         S.cardsVisible = false;
         chat.cardsVisible = false;
       }
 
-      inp.value = '';
+      if (!isRegen) inp.value = '';
       var k = gK(); if (!k) { alert('请先填写API Key'); return; }
 
-      if (!chat.msgs.length || chat.msgs[chat.msgs.length - 1].content !== txt) chat.msgs.push({ role: 'user', content: txt });
+      if (!isRegen && txt) {
+        if (!chat.msgs.length || chat.msgs[chat.msgs.length - 1].content !== txt) chat.msgs.push({ role: 'user', content: txt });
+      }
       sv(); rd();
 
       var docT = '';
