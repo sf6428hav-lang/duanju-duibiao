@@ -2044,10 +2044,20 @@
         var r = await fetch(B + '/api/history/list?token=' + encodeURIComponent(token), { headers: getAuthHeaders() });
         var d = await r.json();
         if (d.sessions && d.sessions.length) {
+          
+          // 将所有远程的 session 注入到 S.chats 里，这样 renderHistorySelect 才能渲染它们
+          d.sessions.forEach(function(s) {
+            var exists = S.chats.find(function(c) { return c.id === s.session_id; });
+            if (!exists) {
+              S.chats.push({ id: s.session_id, title: s.title, msgs: [], sd: null, mode: s.mode, benchStep: 1, step4Questions: null, cstr: false, qaHandled: false, cardsVisible: true });
+            }
+          });
+          
           var sel = document.getElementById('historySelect');
           if (sel) {
-            sel.innerHTML = d.sessions.map(function(s) {
-              return '<option value="' + s.session_id + '">' + esc(s.title) + '</option>';
+            // ...
+            sel.innerHTML = S.chats.map(function(c) {
+              return '<option value="' + c.id + '">' + esc(c.title || '对话') + '</option>';
             }).join('');
             
             sel.value = S.cid;
