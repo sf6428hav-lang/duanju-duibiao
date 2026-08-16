@@ -209,6 +209,41 @@
       justify-content: space-between;
     }
 
+    
+    /* 批量管理样式 */
+    .msg-wrap {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 24px;
+      position: relative;
+    }
+    .msg-wrap.multi-select .msg {
+      margin-left: 12px;
+      margin-bottom: 0 !important;
+      width: calc(100% - 30px);
+    }
+    .msg-checkbox {
+      margin-top: 10px;
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+    .batch-bar {
+      position: sticky;
+      bottom: 20px;
+      margin: 20px auto 0;
+      width: fit-content;
+      background: var(--card);
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      padding: 10px 20px;
+      border-radius: 20px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      z-index: 100;
+    }
+
     /* 主区域 */
     .main {
       flex: 1;
@@ -1064,6 +1099,36 @@
     function gK() { return E('apiKey').value.trim(); }
     function gU() { return E('apiUrl').value.trim() || 'https://yunwu.ai/v1'; }
 
+    
+    function toggleMultiSelect() {
+      S.multiSelectMode = !S.multiSelectMode;
+      S.selectedMsgs = {};
+      rd();
+    }
+    
+    function toggleSelectMsg(idx) {
+      S.selectedMsgs[idx] = !S.selectedMsgs[idx];
+      rd();
+    }
+    
+    function deleteSelectedMsgs() {
+      var c = CC();
+      var toDelete = Object.keys(S.selectedMsgs).filter(function(k) { return S.selectedMsgs[k]; }).map(Number);
+      if (toDelete.length === 0) {
+        alert("请先选择要删除的消息");
+        return;
+      }
+      if (!confirm("确定要删除选中的 " + toDelete.length + " 条消息吗？删除后AI将丢失这段记忆。")) return;
+      
+      toDelete.sort(function(a,b) { return b - a; });
+      for (var i = 0; i < toDelete.length; i++) {
+        c.msgs.splice(toDelete[i], 1);
+      }
+      S.multiSelectMode = false;
+      S.selectedMsgs = {};
+      sv(); rd();
+    }
+
     function CC() {
       if (!S.chats) S.chats = [];
       var c = S.chats.find(function (x) { return x.id === S.cid; });
@@ -1685,11 +1750,21 @@
         } else {
           h += '<div style="text-align:center;padding:60px 0;opacity:.4;font-size:14px;">👆 点击底部「对标」或「创作」开始或在输入框中自由对话 ✨</div>';
         }
-        area.innerHTML = h;
+        
+      if (S.multiSelectMode) {
+        var selCount = Object.keys(S.selectedMsgs).filter(function(k){return S.selectedMsgs[k];}).length;
+        h += '<div class="batch-bar"><span style="font-size:12px;font-weight:600">已选 ' + selCount + ' 条</span><button class="btn sm danger" onclick="deleteSelectedMsgs()">删除</button><button class="btn sm" onclick="toggleMultiSelect()">取消</button></div>';
+      }
+      area.innerHTML = h;
         return;
       }
 
       // 🔴 方案 1 性能优化：消息超过 15 条时，开启 UI 视口切片渲染（不影响文件资产存盘与后端全量保存）
+      var batchBtn = '';
+      if (!S.multiSelectMode && msgs.length > 0) {
+        batchBtn = '<div style="text-align:right; margin-bottom:10px;"><button class="btn xs" onclick="toggleMultiSelect()">批量管理</button></div>';
+      }
+      h += batchBtn;
       var maxVisible = S.showAllMsgs ? msgs.length : 15;
       var startIdx = Math.max(0, msgs.length - maxVisible);
 
@@ -1702,6 +1777,11 @@
 
       for (var i = startIdx; i < msgs.length; i++) {
         var m = msgs[i];
+        if (!S.selectedMsgs) S.selectedMsgs = {};
+        h += '<div class="msg-wrap ' + (S.multiSelectMode ? 'multi-select' : '') + '">';
+        if (S.multiSelectMode) {
+          h += '<input type="checkbox" class="msg-checkbox" ' + (S.selectedMsgs[i] ? 'checked' : '') + ' onclick="toggleSelectMsg(' + i + ')">';
+        }
         if (m.role === 'user') {
           if (S.edi === i) {
             h += '<div class="msg user"><div class="role">👤 你（编辑中）</div><textarea class="edit-textarea" id="editArea" style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);">' + esc(m.content) + '</textarea><div class="actions" style="margin-top:4px;"><button class="btn sm primary" onclick="cfEd(' + i + ')">确认</button><button class="btn sm" onclick="S.edi=null;rd()">取消</button></div></div>';
@@ -1748,8 +1828,15 @@
             }
           }
           h += '</div>';
-        }
         h += '</div>';
+      }
+        h += '</div>';
+        h += '</div>';
+      }
+      
+      if (S.multiSelectMode) {
+        var selCount = Object.keys(S.selectedMsgs).filter(function(k){return S.selectedMsgs[k];}).length;
+        h += '<div class="batch-bar"><span style="font-size:12px;font-weight:600">已选 ' + selCount + ' 条</span><button class="btn sm danger" onclick="deleteSelectedMsgs()">删除</button><button class="btn sm" onclick="toggleMultiSelect()">取消</button></div>';
       }
       area.innerHTML = h;
       area.scrollTop = area.scrollHeight;
