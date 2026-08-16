@@ -275,11 +275,11 @@ def process_document_saving(content: str, session_dir: str, messages: list = Non
     text = re.sub(r'```json[\s\S]*?```', '', text, flags=re.DOTALL | re.IGNORECASE).strip()
 
     # 2. 严格识别正式资产头部
-    has_script = bool(re.search(r'^(?:#+\s*|【)?(?:第[一二三四五六七八九十0-9]+集|1-5集剧本|6-10集剧本|分集剧本正文)(?:】|\s|$)', text, re.MULTILINE))
-    has_character = bool(re.search(r'^(?:#+\s*|【)?(?:人物小传|角色设定|人设小传|角色小传)(?:】|\s|$)', text, re.MULTILINE))
-    has_outline = bool(re.search(r'^(?:#+\s*|【)?(?:故事大纲|剧情大纲|三幕式大纲)(?:】|\s|$)', text, re.MULTILINE))
-    has_ep_outline = bool(re.search(r'^(?:#+\s*|【)?(?:前十集集纲|分集集纲|前10集集纲)(?:】|\s|$)', text, re.MULTILINE))
-    has_analysis = bool(re.search(r'^(?:#+\s*|【)?(?:对标拆解分析方案|Step1-3拆解分析|Step5-6方案大纲|对标拆解报告)(?:】|\s|$)', text, re.MULTILINE))
+    has_script = bool(re.search(r'^(?:#+.*|【.*)?(?:第[一二三四五六七八九十0-9]+集|1-5集剧本|6-10集剧本|分集剧本正文)', text, re.MULTILINE))
+    has_character = bool(re.search(r'^(?:#+.*|【.*)?(?:人物小传|角色设定|人设小传|角色小传)', text, re.MULTILINE))
+    has_outline = bool(re.search(r'^(?:#+.*|【.*)?(?:故事大纲|剧情大纲|三幕式大纲)', text, re.MULTILINE))
+    has_ep_outline = bool(re.search(r'^(?:#+.*|【.*)?(?:前十集集纲|分集集纲|前10集集纲)', text, re.MULTILINE))
+    has_analysis = bool(re.search(r'^(?:#+.*|【.*)?(?:对标拆解分析方案|Step1-3拆解分析|Step5-6方案大纲|对标拆解报告)', text, re.MULTILINE))
 
     doc_type = ""
     label_suffix = ""
@@ -314,7 +314,7 @@ def process_document_saving(content: str, session_dir: str, messages: list = Non
     for line in lines:
         stripped = line.strip()
         if not in_body:
-            if re.search(r'^(?:#+|【)?(?:第[0-9一二三四五六七八九十]+集|第一集|第1集|人物小传|角色小传|故事大纲|前十集集纲|对标拆解分析方案|Step1-3|Step5-6)', stripped):
+            if re.search(r'^(?:#+.*|【.*)?(?:第[0-9一二三四五六七八九十]+集|第一集|第1集|人物小传|角色小传|角色设定|故事大纲|前十集集纲|对标拆解|Step)', stripped):
                 in_body = True
 
         if in_body:
@@ -744,7 +744,7 @@ async def preview_file(filepath: str):
     for line in lines:
         stripped = line.strip()
         if not in_body:
-            if re.search(r'^(?:#+|【)?(?:第[0-9一二三四五六七八九十]+集|第一集|第1集|人物小传|角色小传|故事大纲|前十集集纲|对标拆解分析方案|Step1-3|Step5-6)', stripped):
+            if re.search(r'^(?:#+.*|【.*)?(?:第[0-9一二三四五六七八九十]+集|第一集|第1集|人物小传|角色小传|角色设定|故事大纲|前十集集纲|对标拆解|Step)', stripped):
                 in_body = True
 
         if in_body:
