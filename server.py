@@ -328,6 +328,19 @@ def parse_docx(file_bytes: bytes) -> str:
     except Exception:
         return ""
 
+class SyncRequest(BaseModel):
+    token: str
+    chats: List[dict]  # 接收完整的旧版 S.chats 列表
+
+class GenerateResponse(BaseModel):
+    messages: List[dict]
+    title: str = "新对话"
+    api_key: Optional[str] = ""
+    apikey: Optional[str] = ""
+    api_url: Optional[str] = "https://yunwu.ai/v1"
+    apiurl: Optional[str] = ""
+    model: str = "gpt-4o"
+
 class ChatRequest(BaseModel):
     token: Optional[str] = ""
     api_key: Optional[str] = ""
@@ -406,6 +419,62 @@ async def login(req: AuthRequest):
 async def get_me(token: Optional[str] = Query(None), authorization: Optional[str] = Header(None)):
     user = get_current_user_info(token, authorization)
     return {"status": "ok", "user": user}
+
+@app.post("/api/history/delete/{session_id}")
+async def delete_history(session_id: str, req: TokenRequest, authorization: Optional[str] = Header(None)):
+    user = get_current_user_info(req.token, authorization)
+    username = user["username"]
+    
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("DELETE FROM user_sessions WHERE session_id = ? AND username = ?", (session_id, username))
+    conn.commit()
+    conn.close()
+    
+    session_dir, _ = get_user_session_dir(username, session_id)
+    if os.path.exists(session_dir):
+        import shutil
+        shutil.rmtree(session_dir, ignore_errors=True)
+        
+    return {"status": "ok"}
+
+@app.post("/api/history/sync")
+async def sync_history(req: SyncRequest, authorization: Optional[str] = Header(None)):
+    user = get_current_user_info(req.token, authorization)
+    username = user["username"]
+    user_id = user["user_id"]
+    
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    
+    success_count = 0
+    for chat in req.chats:
+        session_id = chat.get("id")
+        title = chat.get("title", "对话")
+        mode = chat.get("mode", "")
+        msgs = chat.get("msgs", [])
+        if not session_id or not msgs:
+            continue
+            
+        session_dir, safe_session = get_user_session_dir(username, session_id)
+        os.makedirs(session_dir, exist_ok=True)
+        history_file = os.path.join(session_dir, "history.json")
+        
+        try:
+            with open(history_file, 'w', encoding='utf-8') as f:
+                json.dump(msgs, f, ensure_ascii=False, indent=2)
+                
+            c.execute('''
+            INSERT OR REPLACE INTO user_sessions (session_id, user_id, username, title, mode, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?)
+            ''', (safe_session, user_id, username, title, mode, int(time.time())))
+            success_count += 1
+        except Exception as e:
+            print(f"Sync error for {session_id}: {e}")
+            
+    conn.commit()
+    conn.close()
+    return {"status": "ok", "synced_count": success_count}
 
 @app.get("/api/history/list")
 async def list_history_sessions(token: Optional[str] = Query(None), authorization: Optional[str] = Header(None)):

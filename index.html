@@ -769,10 +769,15 @@
 
     <div>
       <h4>💬 历史对话</h4>
-      <div class="row">
+      <div class="row" style="margin-bottom:6px;">
         <button class="btn primary" onclick="newChat()">+ 新建对话</button>
         <select id="historySelect" style="flex:1;" onchange="swChat(this.value)"></select>
         <button class="btn sm" onclick="openHistory()">📋 列表</button>
+      </div>
+      <div class="row">
+        <button class="btn sm" style="flex:1;" onclick="exportHistory()">⬇️ 导出备份</button>
+        <button class="btn sm" style="flex:1;" onclick="document.getElementById('importFile').click()">⬆️ 导入并同步</button>
+        <input type="file" id="importFile" style="display:none;" accept=".json" onchange="importHistory(event)">
       </div>
       <div id="historyList" style="margin-top:8px;font-size:12px;max-height:120px;overflow-y:auto;display:none;"></div>
     </div>
@@ -2078,6 +2083,82 @@
           }
         }
       } catch(e) {}
+    }
+
+    function exportHistory() {
+      if (!S.chats || S.chats.length === 0) {
+        alert("没有可导出的历史记录");
+        return;
+      }
+      var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(S.chats, null, 2));
+      var downloadAnchorNode = document.createElement('a');
+      downloadAnchorNode.setAttribute("href", dataStr);
+      downloadAnchorNode.setAttribute("download", "history_backup.json");
+      document.body.appendChild(downloadAnchorNode);
+      downloadAnchorNode.click();
+      downloadAnchorNode.remove();
+    }
+
+    async function importHistory(event) {
+      var file = event.target.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = async function(e) {
+        try {
+          var importedChats = JSON.parse(e.target.result);
+          if (!Array.isArray(importedChats)) {
+            alert("导入的文件格式不正确！");
+            return;
+          }
+          if (!S.chats) S.chats = [];
+          
+          var newCount = 0;
+          importedChats.forEach(function(ic) {
+            var exists = S.chats.find(function(c) { return c.id === ic.id; });
+            if (!exists) {
+              S.chats.push(ic);
+              newCount++;
+            }
+          });
+          
+          sv();
+          rf();
+          
+          if (newCount > 0) {
+            alert("成功导入了 " + newCount + " 条新记录。正在自动同步到云端...");
+            var token = getToken();
+            if (token) {
+              try {
+                var res = await fetch(B + '/api/history/sync', {
+                  method: 'POST',
+                  headers: Object.assign({'Content-Type': 'application/json'}, getAuthHeaders()),
+                  body: JSON.stringify({
+                    token: token,
+                    chats: importedChats
+                  })
+                });
+                var d = await res.json();
+                if (d.status === 'ok') {
+                  alert("云端同步完成！成功同步了 " + d.synced_count + " 条记录。");
+                  loadUserHistorySessions(); // 刷新云端列表
+                } else {
+                  alert("云端同步失败: " + d.message);
+                }
+              } catch(err) {
+                alert("云端同步请求出错，请确保你已登录并且网络畅通。");
+              }
+            } else {
+              alert("导入成功，但你未登录账号，无法同步到云端。");
+            }
+          } else {
+            alert("没有发现新的记录，所有记录已存在。");
+          }
+        } catch(err) {
+          alert("解析备份文件失败: " + err.message);
+        }
+        document.getElementById('importFile').value = "";
+      };
+      reader.readAsText(file);
     }
 
     ld(); lds(); rf(); checkAuthStatus();
