@@ -765,6 +765,24 @@ async def delete_file(filepath: str):
             return {"error": f"删除失败: {str(e)}"}
     return {"error": "文件不存在"}
 
+class SaveFileRequest(BaseModel):
+    filepath: str
+    content: str
+
+@app.post("/api/save_file")
+async def save_file(req: SaveFileRequest, token: Optional[str] = Query(None), authorization: Optional[str] = Header(None)):
+    user = get_current_user_info(token, authorization)
+    username = user["username"]
+    fp = os.path.join(OUTPUT_DIR, req.filepath)
+    if not os.path.exists(fp):
+        return {"error": "文件不存在"}
+    try:
+        with open(fp, "w", encoding="utf-8") as f:
+            f.write(req.content)
+        return {"status": "ok"}
+    except Exception as e:
+        return {"error": str(e)}
+
 @app.get("/api/health")
 async def health():
     return {"status": "ok"}

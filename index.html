@@ -169,6 +169,46 @@
       color: #92400e;
     }
 
+    
+    .editor-pane {
+      display: none;
+      flex: 1.5;
+      flex-direction: column;
+      background: var(--card);
+      border-right: 1px solid var(--border);
+      height: 100vh;
+      overflow: hidden;
+      min-width: 0;
+    }
+    .editor-pane .top-bar {
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      min-height: 52px;
+    }
+    .editor-content {
+      flex: 1;
+      padding: 24px 40px;
+      overflow-y: auto;
+      outline: none;
+      font-size: 15px;
+      line-height: 1.8;
+      color: var(--text);
+      white-space: pre-wrap;
+    }
+    .editor-bottom {
+      padding: 10px 20px;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--text);
+      opacity: 0.8;
+      display: flex;
+      justify-content: space-between;
+    }
+
     /* 主区域 */
     .main {
       flex: 1;
@@ -817,6 +857,24 @@
     </div>
   </div>
 
+  
+  <div id="editorPane" class="editor-pane">
+    <div class="top-bar">
+      <div style="font-weight: 600; font-size: 15px; display: flex; align-items: center; gap: 8px;">
+        📄 <span id="editorFileName">未命名文档</span>
+      </div>
+      <div>
+        <button class="btn primary sm" onclick="saveEditorContent()">💾 保存</button>
+        <button class="btn sm" onclick="closeEditor()">✕ 关闭</button>
+      </div>
+    </div>
+    <div id="editorContent" class="editor-content" contenteditable="true" oninput="updateWordCount()"></div>
+    <div class="editor-bottom">
+      <span id="editorWordCountStr">字数：0</span>
+      <span id="editorSaveStatus">已保存</span>
+    </div>
+  </div>
+
   <div class="main">
     <div class="top-bar">
       <div id="topBar"></div>
@@ -845,8 +903,7 @@
     </div>
   </div>
 
-  <!-- 预览面板 -->
-  <div id="previewBox" style="display:none;position:fixed;top:40px;right:40px;bottom:40px;left:360px;z-index:100;background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);padding:20px;overflow:hidden;"></div>
+  
 
   <!-- 历史弹窗 -->
   <div class="modal-overlay" id="historyModal" onclick="if(event.target===this)closeHistory()">
@@ -873,6 +930,45 @@
       "🌃 霓虹夜幕": { bg: "#13111c", bg2: "#0d0b14", text: "#dcd7ec", primary: "#a855f7", card: "#1c182b", border: "#2e2844", shadow: "0 4px 20px rgba(0,0,0,0.35)", radius: "10px", eb: "#3b1219", ebd: "#f43f5e", dot: "#a855f7", stepDone: "#10b981", stepActive: "#a855f7", stepPending: "#6b7280" },
       "🩶 莫兰迪灰": { bg: "#f0f2f5", bg2: "#ffffff", text: "#2c3e50", primary: "#64748b", card: "#ffffff", border: "#cbd5e1", shadow: "0 4px 16px rgba(100,116,139,0.08)", radius: "8px", eb: "#fef2f2", ebd: "#fca5a5", dot: "#64748b", stepDone: "#10b981", stepActive: "#64748b", stepPending: "#94a3b8" }
     };
+
+    
+    let currentPreviewFile = "";
+
+    function updateWordCount() {
+      var text = E('editorContent').innerText || "";
+      var count = text.replace(/\s/g, '').length;
+      E('editorWordCountStr').innerText = '字数：' + count;
+      E('editorSaveStatus').innerText = '未保存';
+      E('editorSaveStatus').style.color = '#ef4444';
+    }
+
+    async function saveEditorContent() {
+      if(!currentPreviewFile) return;
+      var text = E('editorContent').innerText;
+      E('editorSaveStatus').innerText = '保存中...';
+      try {
+        var r = await fetch(B + '/api/save_file', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': localStorage.getItem('sdt_token') || '' },
+          body: JSON.stringify({ filepath: currentPreviewFile, content: text })
+        });
+        var d = await r.json();
+        if (d.status === 'ok') {
+          E('editorSaveStatus').innerText = '已保存';
+          E('editorSaveStatus').style.color = '#10b981';
+          showToast('保存成功');
+        } else {
+          alert('保存失败: ' + d.error);
+        }
+      } catch(e) {
+        alert('保存失败: ' + e.message);
+      }
+    }
+
+    function closeEditor() {
+      E('editorPane').style.display = 'none';
+      currentPreviewFile = "";
+    }
 
     // 对标流程 8 步定义
     var BENCH_STEPS = [
@@ -1656,7 +1752,8 @@
         h += '</div>';
       }
       area.innerHTML = h;
-      area.scrollTop = area.scrollHeight;
+      let isAtBottom = area.scrollHeight - area.scrollTop <= area.clientHeight + 150;
+      if(isAtBottom) area.scrollTop = area.scrollHeight;
       rP();
     }
 
@@ -1762,7 +1859,8 @@
                 var el = E("msg_" + pid);
                 if (el) {
                   el.innerHTML = renderMarkdown(full.replace(/\[TEMPLATEJSON\][\s\S]*?\[\/TEMPLATEJSON\]/g, ""));
-                  E("chatArea").scrollTop = E("chatArea").scrollHeight;
+                  let isAtB2 = E("chatArea").scrollHeight - E("chatArea").scrollTop <= E("chatArea").clientHeight + 150;
+                  if(isAtB2) E("chatArea").scrollTop = E("chatArea").scrollHeight;
                   rP();
                 } else {
                   rd();
