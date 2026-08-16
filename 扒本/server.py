@@ -36,8 +36,8 @@ SCRATCH_DIR = os.path.dirname(os.path.abspath(__file__))
 OUTPUT_DIR = os.path.join(SCRATCH_DIR, "output")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-# 共享数据库路径
-DB_PATH = os.path.join(os.path.dirname(SCRATCH_DIR), "短剧对标", "database.db")
+# 共享数据库路径 (上级目录的 database.db)
+DB_PATH = os.path.join(os.path.dirname(os.path.dirname(SCRATCH_DIR)), "database.db")
 if not os.path.exists(os.path.dirname(DB_PATH)):
     DB_PATH = os.path.join(SCRATCH_DIR, "database.db")
 
