@@ -724,6 +724,15 @@ async def process_video_script(
 async def health():
     return {"status": "ok"}
 
+@app.get("/")
+async def read_root():
+    idx = os.path.join(SCRIPT_DIR, "index.html")
+    if not os.path.exists(idx):
+        idx = os.path.join(SCRIPT_DIR, "创作工坊.html")
+    if os.path.exists(idx):
+        return FileResponse(idx)
+    return {"message": "index.html not found"}
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
