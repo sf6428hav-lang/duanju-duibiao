@@ -682,6 +682,7 @@
       border: 1px solid var(--border, #e2e8f0);
       border-radius: 20px;
       width: 400px;
+      position: relative;
       max-width: 90vw;
       padding: 24px 28px;
       box-shadow: 0 20px 40px rgba(0,0,0,0.2);
@@ -717,14 +718,18 @@
       font-weight: 600;
       color: var(--text-muted, #64748b);
     }
+    .modal-close-btn {
+      background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-muted);
+    }
 
   </style>
 </head>
 <body>
 
   <!-- 用户登录注册弹窗 -->
-  <div id="authModal" class="auth-overlay" style="display:none;">
+  <div id="authModal" class="auth-overlay" style="display:none !important;">
     <div class="auth-card">
+      <button class="modal-close-btn" onclick="document.getElementById('authModal').style.display='none'" style="position: absolute; right: 16px; top: 16px;">&times;</button>
       <div style="text-align:center;margin-bottom:16px;">
         <h3 style="font-size:20px;margin-bottom:4px;">🎬 创作工坊用户系统</h3>
         <p style="font-size:12px;opacity:0.7;">登入专属账号，自动隔离与多端同步您的短剧资产</p>
@@ -1965,7 +1970,7 @@
     async function checkAuthStatus() {
       var token = getToken();
       if (!token) {
-        openAuthModal();
+        // openAuthModal();
         updateUserBadge(null);
         return;
       }

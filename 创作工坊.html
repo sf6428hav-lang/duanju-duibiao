@@ -723,7 +723,7 @@
 <body>
 
   <!-- 用户登录注册弹窗 -->
-  <div id="authModal" class="auth-overlay" style="display:none;">
+  <div id="authModal" class="auth-overlay" style="display:none !important;">
     <div class="auth-card">
       <div style="text-align:center;margin-bottom:16px;">
         <h3 style="font-size:20px;margin-bottom:4px;">🎬 创作工坊用户系统</h3>
@@ -770,7 +770,7 @@
     <div>
       <h4>💬 历史对话</h4>
       <div class="row">
-        <button class="btn primary" onclick="newChat()">+ 新建对话</button>
+        <button class="btn primary" onclick="newChat()">+ 新建对话</button><button class="btn sm" onclick="exportOld()">⬇️ 导出备份</button>
         <select id="historySelect" style="flex:1;" onchange="swChat(this.value)"></select>
         <button class="btn sm" onclick="openHistory()">📋 列表</button>
       </div>
@@ -2041,5 +2041,15 @@
 
     ld(); lds(); rf(); checkAuthStatus();
   </script>
-</body>
+<script>
+function exportOld(){
+  var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(S.chats, null, 2));
+  var downloadAnchorNode = document.createElement("a");
+  downloadAnchorNode.setAttribute("href", dataStr);
+  downloadAnchorNode.setAttribute("download", "history_backup.json");
+  document.body.appendChild(downloadAnchorNode);
+  downloadAnchorNode.click();
+  downloadAnchorNode.remove();
+}
+</script></body>
 </html>

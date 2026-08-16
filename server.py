@@ -328,6 +328,9 @@ def parse_docx(file_bytes: bytes) -> str:
     except Exception:
         return ""
 
+class TokenRequest(BaseModel):
+    token: str
+
 class SyncRequest(BaseModel):
     token: str
     chats: List[dict]  # 接收完整的旧版 S.chats 列表
