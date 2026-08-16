@@ -666,10 +666,22 @@ async def health():
 async def read_root():
     idx = os.path.join(SCRIPT_DIR, "index.html")
     if not os.path.exists(idx):
-        idx = os.path.join(SCRIPT_DIR, "创作工坊.html")
+        idx = os.path.join(SCRIPT_DIR, "index.html")
     if os.path.exists(idx):
         return FileResponse(idx)
     return {"message": "index.html not found"}
+
+@app.get("/api/debug/db")
+async def debug_db():
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("SELECT id, username FROM users")
+    users = c.fetchall()
+    c.execute("SELECT session_id, username, title, updated_at FROM user_sessions")
+    sessions = c.fetchall()
+    conn.close()
+    return {"users": users, "sessions": sessions}
+
 
 if __name__ == "__main__":
     import uvicorn
