@@ -2409,14 +2409,81 @@
       if(text) {
           let input = document.getElementById('chatInput');
           let existing = input.value;
-          input.value = '> ' + text + '\n\n' + existing;
+          input.value = '> ' + text + '
+
+' + existing;
           input.focus();
           document.getElementById('quoteBtn').style.display = 'none';
           window.getSelection().removeAllRanges();
+          
+          window.pendingQuoteContext = {
+              text: text,
+              file: window.currentPreviewFile || null
+          };
       }
     }
+    }
     
-  </script>
+  
+    async function applySmartPatch(msgId, ctxStr) {
+        var ctx = JSON.parse(decodeURIComponent(ctxStr));
+        var c = S.chats.find(function(x) { return x.id === S.cid; });
+        var m = c.msgs.find(function(x) { return x.id === msgId; });
+        if (!m) return;
+        
+        var newText = m.content.trim();
+        var oldText = ctx.text;
+        var file = ctx.file;
+        
+        if (window.currentPreviewFile !== file) {
+            await pv(file);
+            // wait for render
+            await new Promise(r => setTimeout(r, 500));
+        }
+        
+        var editor = document.getElementById('editorContent');
+        var currentContent = editor.innerText;
+        
+        if (currentContent.indexOf(oldText) === -1) {
+            // Try stripping leading/trailing whitespace which might have been altered
+            var strippedOld = oldText.replace(/^\s+|\s+$/g, '');
+            if (currentContent.indexOf(strippedOld) !== -1) {
+                oldText = strippedOld;
+            } else {
+                alert("在文档中找不到原始引用的文本，可能已经被手动修改过了。");
+                return;
+            }
+        }
+        
+        var updatedContent = currentContent.replace(oldText, newText);
+        editor.innerText = updatedContent;
+        
+        await saveEditorContent();
+        
+        removeSmartPatch(msgId);
+        
+        // Show success animation or alert
+        var btn = document.getElementById('btnCreate');
+        var oldBtnText = btn ? btn.innerText : '';
+        if(btn) {
+            btn.innerText = '✅ 覆写成功！';
+            setTimeout(() => btn.innerText = oldBtnText, 2000);
+        } else {
+            alert("✅ 覆写成功并已保存！");
+        }
+    }
+
+    function removeSmartPatch(msgId) {
+        var c = S.chats.find(function(x) { return x.id === S.cid; });
+        var m = c.msgs.find(function(x) { return x.id === msgId; });
+        if (m) {
+            delete m.quoteContext;
+            sv();
+            rf();
+        }
+    }
+
+</script>
 <button id="quoteBtn" class="btn primary" onclick="handleQuote()" style="display:none; position:fixed; z-index:9999; box-shadow:0 4px 12px rgba(0,0,0,0.15); border-radius:6px; font-size:12px; padding:6px 12px; cursor:pointer;">❝ 引用</button>
 </body>
 </html>
