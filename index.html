@@ -40,11 +40,7 @@
     /* 侧边栏 */
     .sidebar {
       width: 240px;
-      min-width: 180px;
-      max-width: 400px;
-      resize: horizontal;
       background: var(--bg2);
-      border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
       padding: 16px;
@@ -407,6 +403,7 @@
 
     .msg.user {
       align-self: flex-end;
+      width: fit-content;
       max-width: 85%;
       margin-left: auto;
     }
@@ -799,7 +796,18 @@
       background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-muted);
     }
 
-  </style>
+  
+    .resizer {
+      width: 4px;
+      cursor: col-resize;
+      background: var(--border);
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+    .resizer:hover, .resizer.dragging {
+      background: var(--primary);
+    }
+</style>
 </head>
 <body>
 
@@ -884,7 +892,7 @@
   </div>
 
 
-  <div class="sidebar">
+  <div class="sidebar" id="sidebar">
     <h3>🎬 创作工坊</h3>
 
     
@@ -918,6 +926,7 @@
   </div>
 
   
+  <div class="resizer" id="resizer"></div>
   <div id="editorPane" class="editor-pane">
     <div class="top-bar">
       <div style="font-weight: 600; font-size: 15px; display: flex; align-items: center; gap: 8px;">
@@ -1733,7 +1742,7 @@
       var ms = JSON.parse(localStorage.getItem('fm') || '["deepseek-chat","deepseek-reasoner","gpt-4o","gpt-4o-mini"]');
       E('modelSelect').innerHTML = ms.map(function (m) { return '<option value="' + m + '">' + m + '</option>'; }).join('');
 
-      E('topBar').innerHTML = '';
+      E('genStatus').innerHTML = '';
       rd();
       renderBenchSteps();
       listFiles();
@@ -1949,7 +1958,7 @@
       }
 
       S.gen = true; S.ab = new AbortController();
-      E('topBar').innerHTML = '<button class="btn danger" onclick="stopGen()">⏹ 停止生成</button>';
+      E('genStatus').innerHTML = '<button class="btn danger" onclick="stopGen()">⏹ 停止生成</button>';
       E('chatInput').disabled = true;
 
       var pid = 'm' + Date.now();
@@ -2040,7 +2049,7 @@
       }
 
       S.gen = false; S.ab = null;
-      E('topBar').innerHTML = ''; E('chatInput').disabled = false; E('chatInput').focus();
+      E('genStatus').innerHTML = ''; E('chatInput').disabled = false; E('chatInput').focus();
       rd(); sv();
     }
 
@@ -2510,6 +2519,36 @@
         }
     }
 
+
+    const resizer = document.getElementById('resizer');
+    const sidebar = document.getElementById('sidebar');
+    let isDragging = false;
+
+    if (resizer && sidebar) {
+        resizer.addEventListener('mousedown', function(e) {
+          isDragging = true;
+          resizer.classList.add('dragging');
+          document.body.style.cursor = 'col-resize';
+          document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', function(e) {
+          if (!isDragging) return;
+          let newWidth = e.clientX;
+          if (newWidth < 180) newWidth = 180;
+          if (newWidth > 600) newWidth = 600;
+          sidebar.style.width = newWidth + 'px';
+        });
+
+        document.addEventListener('mouseup', function(e) {
+          if (isDragging) {
+            isDragging = false;
+            resizer.classList.remove('dragging');
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+          }
+        });
+    }
 </script>
 <button id="quoteBtn" class="btn primary" onclick="handleQuote()" style="display:none; position:fixed; z-index:9999; box-shadow:0 4px 12px rgba(0,0,0,0.15); border-radius:6px; font-size:12px; padding:6px 12px; cursor:pointer;">❝ 引用</button>
 </body>
