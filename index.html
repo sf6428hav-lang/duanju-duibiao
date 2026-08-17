@@ -39,7 +39,10 @@
 
     /* 侧边栏 */
     .sidebar {
-      width: 320px;
+      width: 240px;
+      min-width: 180px;
+      max-width: 400px;
+      resize: horizontal;
       background: var(--bg2);
       border-right: 1px solid var(--border);
       display: flex;
@@ -47,6 +50,7 @@
       padding: 16px;
       gap: 16px;
       overflow-y: auto;
+      overflow-x: hidden;
       flex-shrink: 0;
     }
 
@@ -404,6 +408,7 @@
     .msg.user {
       align-self: flex-end;
       max-width: 85%;
+      margin-left: auto;
     }
 
     .msg.user .content {
