@@ -1186,26 +1186,24 @@
       input.value = ''; // reset
     }
 
-    // Add paste listener to chatInput once the DOM is ready
-    window.addEventListener('DOMContentLoaded', function() {
-      var inp = document.getElementById('chatInput');
-      if(inp) {
-        inp.addEventListener('paste', function(e) {
-          var items = (e.clipboardData || e.originalEvent.clipboardData).items;
-          for (var i = 0; i < items.length; i++) {
-            if (items[i].kind === 'file' && items[i].type.startsWith('image/')) {
-              var blob = items[i].getAsFile();
-              var reader = new FileReader();
-              reader.onload = function(evt) {
-                pendingImages.push(evt.target.result);
-                renderPendingImages();
-              };
-              reader.readAsDataURL(blob);
-            }
+    // Add paste listener directly
+    var inp = document.getElementById('chatInput');
+    if(inp) {
+      inp.addEventListener('paste', function(e) {
+        var items = (e.clipboardData || e.originalEvent.clipboardData).items;
+        for (var i = 0; i < items.length; i++) {
+          if (items[i].kind === 'file' && items[i].type.startsWith('image/')) {
+            var blob = items[i].getAsFile();
+            var reader = new FileReader();
+            reader.onload = function(evt) {
+              pendingImages.push(evt.target.result);
+              renderPendingImages();
+            };
+            reader.readAsDataURL(blob);
           }
-        });
-      }
-    });
+        }
+      });
+    }
 
     var S = { cid: 'c' + Date.now(), mode: null, chats: [], doc: '', s4: false, s7: false, cstr: false, qaHandled: false, cardsVisible: true, bi: 0, tb: 0, gen: false, ab: null, sd: null, edi: null, step4Questions: null, createStage: '头脑风暴', benchStep: 1 };
 
