@@ -978,7 +978,7 @@
     <div class="input-area bottom-bar">
       <button id="btnBench" class="btn" onclick="toggleMode('短剧对标')">对标</button>
       <button id="btnCreate" class="btn" onclick="toggleMode('剧本创作')">创作</button>
-      <textarea id="chatInput" rows="1" style="min-height: 40px; max-height: 200px; resize: none; overflow-y: auto;" placeholder="在通用模式下输入指令..." oninput="this.style.height='auto'; this.style.height=(this.scrollHeight)+'px';" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg();}"></textarea>
+      <textarea id="chatInput" rows="1" style="min-height: 40px; max-height: 200px; resize: vertical; overflow-y: auto;" placeholder="在通用模式下输入指令..." oninput="this.style.height='auto'; this.style.height=(this.scrollHeight)+'px';" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg();}"></textarea>
       <div id="genStatus" style="margin: 0 10px; font-size: 13px;"></div>
         <button class="btn primary" onclick="sendMsg()" style="padding:0 20px;">发送</button>
     </div>
@@ -1822,7 +1822,7 @@
       if (!S.multiSelectMode && msgs.length > 0) {
         batchBtn = '<div style="text-align:right; margin-bottom:10px;"><button class="btn xs" onclick="toggleMultiSelect()">批量管理</button></div>';
       }
-      h += batchBtn;
+      /* h += batchBtn; MOVED TO BOTTOM */
       var maxVisible = S.showAllMsgs ? msgs.length : 15;
       var startIdx = Math.max(0, msgs.length - maxVisible);
 
