@@ -1231,7 +1231,8 @@
     }
 
     function newChat() {
-      var curC = CC();
+      closeEditor();
+        var curC = CC();
       if (curC.msgs && curC.msgs.length) {
         var f = curC.msgs.find(function (m) { return m.role === 'user'; });
         curC.title = f ? f.content.replace(/[#*\[\]【】\s]/g, '').slice(0, 14) : '对话';
@@ -1278,7 +1279,8 @@
 
     async function swChat(id) {
       if (id === S.cid) return;
-      var curC = CC();
+      closeEditor();
+        var curC = CC();
       if (curC.msgs && curC.msgs.length) {
         var f = curC.msgs.find(function (m) { return m.role === 'user'; });
         curC.title = f ? f.content.replace(/[#*\[\]【】\s]/g, '').slice(0, 14) : '对话';
