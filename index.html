@@ -836,6 +836,21 @@
   <div class="sidebar">
     <h3>🎬 创作工坊</h3>
 
+    <div class="sidebar-block" style="flex-shrink:0;">
+      <h3 style="margin-bottom:8px;">主题切换</h3>
+      <select id="themeSelect" class="w-full bg-transparent text-sm outline-none" onchange="switchTheme(this.value)">
+        <option value="绿野仙踪">🍵 静心抹茶</option>
+        <option value="暗夜狂欢">🌙 护眼暗色</option>
+        <option value="纯净极简">⚪ 极简留白</option>
+      </select>
+      <h3 style="margin-top:12px;margin-bottom:8px;">工作模式</h3>
+      <select id="modeSelect" class="w-full bg-transparent text-sm outline-none" onchange="switchMode()">
+        <option value="剧本创作">剧本创作</option>
+        <option value="短剧对标">短剧对标</option>
+        <option value="爆款大纲与小传">🔥 爆款大纲与小传</option>
+      </select>
+    </div>
+
     <div id="userBadge" style="margin-bottom:12px;padding:8px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;display:flex;justify-content:space-between;align-items:center;">
       <span id="userNameShow" style="font-size:13px;font-weight:600;">👤 未登录</span>
       <button id="userAuthActionBtn" class="btn xs" onclick="openAuthModal()">登录/注册</button>
