@@ -810,7 +810,80 @@
     .resizer:hover, .resizer.dragging {
       background: var(--primary);
     }
-</style>
+
+    /* Modern Chat Input Wrapper */
+    .chat-input-wrapper {
+      margin: 15px 20px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      padding: 10px 16px;
+      position: relative;
+      z-index: 10;
+      flex-shrink: 0;
+    }
+    .chat-input-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 10px;
+      overflow-x: auto;
+    }
+    .toolbar-left, .toolbar-right, .actions-left, .actions-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .toolbar-right { flex-shrink: 0; }
+    .btn-cap {
+      background: transparent;
+      border: none;
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 13px;
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.2s;
+      opacity: 0.6;
+      white-space: nowrap;
+    }
+    .btn-cap:hover { background: var(--bg); opacity: 1; }
+    .btn-add { background: rgba(59, 130, 246, 0.1); color: #3b82f6; opacity: 1; font-weight: 500; }
+    .btn-add:hover { background: rgba(59, 130, 246, 0.2); }
+    .cap-tag.active { background: rgba(59, 130, 246, 0.1); color: #3b82f6; opacity: 1; font-weight: bold; border: 1px solid rgba(59, 130, 246, 0.2); }
+    .info-icon { font-size: 16px; cursor: help; opacity: 0.4; }
+    .selected-cap-text { font-size: 13px; color: var(--text); opacity: 0.5; }
+    
+    #chatInput {
+      border: none; background: transparent; outline: none;
+      color: var(--text); font-size: 15px; resize: none;
+      max-height: 200px; padding: 4px 0; overflow-y: auto;
+      line-height: 1.5; font-family: inherit;
+    }
+    #chatInput::placeholder { color: #9ca3af; }
+    
+    .chat-input-actions {
+      display: flex; justify-content: space-between; align-items: center;
+      padding-top: 8px;
+    }
+    .btn-icon {
+      background: transparent; border: none; font-size: 20px; cursor: pointer;
+      padding: 6px; border-radius: 8px; transition: background 0.2s; color: var(--text);
+    }
+    .btn-icon:hover { background: var(--bg); }
+    
+    #imagePreviewArea {
+      display: flex; gap: 10px; overflow-x: auto; min-height: 0; padding: 4px 0;
+    }
+    #imagePreviewArea::-webkit-scrollbar { height: 6px; }
+    #imagePreviewArea::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  </style>
 
   <style id="themeDynamicCSS">
     /* Theme Glassmorphism */
@@ -871,6 +944,79 @@
       0% { transform: translateY(-10vh) rotate(0deg) translateX(0); opacity: 0.8; }
       100% { transform: translateY(110vh) rotate(360deg) translateX(50px); opacity: 0; }
     }
+  
+    /* Modern Chat Input Wrapper */
+    .chat-input-wrapper {
+      margin: 15px 20px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      padding: 10px 16px;
+      position: relative;
+      z-index: 10;
+      flex-shrink: 0;
+    }
+    .chat-input-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 10px;
+      overflow-x: auto;
+    }
+    .toolbar-left, .toolbar-right, .actions-left, .actions-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .toolbar-right { flex-shrink: 0; }
+    .btn-cap {
+      background: transparent;
+      border: none;
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 13px;
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.2s;
+      opacity: 0.6;
+      white-space: nowrap;
+    }
+    .btn-cap:hover { background: var(--bg); opacity: 1; }
+    .btn-add { background: rgba(59, 130, 246, 0.1); color: #3b82f6; opacity: 1; font-weight: 500; }
+    .btn-add:hover { background: rgba(59, 130, 246, 0.2); }
+    .cap-tag.active { background: rgba(59, 130, 246, 0.1); color: #3b82f6; opacity: 1; font-weight: bold; border: 1px solid rgba(59, 130, 246, 0.2); }
+    .info-icon { font-size: 16px; cursor: help; opacity: 0.4; }
+    .selected-cap-text { font-size: 13px; color: var(--text); opacity: 0.5; }
+    
+    #chatInput {
+      border: none; background: transparent; outline: none;
+      color: var(--text); font-size: 15px; resize: none;
+      max-height: 200px; padding: 4px 0; overflow-y: auto;
+      line-height: 1.5; font-family: inherit;
+    }
+    #chatInput::placeholder { color: #9ca3af; }
+    
+    .chat-input-actions {
+      display: flex; justify-content: space-between; align-items: center;
+      padding-top: 8px;
+    }
+    .btn-icon {
+      background: transparent; border: none; font-size: 20px; cursor: pointer;
+      padding: 6px; border-radius: 8px; transition: background 0.2s; color: var(--text);
+    }
+    .btn-icon:hover { background: var(--bg); }
+    
+    #imagePreviewArea {
+      display: flex; gap: 10px; overflow-x: auto; min-height: 0; padding: 4px 0;
+    }
+    #imagePreviewArea::-webkit-scrollbar { height: 6px; }
+    #imagePreviewArea::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
   </style>
 </head>
 
@@ -1039,18 +1185,40 @@
 
     <!-- 对标 / 创作 按钮在 <main> 最底部的 .bottom-bar 里 -->
     
-      <!-- Image Preview Area -->
-      <div id="imagePreviewArea" style="display:flex; gap:10px; padding:5px 20px; overflow-x:auto; min-height: 0;"></div>
-      <div class="input-area bottom-bar">
-        <input type="file" id="imageUploadInput" accept="image/*" multiple style="display:none;" onchange="handleImageUpload(this)">
-        <button type="button" class="btn" onclick="document.getElementById('imageUploadInput').click()" style="padding:0 10px; font-size:18px; border:none; background:transparent;" title="上传图片">🖼️</button>
-
-      <button id="btnBench" class="btn" onclick="toggleMode('短剧对标')">对标</button>
-      <button id="btnCreate" class="btn" onclick="toggleMode('剧本创作')">创作</button>
-      <textarea id="chatInput" rows="1" style="min-height: 40px; max-height: 200px; resize: vertical; overflow-y: auto;" placeholder="在通用模式下输入指令..." oninput="this.style.height='auto'; this.style.height=(this.scrollHeight)+'px';" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg();}"></textarea>
-      <div id="genStatus" style="margin: 0 10px; font-size: 13px;"></div>
-        <button class="btn primary" onclick="sendMsg()" style="padding:0 20px;">发送</button>
-    </div>
+            <!-- Chat Input Card -->
+      <div class="chat-input-wrapper">
+        <!-- Top Toolbar -->
+        <div class="chat-input-toolbar">
+          <div class="toolbar-left">
+            <button class="btn-cap btn-add">➕ 添加能力</button>
+            <button class="btn-cap cap-tag active" onclick="setMode('通用')" id="cap-general">通用</button>
+            <button class="btn-cap cap-tag" onclick="setMode('剧本创作')" id="cap-create">✨ 剧本创作</button>
+            <button class="btn-cap cap-tag" onclick="setMode('短剧对标')" id="cap-bench">✨ 短剧对标</button>
+          </div>
+          <div class="toolbar-right">
+            <span class="info-icon" title="选择不同的能力模型，AI会自动切换为对应的专家模式">ℹ️</span>
+            <span class="selected-cap-text" id="selectedCapText">未选择能力</span>
+          </div>
+        </div>
+        
+        <!-- Image Preview Area -->
+        <div id="imagePreviewArea"></div>
+        
+        <!-- Middle Textarea -->
+        <textarea id="chatInput" rows="1" placeholder="描述你需要帮助... (Shift+Enter 换行)" oninput="this.style.height='auto'; this.style.height=(this.scrollHeight)+'px';" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg();}"></textarea>
+        
+        <!-- Bottom Actions -->
+        <div class="chat-input-actions">
+          <div class="actions-left">
+            <input type="file" id="imageUploadInput" accept="image/*" multiple style="display:none;" onchange="handleImageUpload(this)">
+            <button type="button" class="btn-icon" onclick="document.getElementById('imageUploadInput').click()" title="上传图片">🖼️</button>
+          </div>
+          <div class="actions-right">
+            <div id="genStatus"></div>
+            <button class="btn primary" onclick="sendMsg()">发送</button>
+          </div>
+        </div>
+      </div>
   </div>
 
   
@@ -1855,7 +2023,41 @@
     }
 
     // ====== 模式切换 ======
-    function toggleMode(m) {
+    
+      function setMode(mode) {
+        if (mode === '通用') {
+            S.mode = null;
+        } else {
+            S.mode = mode;
+            if (mode === '短剧对标') S.benchStep = 1;
+        }
+        sv(); rf();
+      }
+
+      function updateToolbarUI() {
+        var currentMode = S.mode || '通用';
+        var elGen = document.getElementById('cap-general');
+        var elCreate = document.getElementById('cap-create');
+        var elBench = document.getElementById('cap-bench');
+        var selText = document.getElementById('selectedCapText');
+        
+        if (elGen) elGen.className = 'btn-cap cap-tag';
+        if (elCreate) elCreate.className = 'btn-cap cap-tag';
+        if (elBench) elBench.className = 'btn-cap cap-tag';
+
+        if (currentMode === '通用') {
+            if (elGen) elGen.classList.add('active');
+            if (selText) selText.innerText = '未选择能力';
+        } else if (currentMode === '剧本创作') {
+            if (elCreate) elCreate.classList.add('active');
+            if (selText) selText.innerText = '✨ 剧本创作';
+        } else if (currentMode === '短剧对标') {
+            if (elBench) elBench.classList.add('active');
+            if (selText) selText.innerText = '✨ 短剧对标';
+        }
+      }
+
+      function toggleMode(m) {
       svs();
       if (S.mode === m) {
         S.mode = null; S.s4 = false; S.s7 = false; S.cstr = false; S.qaHandled = false; S.cardsVisible = true; S.bi = 0; S.benchStep = 1;
