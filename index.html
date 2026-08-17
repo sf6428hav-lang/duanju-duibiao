@@ -1260,7 +1260,9 @@
           var r = await fetch(B + '/api/history/detail/' + id + '?token=' + encodeURIComponent(token), { headers: getAuthHeaders() });
           var d = await r.json();
           if (d.status === 'ok' && d.messages) {
-            targetC.msgs = d.messages;
+            if (d.messages.length > 0 || !targetC.msgs || targetC.msgs.length === 0) {
+                targetC.msgs = d.messages;
+              }
             if (d.messages.length > 0) {
               var f = d.messages.find(function (m) { return m.role === 'user'; });
               targetC.title = f ? f.content.replace(/[#*\[\]【】\s]/g, '').slice(0, 14) : '对话';
