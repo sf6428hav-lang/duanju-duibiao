@@ -1793,7 +1793,7 @@
       for (var i = startIdx; i < msgs.length; i++) {
         var m = msgs[i];
         if (!S.selectedMsgs) S.selectedMsgs = {};
-        h += '<div class="msg-wrap ' + (S.multiSelectMode ? 'multi-select' : '') + '">';
+        h += '<div class="msg-wrap ' + (m.role === 'user' ? 'is-user ' : '') + (S.multiSelectMode ? 'multi-select' : '') + '">';
         if (S.multiSelectMode) {
           h += '<input type="checkbox" class="msg-checkbox" ' + (S.selectedMsgs[i] ? 'checked' : '') + ' onclick="toggleSelectMsg(' + i + ')">';
         }
@@ -2388,6 +2388,44 @@
     }
 
     ld(); lds(); rf(); checkAuthStatus();
+  
+    // Quote feature
+    document.addEventListener('mouseup', function(e) {
+      if(e.target.id === 'quoteBtn') return;
+      setTimeout(() => {
+        let sel = window.getSelection();
+        let text = sel.toString().trim();
+        let btn = document.getElementById('quoteBtn');
+        if (!text) {
+            btn.style.display = 'none';
+            return;
+        }
+        let rect = sel.getRangeAt(0).getBoundingClientRect();
+        btn.style.display = 'block';
+        btn.style.left = Math.max(10, rect.left + (rect.width / 2) - 35) + 'px';
+        btn.style.top = Math.max(10, rect.top - 40) + 'px';
+      }, 10);
+    });
+    document.addEventListener('mousedown', function(e) {
+      if(e.target.id !== 'quoteBtn') {
+          let btn = document.getElementById('quoteBtn');
+          if(btn) btn.style.display = 'none';
+      }
+    });
+    function handleQuote() {
+      let sel = window.getSelection();
+      let text = sel.toString().trim();
+      if(text) {
+          let input = document.getElementById('chatInput');
+          let existing = input.value;
+          input.value = '> ' + text + '\n\n' + existing;
+          input.focus();
+          document.getElementById('quoteBtn').style.display = 'none';
+          window.getSelection().removeAllRanges();
+      }
+    }
+    
   </script>
+<button id="quoteBtn" class="btn primary" onclick="handleQuote()" style="display:none; position:fixed; z-index:9999; box-shadow:0 4px 12px rgba(0,0,0,0.15); border-radius:6px; font-size:12px; padding:6px 12px; cursor:pointer;">❝ 引用</button>
 </body>
 </html>
