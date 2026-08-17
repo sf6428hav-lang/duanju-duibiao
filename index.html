@@ -1788,12 +1788,14 @@
           } else {
             h += '<div class="msg user"><div class="role" style="display:flex;justify-content:space-between"><span>👤 你</span><button class="btn xs" onclick="S.edi=' + i + ';rd()" style="opacity:.4">✏️</button></div><div class="content">' + renderMarkdown(m.content) + '</div></div>';
           }
+          h += '</div>'; // close msg-wrap
           continue;
         }
         if (m.er) {
           h += '<div class="err-box"><div style="font-weight:600;margin-bottom:4px;">生成失败</div><div>' + esc(m.content) + '</div>';
           if (i === msgs.length - 1 && !S.gen) h += '<div style="margin-top:6px;"><button class="btn sm" onclick="rgn(' + i + ')">重新生成</button></div>';
           h += '</div>';
+          h += '</div>'; // close msg-wrap
           continue;
         }
 
@@ -1828,10 +1830,9 @@
             }
           }
           h += '</div>';
-        h += '</div>';
-      }
-        h += '</div>';
-        h += '</div>';
+        }
+        h += '</div>'; // close msg assistant
+        h += '</div>'; // close msg-wrap
       }
       
       if (S.multiSelectMode) {
