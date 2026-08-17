@@ -172,7 +172,7 @@
     
     .editor-pane {
       flex: 1;
-      display: flex; /* will be overwritten by style="display:none" normally, but we want it block/flex */
+      display: none; /* normally none until preview is opened */
       flex-direction: column;
       background: var(--bg);
       border-right: 1px solid var(--border);
@@ -894,6 +894,7 @@
 
   <div class="sidebar" id="sidebar">
     <h3 style="font-size:14px; margin-bottom:0; display:flex; align-items:center; gap:6px;">🎬 创作工坊</h3>
+    <div id="stepList" style="margin-top:10px; display:flex; flex-direction:column; gap:6px;"></div>
 
     
 
@@ -974,7 +975,7 @@
     <div class="input-area bottom-bar">
       <button id="btnBench" class="btn" onclick="toggleMode('短剧对标')">对标</button>
       <button id="btnCreate" class="btn" onclick="toggleMode('剧本创作')">创作</button>
-      <textarea id="chatInput" rows="2" placeholder="在通用模式下输入指令..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg();}"></textarea>
+      <textarea id="chatInput" rows="1" style="min-height: 40px; max-height: 200px; resize: none; overflow-y: auto;" placeholder="在通用模式下输入指令..." oninput="this.style.height='auto'; this.style.height=(this.scrollHeight)+'px';" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg();}"></textarea>
       <button class="btn primary" onclick="sendMsg()" style="padding:0 20px;">发送</button>
     </div>
   </div>
@@ -2341,7 +2342,12 @@
               if (d2.status === 'ok' && d2.messages) {
                 S.cid = cidToFetch;
                 var targetC = CC();
-                targetC.msgs = d2.messages;
+                if (d2.messages.length > 0 || !targetC.msgs || targetC.msgs.length === 0) {
+                    targetC.msgs = d2.messages;
+                  }
+                  S.mode = targetC.mode || null;
+                  S.benchStep = targetC.benchStep || 1;
+                  
                 sv(); rf();
               }
             } catch(e) {}
