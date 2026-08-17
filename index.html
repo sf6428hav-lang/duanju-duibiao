@@ -2147,7 +2147,9 @@
     async function pv(path) {
       try {
         
-        E('editorFileName').innerText = '加载中...';
+        
+          var ep = document.getElementById('editorPane'); if(ep) ep.style.display = 'flex';
+E('editorFileName').innerText = '加载中...';
           E('editorContent').contentEditable = 'true';
         E('editorContent').innerText = '正在读取文件内容，请稍候...';
         E('editorSaveStatus').innerText = '';
