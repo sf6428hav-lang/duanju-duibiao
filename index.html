@@ -3,7 +3,38 @@
 <head>
   <script>
     window.onerror = function(msg, url, line, col, error) { alert("【系统调试信息】页面出现错误，请把这段字发给AI修复：\n" + msg + "\n行号: " + line); };
-  </script>
+  
+    const resizerRight = document.getElementById('resizerRight');
+    const editorPane = document.getElementById('editorPane');
+    let isDraggingRight = false;
+
+    if (resizerRight && editorPane) {
+        resizerRight.addEventListener('mousedown', function(e) {
+          isDraggingRight = true;
+          resizerRight.classList.add('dragging');
+          document.body.style.cursor = 'col-resize';
+          document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', function(e) {
+          if (!isDraggingRight) return;
+          let newWidth = e.clientX - editorPane.getBoundingClientRect().left;
+          if (newWidth < 200) newWidth = 200;
+          if (newWidth > 1200) newWidth = 1200;
+          editorPane.style.flex = 'none';
+          editorPane.style.width = newWidth + 'px';
+        });
+
+        document.addEventListener('mouseup', function(e) {
+          if (isDraggingRight) {
+            isDraggingRight = false;
+            resizerRight.classList.remove('dragging');
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+          }
+        });
+    }
+</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>创作工坊 · AI短剧剧本创作与对标系统</title>
@@ -1049,12 +1080,13 @@
       }
     }
 
-    function closeEditor() {
-      
+        function closeEditor() {
       currentPreviewFile = "";
       E("editorContent").contentEditable = "false";
       E("editorContent").innerHTML = '<p style="color:#999; text-align:center; margin-top:100px; user-select:none; pointer-events:none;">👈 在左侧选择或上传文件，开始编辑...</p>';
       updateWordCount();
+      var ep = E('editorPane'); if(ep) ep.style.display = 'none';
+      var rr = E('resizerRight'); if(rr) rr.style.display = 'none';
     }
 
     // 对标流程 8 步定义
@@ -2149,6 +2181,7 @@
         
         
           var ep = document.getElementById('editorPane'); if(ep) ep.style.display = 'flex';
+          var rr = document.getElementById('resizerRight'); if(rr) rr.style.display = 'block';
 E('editorFileName').innerText = '加载中...';
           E('editorContent').contentEditable = 'true';
         E('editorContent').innerText = '正在读取文件内容，请稍候...';
@@ -2568,6 +2601,37 @@ E('editorFileName').innerText = '加载中...';
           if (isDragging) {
             isDragging = false;
             resizer.classList.remove('dragging');
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+          }
+        });
+    }
+
+    const resizerRight = document.getElementById('resizerRight');
+    const editorPane = document.getElementById('editorPane');
+    let isDraggingRight = false;
+
+    if (resizerRight && editorPane) {
+        resizerRight.addEventListener('mousedown', function(e) {
+          isDraggingRight = true;
+          resizerRight.classList.add('dragging');
+          document.body.style.cursor = 'col-resize';
+          document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', function(e) {
+          if (!isDraggingRight) return;
+          let newWidth = e.clientX - editorPane.getBoundingClientRect().left;
+          if (newWidth < 200) newWidth = 200;
+          if (newWidth > 1200) newWidth = 1200;
+          editorPane.style.flex = 'none';
+          editorPane.style.width = newWidth + 'px';
+        });
+
+        document.addEventListener('mouseup', function(e) {
+          if (isDraggingRight) {
+            isDraggingRight = false;
+            resizerRight.classList.remove('dragging');
             document.body.style.cursor = '';
             document.body.style.userSelect = '';
           }
