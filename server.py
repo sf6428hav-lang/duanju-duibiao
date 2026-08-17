@@ -715,7 +715,14 @@ async def chat(req: ChatRequest, authorization: Optional[str] = Header(None)):
                 json.dump(new_msgs, f, ensure_ascii=False, indent=2)
 
             # 更新 user_sessions 数据库索引
-            smart_title = extract_smart_filename(full_response, req.messages, uinput, wmode) or uinput[:20] or "创作会话"
+                        fallback_uinput = uinput
+            if not fallback_uinput and req.messages and len(req.messages) > 0 and req.messages[-1].get("role") == "user":
+                last_content = req.messages[-1].get("content", "")
+                if isinstance(last_content, list):
+                    fallback_uinput = next((p["text"] for p in last_content if p.get("type") == "text"), "")
+                else:
+                    fallback_uinput = str(last_content)
+            smart_title = extract_smart_filename(full_response, req.messages, uinput, wmode) or fallback_uinput[:20] or "创作会话"
             conn = sqlite3.connect(DB_PATH)
             c = conn.cursor()
             c.execute('''

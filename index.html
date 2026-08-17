@@ -975,7 +975,13 @@
     <div id="batchPanel" style="padding:0 20px;"></div>
 
     <!-- 对标 / 创作 按钮在 <main> 最底部的 .bottom-bar 里 -->
-    <div class="input-area bottom-bar">
+    
+      <!-- Image Preview Area -->
+      <div id="imagePreviewArea" style="display:flex; gap:10px; padding:5px 20px; overflow-x:auto; min-height: 0;"></div>
+      <div class="input-area bottom-bar">
+        <input type="file" id="imageUploadInput" accept="image/*" multiple style="display:none;" onchange="handleImageUpload(this)">
+        <button type="button" class="btn" onclick="document.getElementById('imageUploadInput').click()" style="padding:0 10px; font-size:18px; border:none; background:transparent;" title="上传图片">🖼️</button>
+
       <button id="btnBench" class="btn" onclick="toggleMode('短剧对标')">对标</button>
       <button id="btnCreate" class="btn" onclick="toggleMode('剧本创作')">创作</button>
       <textarea id="chatInput" rows="1" style="min-height: 40px; max-height: 200px; resize: vertical; overflow-y: auto;" placeholder="在通用模式下输入指令..." oninput="this.style.height='auto'; this.style.height=(this.scrollHeight)+'px';" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg();}"></textarea>
@@ -1081,6 +1087,62 @@
       7: null,
       8: '请按照确认的格式，开始逐集生成完整剧本。'
     };
+
+    
+    var pendingImages = [];
+    
+    function renderPendingImages() {
+      var area = document.getElementById('imagePreviewArea');
+      if (!pendingImages.length) {
+        area.style.minHeight = '0';
+        area.innerHTML = '';
+        return;
+      }
+      area.style.minHeight = '60px';
+      var html = '';
+      pendingImages.forEach(function(img, idx) {
+        html += '<div style="position:relative; display:inline-block;">' +
+                  '<img src="' + img + '" style="height:60px; border-radius:6px; border:1px solid var(--border);">' +
+                  '<button onclick="pendingImages.splice(' + idx + ', 1); renderPendingImages();" style="position:absolute; top:-5px; right:-5px; background:red; color:white; border:none; border-radius:50%; width:18px; height:18px; font-size:10px; cursor:pointer; line-height:16px; padding:0;">✕</button>' +
+                '</div>';
+      });
+      area.innerHTML = html;
+    }
+
+    function handleImageUpload(input) {
+      if (!input.files || !input.files.length) return;
+      Array.from(input.files).forEach(function(file) {
+        if (!file.type.startsWith('image/')) return;
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          pendingImages.push(e.target.result);
+          renderPendingImages();
+        };
+        reader.readAsDataURL(file);
+      });
+      input.value = ''; // reset
+    }
+
+    // Add paste listener to chatInput once the DOM is ready
+    window.addEventListener('DOMContentLoaded', function() {
+      var inp = document.getElementById('chatInput');
+      if(inp) {
+        inp.addEventListener('paste', function(e) {
+          var items = (e.clipboardData || e.originalEvent.clipboardData).items;
+          for (var i = 0; i < items.length; i++) {
+            if (items[i].kind === 'file' && items[i].type.startsWith('image/')) {
+              var blob = items[i].getAsFile();
+              var reader = new FileReader();
+              reader.onload = function(evt) {
+                pendingImages.push(evt.target.result);
+                renderPendingImages();
+              };
+              reader.readAsDataURL(blob);
+            }
+          }
+        });
+      }
+    });
 
     var S = { cid: 'c' + Date.now(), mode: null, chats: [], doc: '', s4: false, s7: false, cstr: false, qaHandled: false, cardsVisible: true, bi: 0, tb: 0, gen: false, ab: null, sd: null, edi: null, step4Questions: null, createStage: '头脑风暴', benchStep: 1 };
 
@@ -1948,7 +2010,7 @@
         S.gen = false;
       }
 
-      if ((!txt && !isRegen) || S.gen) return;
+      if ((!txt && !isRegen && pendingImages.length === 0) || S.gen) return;
 
       if (S.mode === '剧本创作') {
         S.cardsVisible = false;
@@ -1988,7 +2050,7 @@
           body: JSON.stringify({
             api_key: k, api_url: gU(), model: gM(), work_mode: S.mode || '通用',
             messages: chat.msgs.filter(function (m) { return !m.s; }).map(function (m) { return { role: m.role, content: m.content }; }),
-            user_input: txt, doc_text: docT, session_id: S.cid, token: getToken()
+            user_input: "", doc_text: docT, session_id: S.cid, token: getToken()
           }),
           signal: S.ab.signal
         });
