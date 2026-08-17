@@ -40,11 +40,11 @@
     /* 侧边栏 */
     .sidebar {
       width: 240px;
-      background: var(--bg2);
+      background: transparent;
       display: flex;
       flex-direction: column;
-      padding: 16px;
-      gap: 16px;
+      padding: 12px;
+      gap: 12px;
       overflow-y: auto;
       overflow-x: hidden;
       flex-shrink: 0;
@@ -893,7 +893,7 @@
 
 
   <div class="sidebar" id="sidebar">
-    <h3>🎬 创作工坊</h3>
+    <h3 style="font-size:14px; margin-bottom:0; display:flex; align-items:center; gap:6px;">🎬 创作工坊</h3>
 
     
 
@@ -937,7 +937,7 @@
         <button class="btn sm" onclick="closeEditor()">✕ 关闭</button>
       </div>
     </div>
-    <div id="editorContent" class="editor-content" contenteditable="true" oninput="updateWordCount()"><p style="color:#999; text-align:center; margin-top:100px;">👈 在左侧选择或上传文件，开始编辑...</p></div>
+    <div id="editorContent" class="editor-content" contenteditable="false" oninput="updateWordCount()"><p style="color:#999; text-align:center; margin-top:100px;">👈 在左侧选择或上传文件，开始编辑...</p></div>
     <div class="editor-bottom">
       <span id="editorWordCountStr">字数：0</span>
       <span id="editorSaveStatus">已保存</span>
@@ -1009,6 +1009,9 @@
 
     
     let currentPreviewFile = "";
+      E("editorContent").contentEditable = "false";
+      E("editorContent").innerHTML = '<p style="color:#999; text-align:center; margin-top:100px; user-select:none; pointer-events:none;">👈 在左侧选择或上传文件，开始编辑...</p>';
+      updateWordCount();
 
     function updateWordCount() {
       var text = E('editorContent').innerText || "";
@@ -1044,6 +1047,9 @@
     function closeEditor() {
       
       currentPreviewFile = "";
+      E("editorContent").contentEditable = "false";
+      E("editorContent").innerHTML = '<p style="color:#999; text-align:center; margin-top:100px; user-select:none; pointer-events:none;">👈 在左侧选择或上传文件，开始编辑...</p>';
+      updateWordCount();
     }
 
     // 对标流程 8 步定义
@@ -2135,6 +2141,7 @@
       try {
         
         E('editorFileName').innerText = '加载中...';
+          E('editorContent').contentEditable = 'true';
         E('editorContent').innerText = '正在读取文件内容，请稍候...';
         E('editorSaveStatus').innerText = '';
         currentPreviewFile = path;
@@ -2538,6 +2545,9 @@
           if (newWidth < 180) newWidth = 180;
           if (newWidth > 600) newWidth = 600;
           sidebar.style.width = newWidth + 'px';
+          sidebar.style.flexBasis = newWidth + 'px';
+          sidebar.style.minWidth = newWidth + 'px';
+          sidebar.style.maxWidth = newWidth + 'px';
         });
 
         document.addEventListener('mouseup', function(e) {
