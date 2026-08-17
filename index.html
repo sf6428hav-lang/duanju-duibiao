@@ -2423,7 +2423,6 @@
     
   
     async function applySmartPatch(msgId, ctxStr) {
-    async function applySmartPatch(msgId, ctxStr) {
         var ctx = JSON.parse(decodeURIComponent(ctxStr));
         var c = S.chats.find(function(x) { return x.id === S.cid; });
         var m = c.msgs.find(function(x) { return x.id === msgId; });
