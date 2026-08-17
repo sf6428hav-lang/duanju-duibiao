@@ -857,25 +857,9 @@
     </div>
 
     
-    <div>
-      <h4>主题切换</h4>
-      <select id="themeSelect" onchange="switchTheme(this.value)"></select>
-    </div>
 
-    <div>
-      <h4>💬 历史对话</h4>
-      <div class="row" style="margin-bottom:6px;">
-        <button class="btn primary" onclick="newChat()">+ 新建对话</button>
-        <select id="historySelect" style="flex:1;" onchange="swChat(this.value)"></select>
-        <button class="btn sm" onclick="openHistory()">📋 列表</button>
-      </div>
-      <div class="row">
-        <button class="btn sm" style="flex:1;" onclick="exportHistory()">⬇️ 导出备份</button>
-        <button class="btn sm" style="flex:1;" onclick="document.getElementById('importFile').click()">⬆️ 导入并同步</button>
-        <input type="file" id="importFile" style="display:none;" accept=".json" onchange="importHistory(event)">
-      </div>
-      <div id="historyList" style="margin-top:8px;font-size:12px;max-height:120px;overflow-y:auto;display:none;"></div>
-    </div>
+
+
 
     <div>
       <div class="row" style="justify-content:space-between;margin-bottom:6px;">
@@ -927,7 +911,14 @@
 
   <div class="main">
     <div class="top-bar">
-      <div id="topBar"></div>
+            <div id="topBar" style="display:flex; justify-content:flex-end; width:100%; align-items:center; gap:12px; padding: 0 12px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <button class="btn primary sm" onclick="newChat()">+ 新建对话</button>
+          <select id="historySelect" style="padding:4px 8px; border-radius:6px; border:1px solid var(--border); max-width:150px;" onchange="swChat(this.value)"></select>
+          <button class="btn sm" onclick="openHistory()">📋 历史列表</button>
+        </div>
+        <div id="historyList" style="display:none;"></div>
+      </div>
     </div>
 
     <!-- ====== 对标流程步骤条 DOM ====== -->
