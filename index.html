@@ -883,6 +883,40 @@
     #imagePreviewArea::-webkit-scrollbar { height: 6px; }
     #imagePreviewArea::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
+  
+    /* Plugin Menu */
+    .plugin-menu {
+      position: absolute;
+      bottom: 60px;
+      left: 20px;
+      background: var(--card);
+      border: var(--border);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      z-index: 1000;
+      min-width: 200px;
+      animation: fadeIn 0.2s ease-out;
+    }
+    .plugin-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: background 0.2s;
+      color: var(--text);
+    }
+    .plugin-item:hover {
+      background: var(--bg);
+    }
+    .plugin-item .p-icon { font-size: 18px; }
+    .plugin-item .p-text { font-size: 14px; font-weight: 500; }
+
   </style>
 
   <style id="themeDynamicCSS">
@@ -1016,6 +1050,40 @@
     }
     #imagePreviewArea::-webkit-scrollbar { height: 6px; }
     #imagePreviewArea::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  
+    /* Plugin Menu */
+    .plugin-menu {
+      position: absolute;
+      bottom: 60px;
+      left: 20px;
+      background: var(--card);
+      border: var(--border);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      z-index: 1000;
+      min-width: 200px;
+      animation: fadeIn 0.2s ease-out;
+    }
+    .plugin-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: background 0.2s;
+      color: var(--text);
+    }
+    .plugin-item:hover {
+      background: var(--bg);
+    }
+    .plugin-item .p-icon { font-size: 18px; }
+    .plugin-item .p-text { font-size: 14px; font-weight: 500; }
 
   </style>
 </head>
@@ -1186,7 +1254,21 @@
     <!-- 对标 / 创作 按钮在 <main> 最底部的 .bottom-bar 里 -->
     
             <!-- Chat Input Card -->
-      <div class="chat-input-wrapper">
+      
+          <!-- Plugin Menu -->
+          <div id="pluginMenu" class="plugin-menu" style="display:none;">
+             <div class="plugin-item" onclick="document.getElementById('fileInput').click(); togglePluginMenu();">
+                <span class="p-icon">🖼️</span><span class="p-text">图片/视频 (自动解析)</span>
+             </div>
+             <div class="plugin-item" onclick="openHistory(); togglePluginMenu();">
+                <span class="p-icon">📂</span><span class="p-text">历史会话记录</span>
+             </div>
+             <div class="plugin-item" onclick="E('settingsModal').style.display='flex'; togglePluginMenu();">
+                <span class="p-icon">⚙️</span><span class="p-text">API & 主题设置</span>
+             </div>
+          </div>
+
+      <div class="chat-input-wrapper" style="position:relative;">
         <!-- Top Toolbar -->
         <div class="chat-input-toolbar">
           <div class="toolbar-left">
@@ -1380,6 +1462,19 @@
 
     function E(id) { return document.getElementById(id); }
     function esc(s) { return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+    
+    function togglePluginMenu() {
+      var m = document.getElementById('pluginMenu');
+      m.style.display = (m.style.display === 'none') ? 'flex' : 'none';
+    }
+    // Close plugin menu when clicking outside
+    document.addEventListener('click', function(e) {
+      var m = document.getElementById('pluginMenu');
+      if (m && m.style.display !== 'none' && !e.target.closest('#pluginMenu') && !e.target.closest('.preset-btn')) {
+        m.style.display = 'none';
+      }
+    });
 
     function showToast(msg) {
       var t = document.createElement('div');
