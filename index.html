@@ -847,7 +847,7 @@
       <select id="modeSelect" class="w-full bg-transparent text-sm outline-none" onchange="switchMode()">
         <option value="剧本创作">剧本创作</option>
         <option value="短剧对标">短剧对标</option>
-        <option value="爆款大纲与小传">🔥 爆款大纲与小传</option>
+        
       </select>
     </div>
 
@@ -2409,9 +2409,7 @@
       if(text) {
           let input = document.getElementById('chatInput');
           let existing = input.value;
-          input.value = '> ' + text + '
-
-' + existing;
+          input.value = '> ' + text + '\n\n' + existing;
           input.focus();
           document.getElementById('quoteBtn').style.display = 'none';
           window.getSelection().removeAllRanges();

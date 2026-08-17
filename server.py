@@ -642,9 +642,7 @@ async def chat(req: ChatRequest, authorization: Optional[str] = Header(None)):
     if wmode == "短剧对标":
         sys_p = BENCH_PROMPT
     elif wmode == "剧本创作":
-        sys_p = CREATE_PROMPT
-    elif wmode == "爆款大纲与小传":
-        sys_p = OUTLINE_BIO_PROMPT
+        sys_p = CREATE_PROMPT + "\n\n" + OUTLINE_BIO_PROMPT
     else:
         sys_p = "你是专业高效的AI创作助手。"
 
