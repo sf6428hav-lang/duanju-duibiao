@@ -2088,18 +2088,37 @@
 
     async function pv(path) {
       try {
+        E('editorPane').style.display = 'flex';
+        E('editorFileName').innerText = '加载中...';
+        E('editorContent').innerText = '正在读取文件内容，请稍候...';
+        E('editorSaveStatus').innerText = '';
+        currentPreviewFile = path;
+
         var t = '';
-        var r = await fetch(B + '/api/preview/' + path + '?token=' + encodeURIComponent(getToken()), { headers: getAuthHeaders() });
-        if (r.ok) {
-          var d = await r.json();
-          t = d.text || d.error || '';
-        } else {
-          var r2 = await fetch(B + '/api/download/' + path);
-          t = await r2.text();
+        try {
+          var r = await fetch(B + '/api/preview/' + path + '?token=' + encodeURIComponent(getToken()), { headers: getAuthHeaders() });
+          if (r.ok) {
+            var d = await r.json();
+            t = d.text || d.error || '';
+          } else {
+            var r2 = await fetch(B + '/api/download/' + path);
+            t = await r2.text();
+          }
+        } catch(netErr) {
+          t = '网络请求失败，请检查服务器是否正常运行。' + netErr.message;
         }
-        E('previewBox').style.display = 'block';
-        E('previewBox').innerHTML = '<div class="panel"><div style="display:flex;justify-content:space-between;align-items:center;"><h4>📖 ' + path.split('/').pop() + '</h4><button class="btn sm" onclick="E(\'previewBox\').style.display=\'none\'">✕</button></div><div class="preview" style="max-height:60vh;overflow-y:auto;margin-top:10px;white-space:pre-wrap;">' + esc(t) + '</div></div>';
-      } catch (e) { }
+        
+        // 只有当用户没有切换到其他文件时才更新
+        if (currentPreviewFile === path) {
+          E('editorFileName').innerText = path.split('/').pop();
+          E('editorContent').innerText = t;
+          updateWordCount();
+        }
+      } catch (e) { 
+        if (currentPreviewFile === path) {
+          E('editorContent').innerText = '读取失败: ' + e.message;
+        }
+      }
     }
 
     async function fetchModels() {
