@@ -2514,7 +2514,7 @@
                 }
               } else if (d.type === 'done') {
                 var m = chat.msgs.find(function (x) { return x.id === pid; });
-                if (m) { delete m.s; delete m.id; m.content = full; if (d.saved_file) m.content += '\n\n---\n📁 已保存: ' + d.saved_file; }
+                if (m) { delete m.s; delete m.id; m.content = full; }
 
                 var sdir = d.session_dir || d.sessiondir;
                 if (sdir) S.sd = sdir;
