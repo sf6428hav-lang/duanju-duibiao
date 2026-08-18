@@ -2391,10 +2391,18 @@
       }
 
       if (!isRegen) inp.value = '';
-      var k = gK(); if (!k) { alert('请先填写API Key'); return; }
+      var k = gK(); if (!k) { alert('请填写API Key'); return; }
 
-      if (!isRegen && txt) {
-        if (!chat.msgs.length || chat.msgs[chat.msgs.length - 1].content !== txt) chat.msgs.push({ role: 'user', content: txt });
+      var fullTxt = txt;
+      if (!isRegen && window.S && S.pendingQuote) {
+          fullTxt = "> " + S.pendingQuote.replace(/\n/g, ' ') + "\n\n" + txt;
+          clearQuote();
+      }
+
+      if (!isRegen && fullTxt) {
+        if (!chat.msgs.length || chat.msgs[chat.msgs.length - 1].content !== fullTxt) {
+             chat.msgs.push({ role: 'user', content: fullTxt });
+        }
       }
       sv(); rd();
 
