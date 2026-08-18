@@ -2492,7 +2492,8 @@
                 if (m) m.content = full;
                 var el = E("msg_" + pid);
                 if (el) {
-                  el.innerHTML = renderMarkdown(full.replace(/\[TEMPLATEJSON\][\s\S]*?\[\/TEMPLATEJSON\]/g, ""));
+                                    var noThink = full.replace(/<(?:think|thinking|thought)>[\s\S]*?(?:<\/(?:think|thinking|thought)>|$)/gi, '');
+                  el.innerHTML = renderMarkdown(noThink.replace(/\[TEMPLATEJSON\][\s\S]*?(?:\[\/TEMPLATEJSON\]|$)/g, ""));
                   let isAtB2 = E("chatArea").scrollHeight - E("chatArea").scrollTop <= E("chatArea").clientHeight + 150;
                   if(isAtB2) E("chatArea").scrollTop = E("chatArea").scrollHeight;
                   rP();
