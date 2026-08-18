@@ -1515,6 +1515,8 @@
           }
         }
       } catch (e) { }
+      S.doc = localStorage.getItem('doc_' + S.cid) || '';
+      try { S.docInfos = JSON.parse(localStorage.getItem('docInfos_' + S.cid) || '[]'); } catch(e) { S.docInfos = []; }
     }
 
     function svs() {
@@ -2193,6 +2195,17 @@
       renderBenchSteps();
       listFiles();
       lds();
+      
+      if (S.docInfos && S.docInfos.length) {
+         var clickableInfos = S.docInfos.map(function(info) {
+              return '<span style="cursor:pointer; color:var(--primary); text-decoration:underline;" title="点击预览文件内容" onclick="viewUploadedDoc()">' + info + '</span>';
+         });
+         var fInfo = document.getElementById('fileInfo');
+         if(fInfo) fInfo.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;"><span>✅ 已成功合并上传 ' + S.docInfos.length + ' 个文件</span><button class="btn xs danger" onclick="clearDoc()">🗑️ 清除</button></div><div style="font-size:11px;opacity:.7;margin-top:4px;">' + clickableInfos.join('<br>') + '</div>';
+      } else {
+         var fInfo = document.getElementById('fileInfo');
+         if(fInfo) fInfo.innerHTML = '未选择文件';
+      }
       renderHistory();
       E('chatInput').placeholder = '在【' + (S.mode || '通用') + '】模式下输入指令...';
     }
@@ -2523,7 +2536,7 @@
 
     // ====== 文件操作与删除 ======
     function clearDoc() {
-      S.doc = '';
+      S.doc = ''; S.docInfos = []; sv();
       var inp = E('fileInput'); if (inp) inp.value = '';
       E('fileInfo').innerHTML = '未选择文件';
       showToast('🗑️ 参考脚本已成功清除！');
@@ -2552,6 +2565,8 @@
       }
       if (texts.length) {
         S.doc = texts.join('\n\n---\n\n');
+        S.docInfos = infos;
+        sv();
         var clickableInfos = infos.map(function(info) {
              return '<span style="cursor:pointer; color:var(--primary); text-decoration:underline;" title="点击预览文件内容" onclick="viewUploadedDoc()">' + info + '</span>';
         });
