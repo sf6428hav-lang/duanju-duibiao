@@ -2215,6 +2215,8 @@
 
       s = s.replace(/^---$/gim, '<hr style="border:none;border-top:1px solid #e2e8f0;margin:8px 0;">');
 
+      s = s.replace(/^&gt;\s*(.*$)/gim, '<blockquote class="md-quote">$1</blockquote>');
+
       s = s.replace(/\*\*(.*?)\*\*/g, '<strong style="color:#0f172a;font-weight:700;background:rgba(59,130,246,0.1);padding:1px 4px;border-radius:4px;margin:0 2px;">$1</strong>');
 
       s = s.replace(/\*(.*?)\*/g, '<em style="color:#475569;">$1</em>');
@@ -2224,8 +2226,8 @@
       s = s.replace(/\n/g, '<br>');
 
       s = s.replace(/(?:<br>\s*){3,}/gi, '<br><br>');
-      s = s.replace(/(<\/h[2-5]>|<hr>|<\/pre>)\s*<br>/gi, '$1');
-      s = s.replace(/<br>\s*(<h[2-5]>|<hr>|<pre)/gi, '$1');
+      s = s.replace(/(<\/h[2-5]>|<hr>|<\/pre>|<\/blockquote>)\s*<br>/gi, '$1');
+      s = s.replace(/<br>\s*(<h[2-5]>|<hr>|<pre|<blockquote)/gi, '$1');
 
       return s.trim();
     }
