@@ -2534,7 +2534,10 @@
       }
       if (texts.length) {
         S.doc = texts.join('\n\n---\n\n');
-        E('fileInfo').innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;"><span>✅ 已成功合并上传 ' + texts.length + ' 个文件</span><button class="btn xs danger" onclick="clearDoc()">🗑️ 清除</button></div><div style="font-size:11px;opacity:.7;margin-top:2px;">' + infos.join('<br>') + '</div>';
+        var clickableInfos = infos.map(function(info) {
+             return '<span style="cursor:pointer; color:var(--primary); text-decoration:underline;" title="点击预览文件内容" onclick="viewUploadedDoc()">' + info + '</span>';
+        });
+        E('fileInfo').innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;"><span>✅ 已成功合并上传 ' + texts.length + ' 个文件</span><button class="btn xs danger" onclick="clearDoc()">🗑️ 清除</button></div><div style="font-size:11px;opacity:.7;margin-top:4px;">' + clickableInfos.join('<br>') + '</div>';
         if (S.mode === '短剧对标') advanceBenchStep(2);
       } else {
         E('fileInfo').innerHTML = '<span style="color:#ff6b6b">上传失败</span>';
@@ -2574,6 +2577,20 @@
       } catch (e) {
         alert('删除请求失败：' + e.message);
       }
+    }
+
+    
+    function viewUploadedDoc() {
+        var ep = document.getElementById('editorPane');
+        if(ep) ep.style.display = 'flex';
+        var rr = document.getElementById('resizerRight');
+        if(rr) rr.style.display = 'block';
+        
+        document.getElementById('editorFileName').innerText = '当前上传的参考文件';
+        document.getElementById('editorContent').contentEditable = 'false';
+        document.getElementById('editorContent').innerText = S.doc || '无内容';
+        document.getElementById('editorSaveStatus').innerText = '';
+        window.currentPreviewFile = null;
     }
 
     async function pv(path) {
