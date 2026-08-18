@@ -249,6 +249,7 @@
     /* 主区域 */
         .main {
       flex: 1;
+      min-width: 0; /* Prevents flex child from stretching infinitely */
       display: flex;
       flex-direction: column;
       background-color: var(--bg2);
@@ -2925,7 +2926,7 @@ E('editorFileName').innerText = '加载中...';
     function clearQuote() {
         S.pendingQuote = null;
         document.getElementById('quotePreview').style.display = 'none';
-        document.getElementById('quotePreviewText').innerText = '';
+        document.getElementById('quotePreviewText').textContent = '';
     }
 
     function handleQuote() {
@@ -2935,7 +2936,7 @@ E('editorFileName').innerText = '加载中...';
           S.pendingQuote = text;
           let qp = document.getElementById('quotePreview');
           qp.style.display = 'flex';
-          document.getElementById('quotePreviewText').innerText = text;
+          document.getElementById('quotePreviewText').textContent = text.replace(/\n/g, ' ');
           
           let btn = document.getElementById('quoteBtn');
           if(btn) btn.style.display = 'none';
