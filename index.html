@@ -416,6 +416,29 @@
       margin-left: auto;
     }
 
+    
+    .msg.user .md-quote {
+      background: rgba(255, 255, 255, 0.15);
+      border-left: 3px solid rgba(255, 255, 255, 0.7);
+      padding: 6px 10px;
+      margin: 2px 0;
+      border-radius: 4px;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .msg.assistant .md-quote {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--primary);
+      padding: 6px 10px;
+      margin: 2px 0;
+      border-radius: 4px;
+      font-size: 12px;
+      color: var(--text);
+      opacity: 0.85;
+      line-height: 1.5;
+    }
+
     .msg.user .content {
       background: var(--primary);
       color: #ffffff;
@@ -2413,7 +2436,7 @@
 
       var fullTxt = txt;
       if (!isRegen && window.S && S.pendingQuote) {
-          fullTxt = "> " + S.pendingQuote.replace(/\n/g, ' ') + "\n\n" + txt;
+          fullTxt = S.pendingQuote.split('\n').map(function(l) { return '> ' + l; }).join('\n') + '\n\n' + txt;
           clearQuote();
       }
 
