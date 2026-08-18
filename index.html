@@ -2330,7 +2330,7 @@
           if (S.edi === i) {
             h += '<div class="msg user" style="width: 100%; max-width: 600px;"><div class="role" style="display:flex;justify-content:flex-end;margin-bottom:4px;font-size:12px;opacity:0.6;">编辑中...</div><textarea class="edit-textarea" id="editArea" style="width:100%; min-height:80px; padding:12px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text); font-family:inherit; resize:vertical; box-shadow: 0 2px 8px rgba(0,0,0,0.05);" oninput="this.style.height=\'auto\'; this.style.height=(this.scrollHeight)+\'px\';">' + esc(m.content) + '</textarea><div class="actions" style="margin-top:8px;display:flex;justify-content:flex-end;gap:8px;"><button class="btn sm primary" onclick="cfEd(' + i + ')">确认</button><button class="btn sm" onclick="S.edi=null;rd(true)">取消</button></div></div>';
           } else {
-            h += '<div class="msg user"><div class="role" style="display:flex;justify-content:flex-end;margin-bottom:4px;"><button class="btn xs" onclick="S.edi=\' + i + \';rd(true)" style="opacity:.4">✏️修改</button></div><div class="content">' + renderMarkdown(m.content) + '</div></div>';
+            h += '<div class="msg user"><div class="role" style="display:flex;justify-content:flex-end;margin-bottom:4px;"><button class="btn xs" onclick="S.edi=' + i + ';rd(true)" style="opacity:.4">✏️修改</button></div><div class="content">' + renderMarkdown(m.content) + '</div></div>';
           }
           h += '</div>'; // close msg-wrap
           continue;
