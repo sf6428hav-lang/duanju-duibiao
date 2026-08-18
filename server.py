@@ -425,8 +425,7 @@ def process_document_saving(content: str, session_dir: str, messages: list = Non
                 in_body = True
 
         if in_body:
-            if any(k in stripped for k in ["集要点:", "集要点：", "字数自算", "在1000以内", "你先审", "告诉我你的想法", "选完（或告诉我", "我立刻按同样"]):
-                break
+            if any(k in stripped for k in ["集要点:", "集要点：", "字数自算", "在1000以内", "你先审", "告诉我你的想法", "选完（或告诉我", "我立刻按同样", "写完", "感觉对吗", "埋点说明", "说明：", "接下来", "还需要", "字数约", "以上就是", "符合你的", "第六集写完"]): break
             if any(stripped.startswith(k) for k in ["数一下字数", "符合要求", "请确认是否", "你定一下", "请在下方说明"]):
                 continue
             clean_lines.append(line)
@@ -862,8 +861,7 @@ async def preview_file(filepath: str):
                 in_body = True
 
         if in_body:
-            if any(k in stripped for k in ["集要点:", "集要点：", "字数自算", "在1000以内", "你先审", "告诉我你的想法", "选完（或告诉我", "我立刻按同样"]):
-                break
+            if any(k in stripped for k in ["集要点:", "集要点：", "字数自算", "在1000以内", "你先审", "告诉我你的想法", "选完（或告诉我", "我立刻按同样", "写完", "感觉对吗", "埋点说明", "说明：", "接下来", "还需要", "字数约", "以上就是", "符合你的", "第六集写完"]): break
             if any(stripped.startswith(k) for k in ["数一下字数", "符合要求", "请确认是否", "你定一下", "请在下方说明"]):
                 continue
             clean_lines.append(line)

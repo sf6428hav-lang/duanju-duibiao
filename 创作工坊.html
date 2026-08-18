@@ -1540,7 +1540,11 @@
             S.step4Questions = curC ? (curC.step4Questions || null) : null;
           }
         }
-      } catch (e) { }
+      } catch (e) {
+        if (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
+            alert('🚨 警告：浏览器本地存储空间已满！可能是您上传的文件过大或聊天记录过多。刷新页面将会丢失本次对话，请先备份重要内容！');
+        }
+      }
       S.doc = localStorage.getItem('doc_' + S.cid) || '';
       try { S.docInfos = JSON.parse(localStorage.getItem('docInfos_' + S.cid) || '[]'); } catch(e) { S.docInfos = []; }
     }
@@ -1565,7 +1569,11 @@
             if (!has) E('customModel').value = d.m;
           }
         }
-      } catch (e) { }
+      } catch (e) {
+        if (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
+            alert('🚨 警告：浏览器本地存储空间已满！可能是您上传的文件过大或聊天记录过多。刷新页面将会丢失本次对话，请先备份重要内容！');
+        }
+      }
       updateApiStatus();
     }
 
@@ -1703,7 +1711,11 @@
               targetC.title = f ? f.content.replace(/[#*\[\]【】\s]/g, '').slice(0, 14) : '对话';
             }
           }
-        } catch(e) {}
+        } catch(e) {
+        if (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
+            alert('🚨 警告：浏览器本地存储空间已满！可能是您上传的文件过大或聊天记录过多。刷新页面将会丢失本次对话，请先备份重要内容！');
+        }
+      }
       }
       S.mode = targetC.mode || null;
       S.sd = targetC.sd || null;
@@ -2537,7 +2549,11 @@
                 if (m) { m.content = d.message; m.er = true; delete m.s; delete m.id; }
                 rd();
               }
-            } catch (e) { }
+            } catch (e) {
+        if (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
+            alert('🚨 警告：浏览器本地存储空间已满！可能是您上传的文件过大或聊天记录过多。刷新页面将会丢失本次对话，请先备份重要内容！');
+        }
+      }
           }
         }
       } catch (e) {
@@ -2869,10 +2885,18 @@ E('editorFileName').innerText = '加载中...';
                   
                 sv(); rf();
               }
-            } catch(e) {}
+            } catch(e) {
+        if (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
+            alert('🚨 警告：浏览器本地存储空间已满！可能是您上传的文件过大或聊天记录过多。刷新页面将会丢失本次对话，请先备份重要内容！');
+        }
+      }
           }
         }
-      } catch(e) {}
+      } catch(e) {
+        if (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
+            alert('🚨 警告：浏览器本地存储空间已满！可能是您上传的文件过大或聊天记录过多。刷新页面将会丢失本次对话，请先备份重要内容！');
+        }
+      }
     }
 
     function exportHistory() {
