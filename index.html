@@ -1291,6 +1291,12 @@
         <!-- Image Preview Area -->
         <div id="imagePreviewArea"></div>
         
+        <!-- Quote Preview Area -->
+        <div id="quotePreview" style="display:none; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; margin: 0 16px 8px 16px; font-size: 12px; color: var(--text); opacity: 0.85; align-items: center; justify-content: space-between;">
+            <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border-left: 3px solid var(--primary); padding-left: 8px;" id="quotePreviewText"></div>
+            <button onclick="clearQuote()" style="background:none;border:none;color:inherit;cursor:pointer;font-size:16px;margin-left:8px;opacity:0.6;line-height:1;">&times;</button>
+        </div>
+        
         <!-- Middle Textarea -->
         <textarea id="chatInput" rows="1" placeholder="描述你需要帮助... (Shift+Enter 换行)" oninput="this.style.height='auto'; this.style.height=(this.scrollHeight)+'px';" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg();}"></textarea>
         
@@ -2371,7 +2377,7 @@
         S.gen = false;
       }
 
-      if ((!txt && !isRegen && pendingImages.length === 0) || S.gen) return;
+      if ((!txt && !isRegen && pendingImages.length === 0 && !(window.S && S.pendingQuote)) || S.gen) return;
 
       if (S.mode === '剧本创作') {
         S.cardsVisible = false;
@@ -2890,23 +2896,30 @@ E('editorFileName').innerText = '加载中...';
           if(btn) btn.style.display = 'none';
       }
     });
+    
+    window.S = window.S || {};
+    function clearQuote() {
+        S.pendingQuote = null;
+        document.getElementById('quotePreview').style.display = 'none';
+        document.getElementById('quotePreviewText').innerText = '';
+    }
+
     function handleQuote() {
       let sel = window.getSelection();
       let text = sel.toString().trim();
       if(text) {
-          let input = document.getElementById('chatInput');
-          let existing = input.value;
-          input.value = '> ' + text + '\n\n' + existing;
-          input.focus();
-          document.getElementById('quoteBtn').style.display = 'none';
-          window.getSelection().removeAllRanges();
+          S.pendingQuote = text;
+          let qp = document.getElementById('quotePreview');
+          qp.style.display = 'flex';
+          document.getElementById('quotePreviewText').innerText = text;
           
-          window.pendingQuoteContext = {
-              text: text,
-              file: window.currentPreviewFile || null
-          };
+          let btn = document.getElementById('quoteBtn');
+          if(btn) btn.style.display = 'none';
+          window.getSelection().removeAllRanges();
+          document.getElementById('chatInput').focus();
       }
     }
+
     
   
     async function applySmartPatch(msgId, ctxStr) {
