@@ -1976,7 +1976,7 @@
       var cp = E('createPanel'), s4 = E('step4Panel'), s7 = E('step7Panel'), bp = E('batchPanel');
 
       // 🔴 剧本创作模式交互面板：只要 AI 输出 TEMPLATEJSON 或导引问题，动态展示选择面板
-      if (S.mode === '剧本创作') {
+      if (S.mode === '剧本创作' || !S.mode || S.mode === '通用' || true) {
         var chat = CC();
         var msgs = chat.msgs || [];
         var lastM = msgs.length ? msgs[msgs.length - 1] : null;
@@ -2277,7 +2277,7 @@
         h += '<div style="margin-bottom:12px;background:#dcfce7;border:1px solid #86efac;color:#166534;padding:8px 14px;border-radius:10px;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:space-between;"><span>✨ 当前已处于全新空白对话 (ID: ' + esc(S.cid) + ')</span><button class="btn xs" onclick="newChat()">清空重置</button></div>';
         if (S.mode === '短剧对标') {
           h += renderBenchGuide();
-        } else if (S.mode === '剧本创作') {
+        } else if (S.mode === '剧本创作' || !S.mode || S.mode === '通用' || true) {
           h += '<div class="guide-msg"><div class="guide-title">🎨 剧本创作模式 · 智能分析与追问体验</div><p>请在下方聊天框直接输入你的创作想法或概述（如："我想写一部女扮男装的宫廷追女爽剧..."），发送后 AI 将深入分析并向你提出定向选项卡片供你确认方案。</p></div>';
         } else {
           h += '<div style="text-align:center;padding:60px 0;opacity:.4;font-size:14px;">👆 点击底部「对标」或「创作」开始或在输入框中自由对话 ✨</div>';
@@ -2333,7 +2333,7 @@
 
         var rawContent = m.content || '';
         var disp = rawContent;
-        if (S.mode === '剧本创作') {
+        if (S.mode === '剧本创作' || !S.mode || S.mode === '通用' || true) {
           disp = disp.replace(/\[TEMPLATEJSON\][\s\S]*?\[\/TEMPLATEJSON\]/g, '');
         } else {
           disp = disp.replace(/\[TEMPLATEJSON\][\s\S]*?\[\/TEMPLATEJSON\]/g, '<span style="font-size:11px;opacity:.6;background:var(--bg);padding:1px 6px;border-radius:4px;display:inline-block;margin:2px 0;">📋 (模板数据已解析)</span>');
@@ -2426,12 +2426,12 @@
 
       if ((!txt && !isRegen && pendingImages.length === 0 && !(window.S && S.pendingQuote)) || S.gen) return;
 
-      if (S.mode === '剧本创作') {
+      if (S.mode === '剧本创作' || !S.mode || S.mode === '通用' || true) {
         S.cardsVisible = false;
         chat.cardsVisible = false;
       }
 
-      if (!isRegen) inp.value = '';
+      if (!isRegen) { inp.value = ''; inp.style.height = 'auto'; }
       var k = gK(); if (!k) { alert('请填写API Key'); return; }
 
       var fullTxt = txt;
