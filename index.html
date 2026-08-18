@@ -2544,6 +2544,9 @@
                 }
 
                 sv(); rd(); listFiles();
+                if (d.saved_file && window.currentPreviewFile && window.currentPreviewFile.endsWith(d.saved_file)) {
+                  pv(window.currentPreviewFile);
+                }
               } else if (d.type === 'error') {
                 var m = chat.msgs.find(function (x) { return x.id === pid; });
                 if (m) { m.content = d.message; m.er = true; delete m.s; delete m.id; }
