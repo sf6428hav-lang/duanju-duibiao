@@ -300,19 +300,56 @@ def extract_template_json(text: str):
 
 def extract_smart_filename(content: str, messages: list = None, user_input: str = "", wmode: str = "") -> str:
     drama_title = ""
-    title_matches = re.findall(r'《([^》]+)》', content)
-    if not title_matches and user_input:
-        title_matches = re.findall(r'《([^》]+)》', str(user_input))
-    if not title_matches and messages:
+    
+    # Clean think blocks first to avoid extracting titles from internal thoughts
+    clean_content = re.sub(r'<thinking>[\s\S]*?(?:</thinking>|$)', '', content, flags=re.DOTALL | re.IGNORECASE)
+    clean_content = re.sub(r'<think>[\s\S]*?(?:</think>|$)', '', clean_content, flags=re.DOTALL | re.IGNORECASE).strip()
+    
+    # Strategy 1: Look for explicit Markdown headers containing 《》
+    header_match = re.search(r'^#+\s*.*?《([^》]+)》', clean_content, re.MULTILINE)
+    if header_match:
+        drama_title = header_match.group(1)
+        
+    # Strategy 2: Look for explicit naming declarations
+    if not drama_title:
+        explicit = re.search(r'(?:剧名|片名|项目名称|剧本名称)[\s:：]*《([^》]+)》', clean_content)
+        if explicit:
+            drama_title = explicit.group(1)
+            
+    # Strategy 3: Fallback to the first 《》 in the clean generated content that is NOT the example title
+    if not drama_title:
+        title_matches = re.findall(r'《([^》]+)》', clean_content)
+        if title_matches:
+            # If the user explicitly provided an example in their input like "参考《xxx》", we should ignore it
+            ignore_titles = []
+            if user_input:
+                ig_match = re.findall(r'(?:参考|仿照|例子|示例)[^《]*《([^》]+)》', str(user_input))
+                ignore_titles.extend(ig_match)
+            
+            for tm in title_matches:
+                if tm not in ignore_titles:
+                    drama_title = tm
+                    break
+            
+            if not drama_title:
+                drama_title = title_matches[0]
+
+    # Strategy 4: Fallback to user input
+    if not drama_title and user_input:
+        tm = re.findall(r'《([^》]+)》', str(user_input))
+        if tm:
+            drama_title = tm[-1] # User usually puts their target title last
+
+    # Strategy 5: Fallback to history
+    if not drama_title and messages:
         for m in reversed(messages):
             mc = m.get("content", "") if isinstance(m, dict) else str(m)
             tm = re.findall(r'《([^》]+)》', mc)
             if tm:
-                title_matches = tm
+                drama_title = tm[-1]
                 break
 
-    if title_matches:
-        drama_title = title_matches[0]
+    if drama_title:
         drama_title = re.sub(r'[\\/:*?"<>|\r\n\t]', '', drama_title).strip()
     return drama_title
 
