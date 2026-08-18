@@ -715,7 +715,7 @@ async def chat(req: ChatRequest, authorization: Optional[str] = Header(None)):
                 json.dump(new_msgs, f, ensure_ascii=False, indent=2)
 
             # 更新 user_sessions 数据库索引
-                        fallback_uinput = uinput
+            fallback_uinput = uinput
             if not fallback_uinput and req.messages and len(req.messages) > 0 and req.messages[-1].get("role") == "user":
                 last_content = req.messages[-1].get("content", "")
                 if isinstance(last_content, list):
