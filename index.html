@@ -247,11 +247,15 @@
     }
 
     /* 主区域 */
-    .main {
+        .main {
       flex: 1;
       display: flex;
       flex-direction: column;
-      background: var(--bg2);
+      background-color: var(--bg2);
+      background-image: var(--bg-img, none);
+      background-position: bottom right;
+      background-repeat: no-repeat;
+      background-size: 300px;
       position: relative;
     }
 
@@ -413,8 +417,9 @@
 
     .msg.user .content {
       background: var(--primary);
-      color: #fff;
+      color: #ffffff;
       border-radius: 14px 14px 2px 14px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
 
     .msg.assistant {
@@ -1319,9 +1324,14 @@
   <script>
     var B = (window.location.origin === 'file://' || window.location.origin === 'null') ? 'http://localhost:8000' : window.location.origin;
         var TH = {
-        "☁️ 软萌玉桂": { bg: "#f0f8ff", bg2: "#ffffff", text: "#4a4a4a", primary: "#87ceeb", card: "#ffffff", border: "#e0f2fe", shadow: "0 4px 16px rgba(135,206,235,0.15)", radius: "16px", eb: "#f0f8ff", ebd: "#bae6fd", dot: "#87ceeb", stepDone: "#38bdf8", stepActive: "#0ea5e9", stepPending: "#e0f2fe" },
-        "🖤 库洛米暗夜": { bg: "#1a1625", bg2: "#2d2438", text: "#e2d5f8", primary: "#b28dff", card: "#2d2438", border: "#4a3b5c", shadow: "0 4px 20px rgba(0,0,0,0.4)", radius: "14px", eb: "#3a2f4c", ebd: "#6b5488", dot: "#b28dff", stepDone: "#c4a3ff", stepActive: "#9d6bfa", stepPending: "#4a3b5c" },
-        "✨ 极简纯白": { bg: "#fcfcfc", bg2: "#ffffff", text: "#111111", primary: "#000000", card: "#ffffff", border: "#eeeeee", shadow: "0 2px 10px rgba(0,0,0,0.02)", radius: "8px", eb: "#f5f5f5", ebd: "#dddddd", dot: "#000000", stepDone: "#333333", stepActive: "#000000", stepPending: "#e5e5e5" }
+        "☁️ 软萌玉桂": { bg: "#f0f8ff", bg2: "#f9fcff", text: "#4a4a4a", primary: "#0ea5e9", card: "rgba(255,255,255,0.9)", border: "#e0f2fe", shadow: "0 8px 32px rgba(135,206,235,0.2)", radius: "20px", eb: "#f0f8ff", ebd: "#bae6fd", dot: "#0ea5e9", stepDone: "#38bdf8", stepActive: "#0ea5e9", stepPending: "#e0f2fe", bgImg: "url('https://api.iconify.design/noto:cloud.svg?color=%2387ceeb&width=200&height=200')" },
+        "🖤 库洛米暗夜": { bg: "#1a1625", bg2: "#221c2e", text: "#e2d5f8", primary: "#b28dff", card: "rgba(45,36,56,0.9)", border: "#4a3b5c", shadow: "0 8px 32px rgba(0,0,0,0.5)", radius: "20px", eb: "#3a2f4c", ebd: "#6b5488", dot: "#b28dff", stepDone: "#c4a3ff", stepActive: "#9d6bfa", stepPending: "#4a3b5c", bgImg: "url('https://api.iconify.design/twemoji:skull.svg?width=200&height=200')" },
+        "✨ 极简纯白": { bg: "#fcfcfc", bg2: "#ffffff", text: "#111111", primary: "#000000", card: "#ffffff", border: "#eeeeee", shadow: "0 4px 20px rgba(0,0,0,0.04)", radius: "12px", eb: "#f5f5f5", ebd: "#dddddd", dot: "#000000", stepDone: "#333333", stepActive: "#000000", stepPending: "#e5e5e5", bgImg: "none" },
+        "🌸 樱花落雪": { bg: "#fff0f5", bg2: "#fff5f8", text: "#5c3a4d", primary: "#ec4899", card: "rgba(255,255,255,0.85)", border: "#fbcfe8", shadow: "0 8px 32px rgba(236,72,153,0.15)", radius: "20px", eb: "#fdf2f8", ebd: "#f9a8d4", dot: "#ec4899", stepDone: "#f472b6", stepActive: "#ec4899", stepPending: "#fce7f3", bgImg: "url('https://api.iconify.design/twemoji:cherry-blossom.svg?width=250&height=250')" },
+        "🍓 草莓奶昔": { bg: "#fff1f2", bg2: "#fff7f8", text: "#701a22", primary: "#e11d48", card: "rgba(255,255,255,0.9)", border: "#ffe4e6", shadow: "0 8px 32px rgba(225,29,72,0.15)", radius: "18px", eb: "#fff1f2", ebd: "#fecdd3", dot: "#e11d48", stepDone: "#fb7185", stepActive: "#e11d48", stepPending: "#ffe4e6", bgImg: "url('https://api.iconify.design/twemoji:strawberry.svg?width=200&height=200')" },
+        "🌟 魔法少女": { bg: "#fdf4ff", bg2: "#fcf5ff", text: "#4a1d96", primary: "#9333ea", card: "rgba(255,255,255,0.88)", border: "#fae8ff", shadow: "0 8px 32px rgba(147,51,234,0.15)", radius: "24px", eb: "#f3e8ff", ebd: "#e9d5ff", dot: "#9333ea", stepDone: "#a855f7", stepActive: "#9333ea", stepPending: "#f3e8ff", bgImg: "url('https://api.iconify.design/twemoji:sparkling-heart.svg?width=220&height=220')" },
+        "🐱 橘猫日记": { bg: "#fff7ed", bg2: "#fffaf5", text: "#7c2d12", primary: "#ea580c", card: "rgba(255,255,255,0.9)", border: "#ffedd5", shadow: "0 8px 32px rgba(234,88,12,0.15)", radius: "16px", eb: "#fff7ed", ebd: "#fed7aa", dot: "#ea580c", stepDone: "#f97316", stepActive: "#ea580c", stepPending: "#ffedd5", bgImg: "url('https://api.iconify.design/twemoji:cat-face.svg?width=200&height=200')" },
+        "🎮 赛博朋克": { bg: "#020617", bg2: "#0f172a", text: "#f8fafc", primary: "#10b981", card: "rgba(30,41,59,0.9)", border: "#334155", shadow: "0 8px 32px rgba(16,185,129,0.3)", radius: "8px", eb: "#052e16", ebd: "#047857", dot: "#10b981", stepDone: "#34d399", stepActive: "#10b981", stepPending: "#022c22", bgImg: "url('https://api.iconify.design/noto:joystick.svg?width=250&height=250')" }
     };
 
     
@@ -1714,12 +1724,13 @@
     }
 
     function switchTheme(n) {
-      var t = TH[n], r = document.documentElement.style;
+      var t = TH[n] || TH["☁️ 软萌玉桂"], r = document.documentElement.style;
       r.setProperty('--bg', t.bg); r.setProperty('--bg2', t.bg2); r.setProperty('--text', t.text);
       r.setProperty('--primary', t.primary); r.setProperty('--card', t.card); r.setProperty('--border', t.border);
       r.setProperty('--shadow', t.shadow); r.setProperty('--radius', t.radius); r.setProperty('--err-bg', t.eb);
       r.setProperty('--err-border', t.ebd); r.setProperty('--dot', t.dot);
       r.setProperty('--step-done', t.stepDone); r.setProperty('--step-active', t.stepActive); r.setProperty('--step-pending', t.stepPending);
+      r.setProperty('--bg-img', t.bgImg || 'none');
       localStorage.setItem('theme', n);
     }
 
