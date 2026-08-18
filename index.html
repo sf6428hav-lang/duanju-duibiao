@@ -2627,6 +2627,9 @@
         document.getElementById('editorContent').innerText = S.doc || '无内容';
         document.getElementById('editorSaveStatus').innerText = '';
         window.currentPreviewFile = null;
+        if (typeof updateWordCount === 'function') {
+            updateWordCount();
+        }
     }
 
     async function pv(path) {
