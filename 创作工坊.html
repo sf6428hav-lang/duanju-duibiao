@@ -1273,7 +1273,7 @@
              </div>
           </div>
 
-      <div class="chat-input-wrapper" style="position:relative;">
+      <div class="chat-input-wrapper" style="position:relative; min-width: 0; max-width: 100%;">
         <!-- Top Toolbar -->
         <div class="chat-input-toolbar">
           <div class="toolbar-left">
@@ -1293,8 +1293,8 @@
         
         <!-- Quote Preview Area -->
         <div id="quotePreview" style="display:none; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; margin: 0 16px 8px 16px; font-size: 12px; color: var(--text); opacity: 0.85; align-items: center; justify-content: space-between;">
-            <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border-left: 3px solid var(--primary); padding-left: 8px;" id="quotePreviewText"></div>
-            <button onclick="clearQuote()" style="background:none;border:none;color:inherit;cursor:pointer;font-size:16px;margin-left:8px;opacity:0.6;line-height:1;">&times;</button>
+            <div style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border-left: 3px solid var(--primary); padding-left: 8px;" id="quotePreviewText"></div>
+            <button onclick="clearQuote()" style="background:none;border:none;color:inherit;cursor:pointer;font-size:16px;margin-left:8px;opacity:0.6;line-height:1;flex-shrink:0;">&times;</button>
         </div>
         
         <!-- Middle Textarea -->
