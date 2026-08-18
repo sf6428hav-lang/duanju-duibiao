@@ -2518,6 +2518,7 @@
       if (!files || !files.length) return;
       S.doc = '';
       var texts = [], infos = [];
+      var errorMsg = '上传失败 (文件为空或解析出错)';
       E('fileInfo').innerHTML = '⏳ 正在解析 ' + files.length + ' 个文件...';
       for (var i = 0; i < files.length; i++) {
         var f = files[i];
@@ -2526,11 +2527,12 @@
         try {
           var r = await fetch(B + '/api/upload', { method: 'POST', body: fd });
           var d = await r.json();
-          if (d.text) {
+          if (d.error) { errorMsg = "上传失败: " + d.error; }
+          else if (d.text) {
             texts.push('【文件' + (i + 1) + ': ' + d.filename + '】\n' + d.text);
             infos.push(d.filename + '（' + d.word_count + '字）');
           }
-        } catch (e) { }
+        } catch (e) { errorMsg = "上传失败: " + e.toString(); }
       }
       if (texts.length) {
         S.doc = texts.join('\n\n---\n\n');
@@ -2540,7 +2542,7 @@
         E('fileInfo').innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;"><span>✅ 已成功合并上传 ' + texts.length + ' 个文件</span><button class="btn xs danger" onclick="clearDoc()">🗑️ 清除</button></div><div style="font-size:11px;opacity:.7;margin-top:4px;">' + clickableInfos.join('<br>') + '</div>';
         if (S.mode === '短剧对标') advanceBenchStep(2);
       } else {
-        E('fileInfo').innerHTML = '<span style="color:#ff6b6b">上传失败</span>';
+        E('fileInfo').innerHTML = '<span style="color:#ff6b6b">' + errorMsg + '</span>';
       }
     }
 

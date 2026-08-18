@@ -665,7 +665,7 @@ async def get_history_detail(session_id: str, token: Optional[str] = Query(None)
 
 @app.post("/api/upload")
 async def upload_file(file: UploadFile = File(...)):
-    if not file.filename.endswith('.docx'):
+    if not file.filename.lower().endswith('.docx'):
         return {"error": "仅支持 .docx 文件"}
     content = await file.read()
     text = parse_docx(content)
