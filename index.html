@@ -1501,6 +1501,9 @@
       curC.qaHandled = S.qaHandled;
       curC.cardsVisible = (S.cardsVisible !== false);
       localStorage.setItem('app', JSON.stringify({ v: 'v55', cid: S.cid, mode: S.mode, chats: S.chats, s4: S.s4, s7: S.s7, cstr: S.cstr, qaHandled: S.qaHandled, cardsVisible: S.cardsVisible, bi: S.bi, tb: S.tb, sd: S.sd, createStage: S.createStage, benchStep: S.benchStep }));
+      
+      localStorage.setItem('doc_' + S.cid, S.doc || '');
+      localStorage.setItem('docInfos_' + S.cid, JSON.stringify(S.docInfos || []));
     }
 
     function ld() {
