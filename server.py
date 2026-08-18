@@ -723,7 +723,7 @@ async def chat(req: ChatRequest, authorization: Optional[str] = Header(None)):
     if wmode == "短剧对标":
         sys_p = BENCH_PROMPT
     elif wmode == "剧本创作":
-        sys_p = CREATE_PROMPT + "\n\n" + OUTLINE_BIO_PROMPT
+        sys_p = CREATE_PROMPT.replace(SCRIPT_FORMAT_RULE + OUTPUT_CLEAN_RULE, "") + "\n\n" + OUTLINE_BIO_PROMPT + "\n\n" + SCRIPT_FORMAT_RULE + OUTPUT_CLEAN_RULE
     else:
         sys_p = "你是专业高效的AI创作助手。"
 
