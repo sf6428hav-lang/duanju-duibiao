@@ -2381,31 +2381,32 @@
         h += '<div class="msg assistant"><div class="role">🤖 助手</div>';
         if (thH.trim()) h += '<details class="think-box"><summary>🧠 思考过程 (点击展开/折叠)</summary><div style="margin-top:6px;opacity:.95;">' + renderMarkdown(thH.trim()) + '</div></details>';
         if (isGenerating) h += '<div class="think-box">🤔 AI 正在思考中<div class="dots"><span></span><span></span><span></span></div></div>';
-        h += '<div class="content" id="msg_' + (m.id || '') + '">' + renderMarkdown(disp) + '</div>';
-
+        var panelHtml = '';
         // INLINE PANEL
         if (i === msgs.length - 1 && !m.s && !S.gen && !m.handled) {
             var pData = tryParseS4();
             if (pData && (pData.step === 'create_qa_ready' || pData.step4_questions || pData.questions)) {
                 var pQs = pData.step4_questions || pData.questions;
                 if (pQs && pQs.length) {
-                    h += '<div class="panel scroll-panel" style="background:#fffaf0; border:1px solid #fde68a; border-radius:12px; padding:16px; margin-top:12px; box-shadow:0 2px 8px rgba(0,0,0,0.03); max-height:none;">';
-                    h += '<div style="font-weight:600;font-size:14px;color:#d97706;margin-bottom:12px;display:flex;align-items:center;gap:6px;">⏸️ 💬 需要你的确认</div>';
+                    panelHtml += '<div class="panel scroll-panel" style="background:var(--bg2); border:1px solid var(--primary); border-radius:12px; padding:16px; margin-top:16px; box-shadow:var(--shadow); max-height:none;">';
+                    panelHtml += '<div style="font-weight:600;font-size:14px;color:var(--primary);margin-bottom:12px;display:flex;align-items:center;gap:6px;">⏸️ 💬 需要你的确认</div>';
                     for (var qi = 0; qi < pQs.length; qi++) {
                       var q = pQs[qi];
-                      h += '<div class="q-block" style="margin-bottom:12px;"><div style="font-weight:600;font-size:13px;margin:6px 0;color:var(--text);">' + esc(q.question) + '</div>';
+                      panelHtml += '<div class="q-block" style="margin-bottom:12px;"><div style="font-weight:600;font-size:13px;margin:6px 0;color:var(--text);">' + esc(q.question) + '</div>';
                       if (q.options && q.options.length) {
                         for (var oi = 0; oi < q.options.length; oi++) {
                           var opt = q.options[oi], sel = (oi === 0);
-                          h += '<div class="q-opt ' + (sel ? 'selected' : '') + '" onclick="selectOpt(this, ' + qi + ', \'' + esc(opt).replace(/'/g, "\\'") + '\')" style="background:#fff;border:1px solid #e2e8f0;margin-bottom:6px;"><input type="radio" name="cq_' + qi + '" value="' + esc(opt).replace(/"/g, '&quot;') + '" ' + (sel ? 'checked' : '') + '> <span>' + esc(opt) + '</span></div>';
+                          panelHtml += '<div class="q-opt ' + (sel ? 'selected' : '') + '" onclick="selectOpt(this, ' + qi + ', \'' + esc(opt).replace(/'/g, "\\'") + '\')" style="background:var(--card);border:1px solid ' + (sel ? 'var(--primary)' : 'var(--border)') + ';margin-bottom:6px;"><input type="radio" name="cq_' + qi + '" value="' + esc(opt).replace(/"/g, '&quot;') + '" ' + (sel ? 'checked' : '') + '> <span>' + esc(opt) + '</span></div>';
                         }
                       }
-                      h += '<input type="text" class="input-box q-custom" id="q_custom_' + qi + '" placeholder="请输入你的自定义要求..." style="display:none;margin-top:6px;"></div>';
+                      panelHtml += '<input type="text" class="input-box q-custom" id="q_custom_' + qi + '" placeholder="请输入你的自定义要求..." style="display:none;margin-top:6px;"></div>';
                     }
-                    h += '<button class="btn primary full" onclick="confirmCreateQA()" style="margin-top:10px;background:#d97706;border:none;">确认选项，提交AI处理</button></div>';
+                    panelHtml += '<button class="btn primary full" onclick="confirmCreateQA()" style="margin-top:10px;">确认选项，提交AI处理</button></div>';
                 }
             }
         }
+
+        h += '<div class="content" id="msg_' + (m.id || '') + '">' + renderMarkdown(disp) + panelHtml + '</div>';
 
         if (i === msgs.length - 1 && !m.s && !S.gen) {
           h += '<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;">';
