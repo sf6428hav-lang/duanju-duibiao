@@ -1243,6 +1243,7 @@
         📄 <span id="editorFileName">未命名文档</span>
       </div>
       <div>
+        <button class="btn sm" id="formatBtn" onclick="formatScript()">✨ 一键排版</button>
         <button class="btn primary sm" onclick="saveEditorContent()">💾 保存</button>
         <button class="btn sm" onclick="closeEditor()">✕ 关闭</button>
       </div>
@@ -1379,6 +1380,49 @@
       E('editorWordCountStr').innerText = '字数：' + count;
       E('editorSaveStatus').innerText = '未保存';
       E('editorSaveStatus').style.color = '#ef4444';
+    }
+
+
+    function formatScript() {
+        var ed = document.getElementById('editorContent');
+        if (!ed || ed.contentEditable === 'false') return;
+        var text = ed.innerText;
+        
+        var lines = text.split('\n');
+        var out = [];
+        
+        for (var i = 0; i < lines.length; i++) {
+            var line = lines[i].trim();
+            if (line === '') continue; 
+            
+            var isScene = /^(\d+-\d+|第\d+场|场次：|场次\d+|【?\d+-\d+】?)/.test(line);
+            var isTitle = /^(第[一二三四五六七八九十0-9]+集)/.test(line);
+            var isChar = /^人物[：:]/.test(line);
+            
+            if (isTitle && out.length > 0 && out[out.length-1] !== '') {
+                out.push('');
+            } else if (isScene && out.length > 0 && out[out.length-1] !== '') {
+                out.push('');
+            }
+            
+            out.push(line);
+            
+            if (isTitle || isChar) {
+                out.push('');
+            }
+        }
+        
+        var finalText = out.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+        
+        ed.innerText = finalText;
+        if (typeof updateWordCount === 'function') updateWordCount();
+        
+        var btn = document.getElementById('formatBtn');
+        if (btn) {
+            var old = btn.innerHTML;
+            btn.innerHTML = '✅ 已排版';
+            setTimeout(function(){ btn.innerHTML = old; }, 2000);
+        }
     }
 
     async function saveEditorContent() {
