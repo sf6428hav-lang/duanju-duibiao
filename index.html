@@ -2622,6 +2622,7 @@
       var c = CC(), nv = E('editArea').value.trim();
       if (nv) { c.msgs[idx].content = nv; c.msgs = c.msgs.slice(0, idx + 1); }
       S.edi = null; sv(); rd();
+      setTimeout(function() { sendMsg(true); }, 100);
     }
 
     // ====== 文件操作与删除 ======
