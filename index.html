@@ -2134,7 +2134,7 @@
               if (customBox && customBox.style.display !== 'none' && customBox.value.trim()) {
                 val = '自定义：' + customBox.value.trim();
               }
-              sel.push('Q' + (qi + 1) + '确认: 「' + qs[qi].question + '」 ➔ 意向选择: 「' + val + '」');
+              sel.push(val);
             }
           }
         }
@@ -2157,7 +2157,7 @@
       var cp = E('createPanel');
       if (cp) { cp.style.display = 'none'; cp.innerHTML = ''; }
 
-      var msgText = '## 确认选项\n' + (sel.join('\n') || '按最优创作方案执行');
+      var msgText = sel.join('\n') || '继续执行';
       E('chatInput').value = msgText;
       sendMsg();
     }
