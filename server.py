@@ -732,8 +732,16 @@ async def chat(req: ChatRequest, authorization: Optional[str] = Header(None)):
 
     api_messages = [{"role": "system", "content": sys_p}]
     for m in req.messages:
-        if m.get("role") in ("role", "user", "assistant"):
-            api_messages.append({"role": m["role"], "content": m["content"]})
+        if m.get("role") in ("system", "user", "assistant"):
+            if m.get("images") and len(m["images"]) > 0:
+                content = []
+                if m.get("content"):
+                    content.append({"type": "text", "text": m["content"]})
+                for img_url in m["images"]:
+                    content.append({"type": "image_url", "image_url": {"url": img_url}})
+                api_messages.append({"role": m["role"], "content": content})
+            else:
+                api_messages.append({"role": m["role"], "content": m["content"]})
     if uinput:
         api_messages.append({"role": "user", "content": uinput})
 

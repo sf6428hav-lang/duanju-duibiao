@@ -2346,10 +2346,14 @@
           h += '<input type="checkbox" class="msg-checkbox" ' + (S.selectedMsgs[i] ? 'checked' : '') + ' onclick="toggleSelectMsg(' + i + ')">';
         }
         if (m.role === 'user') {
+          var imgHtml = '';
+          if (m.images && m.images.length) {
+              imgHtml = '<div style="margin-bottom:8px; display:flex; gap:8px; flex-wrap:wrap;">' + m.images.map(function(img){ return '<img src="'+img+'" style="max-height:150px; border-radius:8px; border:1px solid var(--border); box-shadow:0 2px 8px rgba(0,0,0,0.05);">'; }).join('') + '</div>';
+          }
           if (S.edi === i) {
-            h += '<div class="msg user" style="width: 100%; max-width: 600px;"><div class="role" style="display:flex;justify-content:flex-end;margin-bottom:4px;font-size:12px;opacity:0.6;">编辑中...</div><textarea class="edit-textarea" id="editArea" style="width:100%; min-height:80px; padding:12px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text); font-family:inherit; resize:vertical; box-shadow: 0 2px 8px rgba(0,0,0,0.05);" oninput="this.style.height=\'auto\'; this.style.height=(this.scrollHeight)+\'px\';">' + esc(m.content) + '</textarea><div class="actions" style="margin-top:8px;display:flex;justify-content:flex-end;gap:8px;"><button class="btn sm primary" onclick="cfEd(' + i + ')">确认</button><button class="btn sm" onclick="S.edi=null;rd(true)">取消</button></div></div>';
+            h += '<div class="msg user" style="width: 100%; max-width: 600px;"><div class="role" style="display:flex;justify-content:flex-end;margin-bottom:4px;font-size:12px;opacity:0.6;">编辑中...</div>' + imgHtml + '<textarea class="edit-textarea" id="editArea" style="width:100%; min-height:80px; padding:12px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text); font-family:inherit; resize:vertical; box-shadow: 0 2px 8px rgba(0,0,0,0.05);" oninput="this.style.height=\'auto\'; this.style.height=(this.scrollHeight)+\'px\';">' + esc(m.content) + '</textarea><div class="actions" style="margin-top:8px;display:flex;justify-content:flex-end;gap:8px;"><button class="btn sm primary" onclick="cfEd(' + i + ')">确认</button><button class="btn sm" onclick="S.edi=null;rd(true)">取消</button></div></div>';
           } else {
-            h += '<div class="msg user"><div class="role" style="display:flex;justify-content:flex-end;margin-bottom:4px;"><button class="btn xs" onclick="S.edi=' + i + ';rd(true)" style="opacity:.4">✏️修改</button></div><div class="content">' + renderMarkdown(m.content) + '</div></div>';
+            h += '<div class="msg user"><div class="role" style="display:flex;justify-content:flex-end;margin-bottom:4px;"><button class="btn xs" onclick="S.edi=' + i + ';rd(true)" style="opacity:.4">✏️修改</button></div><div class="content">' + imgHtml + renderMarkdown(m.content) + '</div></div>';
           }
           h += '</div>'; // close msg-wrap
           continue;
@@ -2496,9 +2500,15 @@
           clearQuote();
       }
 
-      if (!isRegen && fullTxt) {
-        if (!chat.msgs.length || chat.msgs[chat.msgs.length - 1].content !== fullTxt) {
-             chat.msgs.push({ role: 'user', content: fullTxt });
+      if (!isRegen && (fullTxt || pendingImages.length > 0)) {
+        var msgObj = { role: 'user', content: fullTxt || '' };
+        if (pendingImages.length > 0) {
+            msgObj.images = pendingImages.slice();
+            pendingImages = [];
+            renderPendingImages();
+        }
+        if (!chat.msgs.length || chat.msgs[chat.msgs.length - 1].content !== fullTxt || msgObj.images) {
+             chat.msgs.push(msgObj);
         }
       }
       sv(); rd();
@@ -2527,7 +2537,7 @@
           headers: Object.assign({ 'Content-Type': 'application/json' }, getAuthHeaders()),
           body: JSON.stringify({
             api_key: k, api_url: gU(), model: gM(), work_mode: S.mode || '通用',
-            messages: chat.msgs.filter(function (m) { return !m.s; }).map(function (m) { return { role: m.role, content: m.content }; }),
+            messages: chat.msgs.filter(function (m) { return !m.s; }).map(function (m) { return { role: m.role, content: m.content, images: m.images }; }),
             user_input: "", doc_text: docT, session_id: S.cid, token: getToken()
           }),
           signal: S.ab.signal
