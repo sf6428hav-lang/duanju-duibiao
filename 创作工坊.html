@@ -2515,7 +2515,7 @@
       sv(); rd();
 
       var docT = '';
-      if (S.doc && (S.mode === '短剧对标' || S.mode === '剧本创作') && chat.msgs.filter(function (m) { return m.role === 'user'; }).length <= 2) {
+      if (S.doc && (S.mode === '短剧对标' || S.mode === '剧本创作')) {
         docT = S.doc;
       }
 
