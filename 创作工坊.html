@@ -1218,8 +1218,8 @@
     
 
     <div>
-      <h4>📁 参考脚本上传 (.docx)</h4>
-      <input type="file" id="fileInput" accept=".docx" multiple style="display:none" onchange="handleFileUpload(this)">
+      <h4>📁 参考脚本上传 (.docx, .pdf)</h4>
+      <input type="file" id="fileInput" accept=".docx,.pdf" multiple style="display:none" onchange="handleFileUpload(this)">
       <button class="btn full" onclick="E('fileInput').click()">选择文件 (支持Ctrl/Cmd多选)</button>
       <div id="fileInfo" style="font-size:12px;opacity:.7;margin-top:6px;">未选择文件</div>
     </div>
@@ -1855,7 +1855,7 @@
 
     function getStepTip(id) {
       var tips = {
-        1: '上传参考剧本（.docx或粘贴文本）',
+        1: '上传参考剧本（.docx/.pdf或粘贴文本）',
         2: 'AI逐集拆解情节节拍与钩子',
         3: '提取可复用的结构模板',
         4: '确认仿写方案与改编方案',

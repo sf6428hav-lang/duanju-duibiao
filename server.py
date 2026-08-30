@@ -747,12 +747,31 @@ async def get_history_detail(session_id: str, token: Optional[str] = Query(None)
                     
     return {"status": "ok", "session_id": safe_session, "messages": chat_messages, "files": files}
 
+def parse_pdf(file_bytes: bytes) -> str:
+    try:
+        import PyPDF2
+        import io
+        pdf_reader = PyPDF2.PdfReader(io.BytesIO(file_bytes))
+        text = ""
+        for page in pdf_reader.pages:
+            page_text = page.extract_text()
+            if page_text:
+                text += page_text + "\n"
+        return text
+    except Exception as e:
+        print("Parse PDF error:", e)
+        return ""
+
 @app.post("/api/upload")
 async def upload_file(file: UploadFile = File(...)):
-    if not file.filename.lower().endswith('.docx'):
-        return {"error": "仅支持 .docx 文件"}
+    filename = file.filename.lower()
+    if not (filename.endswith('.docx') or filename.endswith('.pdf')):
+        return {"error": "仅支持 .docx 或 .pdf 文件"}
     content = await file.read()
-    text = parse_docx(content)
+    if filename.endswith('.pdf'):
+        text = parse_pdf(content)
+    else:
+        text = parse_docx(content)
     return {"filename": file.filename, "word_count": len(text), "text": text}
 
 @app.post("/api/fetch-models")
