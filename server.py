@@ -375,37 +375,48 @@ SKILL0_PROMPT = """你是短篇小说需求理解器（Skill 0）。你的目标
 如果用户给出的需求已经非常明确，或者已经完成了选择，请生成最终的【创作需求卡片】，准备提交给故事设计器。
 """
 
-SKILL1_PROMPT = """你是短篇对标分析器（Skill 1）。
-你的任务是对用户上传的参考爆文进行“逆向工程”，拆解其结构、情绪模型和节奏规律。
-这不是为了概括剧情，而是为了提取“可复用的创作规律”。
+SKILL1_PROMPT = """你是短篇拆解器（Skill 1）。
+你的任务是对用户上传的参考文章进行严格的结构拆解。收到文章后，不允许询问用户，请直接执行拆解模板。
 
-请务必按照以下格式输出你的分析结果：
+请严格按照以下【短篇拆解器执行模板】输出：
 
-### 1. 类型标签
-主类型：
-副类型：
+### Step 1：基础识别
+题材：[提取题材]
+子类型：[提取子类型]
+目标读者：[谁会看这篇]
+核心卖点：[最核心的看点/噱头]
 
-### 2. 主线结构
-【主人公】：身份、性格、核心需求
-【目标】：真正想获得什么
-【障碍】：阻碍来自谁，为什么形成
-【行动】：如何解决问题
-【转折】：局势如何改变
-【高潮】：最大情绪释放点
-【结局】：情绪满足
+### Step 2：主线拆解
+主角是谁？[身份/性格]
+主角想得到什么？[核心诉求]
+阻碍是什么？[核心困境]
+最大的矛盾是什么？[双方最核心的冲突点]
+故事最终解决什么？[结局达成的状态]
 
-### 3. 核心情绪模型
-（分析每个阶段的情绪，并给予 1-5 强度打分）
-- 开篇钩子阶段：[情绪]（X分）- [原因]
-- 中段压力累积：[情绪]（X分）- [原因]
-- 付费卡点附近：[情绪]（X分）- [原因]
-- 最终爽点释放：[情绪]（X分）- [原因]
+### Step 3：情绪曲线
+按章节（或阶段）拆解：
+开篇：制造什么情绪？[具体情绪，如憋屈/猎奇/同情]
+中段：如何升级？[压力或爽感如何递进]
+高潮：如何释放？[最大的情绪爆发点]
+结尾：如何满足？[读者的情绪落脚点]
 
-### 4. 章节节奏规律
-- 每章功能及高潮位置
+### Step 4：爆文机制
+分析：
+为什么读者继续看？[钩子设计]
+哪里产生付费欲？[卡点/最强烈的期待点]
+哪里产生爽感？[打脸/反转点]
+哪里产生期待？[悬念设置]
 
-### 5. 可迁移创作规则
-（总结 3-4 条可供后续生成的规律，不要复制原人物设定）
+### Step 5：迁移规则
+可迁移公式：
+（请提炼出一个可以套用到其他设定的通用结构，必须是如“女主遭受背叛 -> 隐藏身份 -> 反转”这样的箭头流程）
+[节点1]
+↓
+[节点2]
+↓
+[节点3]
+↓
+[节点4]
 """
 
 BENCH_PROMPT = r"""
@@ -879,7 +890,22 @@ async def chat(req: ChatRequest, authorization: Optional[str] = Header(None)):
     elif wmode == "剧本创作":
         sys_p = CREATE_PROMPT.replace(SCRIPT_FORMAT_RULE + OUTPUT_CLEAN_RULE, "") + "\n\n" + GENERAL_SCRIPT_LOGIC + "\n\n" + OUTLINE_BIO_PROMPT + "\n\n" + SCRIPT_FORMAT_RULE + OUTPUT_CLEAN_RULE
     elif wmode == "短篇创作":
-        if dtext:
+        # 强制路由规则 (Task Router - Skill -1)
+        analysis_keywords = ["分析", "拆解", "研究", "学习", "模仿", "结构", "看看这篇", "提取", "套路"]
+        creation_keywords = ["写一个", "创作一个", "生成一个", "我要写", "新写", "帮我写", "构思"]
+        revision_keywords = ["改一下", "润色", "降低ai感", "重写", "修改"]
+        continue_keywords = ["继续写", "接着写", "下一章"]
+        
+        is_revision = any(k in uinput for k in revision_keywords)
+        is_continue = any(k in uinput for k in continue_keywords)
+        is_creation = any(k in uinput for k in creation_keywords)
+        is_analysis = any(k in uinput for k in analysis_keywords) or (bool(dtext) and not is_creation)
+        
+        if is_revision:
+            sys_p = "你是润色专家（Skill 6）。请根据用户的要求修改文本。"
+        elif is_continue:
+            sys_p = "你是续写专家（Skill 4）。请根据用户的要求继续撰写内容。"
+        elif is_analysis:
             sys_p = SKILL1_PROMPT
         else:
             sys_p = SKILL0_PROMPT
