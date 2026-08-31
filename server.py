@@ -819,11 +819,19 @@ def parse_pdf(file_bytes: bytes) -> str:
 @app.post("/api/upload")
 async def upload_file(file: UploadFile = File(...)):
     filename = file.filename.lower()
-    if not (filename.endswith('.docx') or filename.endswith('.pdf')):
-        return {"error": "仅支持 .docx 或 .pdf 文件"}
+    if not (filename.endswith('.docx') or filename.endswith('.pdf') or filename.endswith('.txt')):
+        return {"error": "仅支持 .docx, .pdf 或 .txt 文件"}
     content = await file.read()
     if filename.endswith('.pdf'):
         text = parse_pdf(content)
+    elif filename.endswith('.txt'):
+        try:
+            text = content.decode('utf-8')
+        except UnicodeDecodeError:
+            try:
+                text = content.decode('gbk')
+            except UnicodeDecodeError:
+                text = content.decode('utf-8', errors='ignore')
     else:
         text = parse_docx(content)
     return {"filename": file.filename, "word_count": len(text), "text": text}
