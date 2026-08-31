@@ -2337,7 +2337,19 @@
         h += '<div style="margin-bottom:12px;background:#dcfce7;border:1px solid #86efac;color:#166534;padding:8px 14px;border-radius:10px;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:space-between;"><span>✨ 当前已处于全新空白对话 (ID: ' + esc(S.cid) + ')</span><button class="btn xs" onclick="newChat()">清空重置</button></div>';
         if (S.mode === '短剧对标') {
           h += renderBenchGuide();
-        } else if (S.mode === '剧本创作' || !S.mode || S.mode === '通用' || true) {
+        } else if (S.mode === '短篇创作') {
+          if (S.docInfos && S.docInfos.length > 0) {
+             h += '<div class="guide-msg"><div class="guide-title">📖 短篇对标与分析向导</div><p>检测到您已上传文档，请选择以下快捷指令进行深度分析：</p>';
+             h += '<div class="preset-btns" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;">';
+             h += '<span class="preset-btn" onclick="E(\'chatInput\').value=\'深度拆解爆文结构\';E(\'sendBtn\').click();">📖 深度拆解爆文结构</span>';
+             h += '<span class="preset-btn" onclick="E(\'chatInput\').value=\'提取一句话主线\';E(\'sendBtn\').click();">🧩 提取一句话主线</span>';
+             h += '<span class="preset-btn" onclick="E(\'chatInput\').value=\'分析人物关系\';E(\'sendBtn\').click();">👥 分析人物关系</span>';
+             h += '<span class="preset-btn" onclick="E(\'chatInput\').value=\'提取爽点和付费卡点\';E(\'sendBtn\').click();">🔥 提取爽点和付费卡点</span>';
+             h += '</div></div>';
+          } else {
+             h += '<div class="guide-msg"><div class="guide-title">✨ 短篇创作与对标分析</div><p>请在下方直接输入创作需求（如：“写一个悬疑复仇故事”），或在左侧上传一篇爆文以进行智能结构拆解。</p></div>';
+          }
+        } else if (S.mode === '剧本创作' || !S.mode || S.mode === '通用') {
           h += '<div class="guide-msg"><div class="guide-title">🎨 剧本创作模式 · 智能分析与追问体验</div><p>请在下方聊天框直接输入你的创作想法或概述（如："我想写一部女扮男装的宫廷追女爽剧..."），发送后 AI 将深入分析并向你提出定向选项卡片供你确认方案。</p></div>';
         } else {
           h += '<div style="text-align:center;padding:60px 0;opacity:.4;font-size:14px;">👆 点击底部「对标」或「创作」开始或在输入框中自由对话 ✨</div>';
@@ -2399,8 +2411,21 @@
         var disp = rawContent;
         if (S.mode === '剧本创作' || !S.mode || S.mode === '通用' || true) {
           disp = disp.replace(/\[TEMPLATEJSON\][\s\S]*?\[\/TEMPLATEJSON\]/g, '');
-          // Hide V6 options JSON block
-          disp = disp.replace(/```json\s*(\{[\s\S]*?"(?:需要确认|step4_questions|create_questions|questions)"[\s\S]*?\})\s*```/g, '<span style="font-size:12px;opacity:.6;background:var(--bg2);padding:2px 8px;border-radius:4px;display:inline-block;margin:4px 0;">✨ 交互选项卡片已生成</span>');
+          // Hide V6 options JSON block & Save Project Memory
+          disp = disp.replace(/```json\s*(\{[\s\S]*?"(?:需要确认|step4_questions|create_questions|questions|need_save)"[\s\S]*?\})\s*```/g, function(match, inner) {
+             if (inner.indexOf('"need_save"') !== -1) {
+                 try {
+                     var parsed = JSON.parse(inner);
+                     if (parsed.need_save && i === msgs.length - 1 && !S.gen) {
+                         if (!S.sd) S.sd = {};
+                         Object.assign(S.sd, parsed);
+                         sv(); // Background save
+                     }
+                 } catch(e) {}
+                 return '<span style="font-size:12px;opacity:.6;background:var(--bg2);padding:2px 8px;border-radius:4px;display:inline-block;margin:4px 0;color:var(--primary);">💾 项目资产已自动保存到系统存储</span>';
+             }
+             return '<span style="font-size:12px;opacity:.6;background:var(--bg2);padding:2px 8px;border-radius:4px;display:inline-block;margin:4px 0;">✨ 交互选项卡片已生成</span>';
+          });
           disp = disp.replace(/(\{[\s\S]*?"(?:需要确认|step4_questions|create_questions|questions)"[\s\S]*?\})/g, function(match) {
              if (match.indexOf('```') !== -1) return match; // skip if wrapped in code block
              return '<span style="font-size:12px;opacity:.6;background:var(--bg2);padding:2px 8px;border-radius:4px;display:inline-block;margin:4px 0;">✨ 交互选项卡片已生成</span>';
