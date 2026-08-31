@@ -378,7 +378,7 @@ SKILL0_PROMPT = """你是短篇小说需求理解器（Skill 0）。你的目标
 SKILL1_PROMPT = """你是专业的短篇爆文拆解器（Skill 1）。
 你的唯一目标是把一本小说拆成「人物—冲突—目标—阻力—解决—章节节奏」的纯客观骨架。
 不要写读后感，不要写营销分析词（如：爆文发动机、情绪映射、创作建议），不要使用诸如“满足读者期待”、“极致爽感”这类主观评价。
-请直接按照以下结构输出，不要使用 ** 或 - 等乱七八糟的Markdown符号，保持纯文本排版清爽，结构层次分明。
+【格式红线】：严禁在任何地方使用 **、-、# 等任何 Markdown 排版符号！必须输出绝对的纯文本格式，段落之间用换行隔开，保持排版清爽。
 
 一、标题与一句话主线
 
@@ -387,7 +387,7 @@ SKILL1_PROMPT = """你是专业的短篇爆文拆解器（Skill 1）。
 核心钩子：[提取核心钩子]
 
 一句话剧情主线
-[请用100-150字总结故事完整主线。必须包含：主角身份 + 核心遭遇 + 主角目标 + 主要阻力 + 解决过程 + 最终结局。不要写文学化简介，不要写营销词，不要评价作品。]
+[请用200字左右总结故事完整主线。必须包含：主角身份 + 核心遭遇 + 主角目标 + 主要阻力 + 解决过程 + 最终结局。不要写文学化简介，不要写营销词，不要评价作品。]
 
 二、题材定位
 
@@ -670,7 +670,7 @@ def process_document_saving(content: str, session_dir: str, messages: list = Non
     has_character = bool(re.search(r'^(?:#+.*|【.*)?(?:人物小传|角色设定|人设小传|角色小传)', text, re.MULTILINE))
     has_outline = bool(re.search(r'^(?:#+.*|【.*)?(?:故事大纲|剧情大纲|三幕式大纲|故事设计方案)', text, re.MULTILINE))
     has_ep_outline = bool(re.search(r'^(?:#+.*|【.*)?(?:前十集集纲|分集集纲|前10集集纲|短篇章节规划)', text, re.MULTILINE))
-    has_analysis = bool(re.search(r'^(?:#+.*|【.*)?(?:对标拆解分析方案|Step1-3拆解分析|Step5-6方案大纲|对标拆解报告|短篇爆文商业拆解报告|短篇爆文拆解报告|短篇拆解结果)', text, re.MULTILINE))
+    has_analysis = bool(re.search(r'^(?:#+.*|【.*)?(?:对标拆解分析方案|Step1-3拆解分析|Step5-6方案大纲|对标拆解报告|短篇爆文商业拆解报告|短篇爆文拆解报告|短篇拆解结果|一、标题与一句话主线)', text, re.MULTILINE))
 
     doc_type = ""
     label_suffix = ""
@@ -716,6 +716,11 @@ def process_document_saving(content: str, session_dir: str, messages: list = Non
             clean_lines.append(line)
 
     cleaned_body = "\n".join(clean_lines).strip()
+    # 强制物理清除所有残余的 Markdown 符号
+    cleaned_body = re.sub(r'\*\*(.*?)\*\*', r'\1', cleaned_body)
+    cleaned_body = re.sub(r'^#+\s*', '', cleaned_body, flags=re.MULTILINE)
+    cleaned_body = re.sub(r'^\s*-\s+', '', cleaned_body, flags=re.MULTILINE)
+    
     if len(cleaned_body) < 150:
         return None
 
