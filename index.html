@@ -1712,6 +1712,7 @@
       S.chats.unshift(newC);
       S.cid = newId;
       S.mode = keepMode; S.s4 = false; S.s7 = false; S.cstr = false; S.qaHandled = false; S.cardsVisible = true; S.bi = 0; S.tb = 0; S.sd = null; S.step4Questions = null; S.benchStep = 1; S.gen = false;
+      S.doc = null; S.docInfos = []; S.uploadedImages = [];
 
       sv();
 
@@ -1774,6 +1775,7 @@
       S.step4Questions = targetC.step4Questions || null;
       S.benchStep = targetC.benchStep || 1;
       S.gen = false;
+      S.doc = null; S.docInfos = []; S.uploadedImages = [];
 
       sv(); rf();
     }
@@ -2940,14 +2942,20 @@ E('editorFileName').innerText = '加载中...';
           
           var sel = document.getElementById('historySelect');
           if (sel) {
-            // ...
+            // 先清理可能存在的本地无意义空对话（如果没有消息）
+            cleanEmptyChats();
+            
             sel.innerHTML = S.chats.map(function(c) {
               return '<option value="' + c.id + '">' + esc(c.title || '对话') + '</option>';
             }).join('');
             
             sel.value = S.cid;
-            if (sel.value !== S.cid) {
+            var currentChat = CC();
+            
+            if (sel.value !== S.cid || (!currentChat.msgs || currentChat.msgs.length === 0)) {
+               // 如果当前在空对话，且云端有记录，强制切换到云端最新的记录
                sel.value = d.sessions[0].session_id;
+               swChat(d.sessions[0].session_id);
             }
             try {
               var cidToFetch = sel.value || S.cid;
