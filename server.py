@@ -535,7 +535,7 @@ def extract_template_json(text: str):
         except: pass
     return None
 
-def extract_smart_filename(content: str, messages: list = None, user_input: str = "", wmode: str = "") -> str:
+def extract_smart_filename(content: str, messages: list = None, user_input: str = "", wmode: str = "", doc_text: str = "") -> str:
     drama_title = ""
     
     # Clean think blocks first to avoid extracting titles from internal thoughts
@@ -586,11 +586,20 @@ def extract_smart_filename(content: str, messages: list = None, user_input: str 
                 drama_title = tm[-1]
                 break
 
+    # Strategy 6: Fallback to uploaded filename from doc_text
+    if not drama_title and doc_text:
+        doc_match = re.search(r'【文件\d+:\s*([^】]+)】', doc_text)
+        if doc_match:
+            fname = doc_match.group(1).strip()
+            if '.' in fname:
+                fname = fname.rsplit('.', 1)[0]
+            drama_title = fname
+
     if drama_title:
         drama_title = re.sub(r'[\\/:*?"<>|\r\n\t]', '', drama_title).strip()
     return drama_title
 
-def process_document_saving(content: str, session_dir: str, messages: list = None, user_input: str = "", wmode: str = "") -> Optional[str]:
+def process_document_saving(content: str, session_dir: str, messages: list = None, user_input: str = "", wmode: str = "", doc_text: str = "") -> Optional[str]:
     if not content:
         return None
 
@@ -605,7 +614,7 @@ def process_document_saving(content: str, session_dir: str, messages: list = Non
     has_character = bool(re.search(r'^(?:#+.*|【.*)?(?:人物小传|角色设定|人设小传|角色小传)', text, re.MULTILINE))
     has_outline = bool(re.search(r'^(?:#+.*|【.*)?(?:故事大纲|剧情大纲|三幕式大纲)', text, re.MULTILINE))
     has_ep_outline = bool(re.search(r'^(?:#+.*|【.*)?(?:前十集集纲|分集集纲|前10集集纲)', text, re.MULTILINE))
-    has_analysis = bool(re.search(r'^(?:#+.*|【.*)?(?:对标拆解分析方案|Step1-3拆解分析|Step5-6方案大纲|对标拆解报告)', text, re.MULTILINE))
+    has_analysis = bool(re.search(r'^(?:#+.*|【.*)?(?:对标拆解分析方案|Step1-3拆解分析|Step5-6方案大纲|对标拆解报告|短篇爆文商业拆解报告|短篇爆文拆解报告|短篇拆解结果)', text, re.MULTILINE))
 
     doc_type = ""
     label_suffix = ""
@@ -628,7 +637,7 @@ def process_document_saving(content: str, session_dir: str, messages: list = Non
         label_suffix = "人物小传与角色设定"
     elif has_analysis:
         doc_type = "analysis"
-        label_suffix = "对标拆解分析方案"
+        label_suffix = "分析报告"
 
     if not doc_type:
         return None
@@ -640,7 +649,7 @@ def process_document_saving(content: str, session_dir: str, messages: list = Non
     for line in lines:
         stripped = line.strip()
         if not in_body:
-            if re.search(r'^(?:#+.*|【.*)?(?:第[0-9一二三四五六七八九十]+集|第一集|第1集|人物小传|角色小传|角色设定|故事大纲|前十集集纲|对标拆解|Step)', stripped):
+            if re.search(r'^(?:#+.*|【.*)?(?:第[0-9一二三四五六七八九十]+集|第一集|第1集|人物小传|角色小传|角色设定|故事大纲|前十集集纲|对标拆解|短篇|Step)', stripped):
                 in_body = True
 
         if in_body:
@@ -654,13 +663,20 @@ def process_document_saving(content: str, session_dir: str, messages: list = Non
     if len(cleaned_body) < 150:
         return None
 
-    drama_title = extract_smart_filename(content, messages, user_input, wmode)
-    if drama_title and label_suffix:
-        final_filename = f"{drama_title}_{label_suffix}"
-    elif drama_title:
-        final_filename = f"{drama_title}_{label_suffix or '创作文档'}"
+    drama_title = extract_smart_filename(content, messages, user_input, wmode, doc_text)
+    
+    if doc_type == "analysis":
+        if drama_title:
+            final_filename = f"分析_{drama_title}_{label_suffix}"
+        else:
+            final_filename = f"分析_{label_suffix}"
     else:
-        final_filename = f"短剧_{label_suffix or '创作文档'}"
+        if drama_title and label_suffix:
+            final_filename = f"{drama_title}_{label_suffix}"
+        elif drama_title:
+            final_filename = f"{drama_title}_{label_suffix or '创作文档'}"
+        else:
+            final_filename = f"短剧_{label_suffix or '创作文档'}"
 
     safe_name = re.sub(r'[\\/:*?"<>|\r\n\t\s]+', '_', final_filename).strip('_')
     filepath = os.path.join(session_dir, f"{safe_name}.docx")
@@ -1031,7 +1047,7 @@ async def chat(req: ChatRequest, authorization: Optional[str] = Header(None)):
             session_dir, safe_session = get_user_session_dir(username, session_raw)
 
             bench_data = extract_template_json(full_response)
-            saved = process_document_saving(full_response, session_dir, req.messages, uinput, wmode)
+            saved = process_document_saving(full_response, session_dir, req.messages, uinput, wmode, req.doc_text)
             
             # 保存聊天历史 json
             history_file = os.path.join(session_dir, "history.json")
@@ -1132,7 +1148,7 @@ async def preview_file(filepath: str):
     for line in lines:
         stripped = line.strip()
         if not in_body:
-            if re.search(r'^(?:#+.*|【.*)?(?:第[0-9一二三四五六七八九十]+集|第一集|第1集|人物小传|角色小传|角色设定|故事大纲|前十集集纲|对标拆解|Step)', stripped):
+            if re.search(r'^(?:#+.*|【.*)?(?:第[0-9一二三四五六七八九十]+集|第一集|第1集|人物小传|角色小传|角色设定|故事大纲|前十集集纲|对标拆解|短篇|Step)', stripped):
                 in_body = True
 
         if in_body:
