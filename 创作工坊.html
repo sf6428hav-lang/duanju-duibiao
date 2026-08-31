@@ -1307,6 +1307,7 @@
             <button class="btn-cap cap-tag active" onclick="setMode('通用')" id="cap-general">通用</button>
             <button class="btn-cap cap-tag" onclick="setMode('剧本创作')" id="cap-create">✨ 剧本创作</button>
             <button class="btn-cap cap-tag" onclick="setMode('短剧对标')" id="cap-bench">✨ 短剧对标</button>
+            <button class="btn-cap cap-tag" onclick="setMode('短篇创作')" id="cap-short-story">✨ 短篇创作</button>
           </div>
           <div class="toolbar-right">
             <span class="info-icon" title="选择不同的能力模型，AI会自动切换为对应的专家模式">ℹ️</span>
@@ -1994,10 +1995,24 @@
       if (!txt) return null;
 
       var d = extractTJ(txt);
-      if (d && (d.step4_questions || d.questions || d.step === 'step4_ready' || d.step === 'create_qa_ready')) {
-        var qs = d.step4_questions || d.questions;
-        if (qs && qs.length) {
-          return { step: 'create_qa_ready', questions: qs, step4_questions: qs, msgId: lastM.id };
+      if (d) {
+        if (d.step4_questions || d.questions || d.step === 'step4_ready' || d.step === 'create_qa_ready') {
+          var qs = d.step4_questions || d.questions;
+          if (qs && qs.length) {
+            return { step: 'create_qa_ready', questions: qs, step4_questions: qs, msgId: lastM.id };
+          }
+        } else if (d.需要确认 && d.options && d.options.length > 0) {
+          var promptText = "【需求分析完成，请选择】\n";
+          if (d.题材 && d.题材 !== "未知") promptText += "• 题材：" + d.题材 + "\n";
+          if (d.爽点 && d.爽点 !== "未知") promptText += "• 爽点：" + d.爽点 + "\n";
+          if (d.情绪 && d.情绪 !== "未知") promptText += "• 情绪：" + d.情绪 + "\n";
+          if (d.目标 && d.目标 !== "未知") promptText += "• 篇幅：" + d.目标 + "\n";
+          
+          var faux_qs = [{
+              question: promptText.trim(),
+              options: d.options.map(function(o) { return typeof o === 'string' ? o : (o.label ? o.label + (o.value ? " (" + o.value + ")" : "") : JSON.stringify(o)); })
+          }];
+          return { step: 'create_qa_ready', questions: faux_qs, step4_questions: faux_qs, msgId: lastM.id };
         }
       }
 
@@ -2208,11 +2223,13 @@
         var elGen = document.getElementById('cap-general');
         var elCreate = document.getElementById('cap-create');
         var elBench = document.getElementById('cap-bench');
+        var elShort = document.getElementById('cap-short-story');
         var selText = document.getElementById('selectedCapText');
         
         if (elGen) elGen.className = 'btn-cap cap-tag';
         if (elCreate) elCreate.className = 'btn-cap cap-tag';
         if (elBench) elBench.className = 'btn-cap cap-tag';
+        if (elShort) elShort.className = 'btn-cap cap-tag';
 
         if (currentMode === '通用') {
             if (elGen) elGen.classList.add('active');
@@ -2223,6 +2240,9 @@
         } else if (currentMode === '短剧对标') {
             if (elBench) elBench.classList.add('active');
             if (selText) selText.innerText = '✨ 短剧对标';
+        } else if (currentMode === '短篇创作') {
+            if (elShort) elShort.classList.add('active');
+            if (selText) selText.innerText = '✨ 短篇创作';
         }
       }
 
