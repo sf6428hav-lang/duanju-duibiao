@@ -2399,6 +2399,12 @@
         var disp = rawContent;
         if (S.mode === '剧本创作' || !S.mode || S.mode === '通用' || true) {
           disp = disp.replace(/\[TEMPLATEJSON\][\s\S]*?\[\/TEMPLATEJSON\]/g, '');
+          // Hide V6 options JSON block
+          disp = disp.replace(/```json\s*(\{[\s\S]*?"(?:需要确认|step4_questions|create_questions|questions)"[\s\S]*?\})\s*```/g, '<span style="font-size:12px;opacity:.6;background:var(--bg2);padding:2px 8px;border-radius:4px;display:inline-block;margin:4px 0;">✨ 交互选项卡片已生成</span>');
+          disp = disp.replace(/(\{[\s\S]*?"(?:需要确认|step4_questions|create_questions|questions)"[\s\S]*?\})/g, function(match) {
+             if (match.indexOf('```') !== -1) return match; // skip if wrapped in code block
+             return '<span style="font-size:12px;opacity:.6;background:var(--bg2);padding:2px 8px;border-radius:4px;display:inline-block;margin:4px 0;">✨ 交互选项卡片已生成</span>';
+          });
         } else {
           disp = disp.replace(/\[TEMPLATEJSON\][\s\S]*?\[\/TEMPLATEJSON\]/g, '<span style="font-size:11px;opacity:.6;background:var(--bg);padding:1px 6px;border-radius:4px;display:inline-block;margin:2px 0;">📋 (模板数据已解析)</span>');
         }
