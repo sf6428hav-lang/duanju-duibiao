@@ -2338,17 +2338,21 @@
         if (S.mode === '短剧对标') {
           h += renderBenchGuide();
         } else if (S.mode === '短篇创作') {
+          h += '<div class="guide-msg"><div class="guide-title">🚀 短篇生产工作流 (V6)</div><p>按照 V6 规范，请根据当前项目资产选择下一步操作：</p>';
+          h += '<div class="preset-btns" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;">';
           if (S.docInfos && S.docInfos.length > 0) {
-             h += '<div class="guide-msg"><div class="guide-title">📖 短篇对标与分析向导</div><p>检测到您已上传文档，请选择以下快捷指令进行深度分析：</p>';
-             h += '<div class="preset-btns" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;">';
-             h += '<span class="preset-btn" onclick="E(\'chatInput\').value=\'深度拆解爆文结构\';E(\'sendBtn\').click();">📖 深度拆解爆文结构</span>';
-             h += '<span class="preset-btn" onclick="E(\'chatInput\').value=\'提取一句话主线\';E(\'sendBtn\').click();">🧩 提取一句话主线</span>';
-             h += '<span class="preset-btn" onclick="E(\'chatInput\').value=\'分析人物关系\';E(\'sendBtn\').click();">👥 分析人物关系</span>';
-             h += '<span class="preset-btn" onclick="E(\'chatInput\').value=\'提取爽点和付费卡点\';E(\'sendBtn\').click();">🔥 提取爽点和付费卡点</span>';
-             h += '</div></div>';
-          } else {
-             h += '<div class="guide-msg"><div class="guide-title">✨ 短篇创作与对标分析</div><p>请在下方直接输入创作需求（如：“写一个悬疑复仇故事”），或在左侧上传一篇爆文以进行智能结构拆解。</p></div>';
+             h += '<span class="preset-btn" onclick="E(\'chatInput\').value=\'深度拆解爆文结构\';E(\'sendBtn\').click();">📖 深度拆解 (Skill 1)</span>';
           }
+          if (S.sd && Object.keys(S.sd).length > 0) {
+             h += '<span class="preset-btn" onclick="E(\'chatInput\').value=\'设计全新故事大纲\';E(\'sendBtn\').click();">🎨 设计大纲 (Skill 2)</span>';
+             h += '<span class="preset-btn" onclick="E(\'chatInput\').value=\'规划章节细纲\';E(\'sendBtn\').click();">📜 规划章节 (Skill 3)</span>';
+             h += '<span class="preset-btn" onclick="E(\'chatInput\').value=\'撰写正文\';E(\'sendBtn\').click();">✍️ 撰写正文 (Skill 4)</span>';
+             h += '<span class="preset-btn" onclick="E(\'chatInput\').value=\'请对上一段文本进行润色修改\';E(\'sendBtn\').click();">✨ 润色修改 (Skill 6)</span>';
+          }
+          if (!(S.docInfos && S.docInfos.length > 0) && (!S.sd || Object.keys(S.sd).length === 0)) {
+              h += '<span style="font-size:12px;opacity:.7;">请在左侧上传对标爆文，或在下方直接输入创作需求。</span>';
+          }
+          h += '</div></div>';
         } else if (S.mode === '剧本创作' || !S.mode || S.mode === '通用') {
           h += '<div class="guide-msg"><div class="guide-title">🎨 剧本创作模式 · 智能分析与追问体验</div><p>请在下方聊天框直接输入你的创作想法或概述（如："我想写一部女扮男装的宫廷追女爽剧..."），发送后 AI 将深入分析并向你提出定向选项卡片供你确认方案。</p></div>';
         } else {
