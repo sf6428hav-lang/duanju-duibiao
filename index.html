@@ -2564,7 +2564,12 @@
           clearQuote();
       }
 
-      if (!isRegen && (fullTxt || pendingImages.length > 0)) {
+      if (isRegen) {
+      if (chat.msgs.length > 0 && chat.msgs[chat.msgs.length - 1].role === 'assistant') {
+          chat.msgs.pop();
+      }
+    }
+    if (!isRegen && (fullTxt || pendingImages.length > 0)) {
         var msgObj = { role: 'user', content: fullTxt || '' };
         if (pendingImages.length > 0) {
             msgObj.images = pendingImages.slice();
@@ -2623,7 +2628,7 @@
                 var el = E("msg_" + pid);
                 if (el) {
                                     var noThink = full.replace(/<(?:think|thinking|thought)>[\s\S]*?(?:<\/(?:think|thinking|thought)>|$)/gi, '');
-                  var finalHtml = renderMarkdown(noThink.replace(/\[TEMPLATEJSON\][\s\S]*?(?:\[\/TEMPLATEJSON\]|$)/g, ""));
+                  var finalHtml = renderMarkdown(noThink.replace(/\[TEMPLATEJSON\][\s\S]*?(?:\[\/TEMPLATEJSON\]|$)/g, "").replace(/```json[\s\S]*?(?:```|$)/g, "<span style=\"font-size:12px;opacity:.6;background:var(--bg2);padding:2px 8px;border-radius:4px;display:inline-block;margin:4px 0;\">✨ 正在生成并解析系统数据...</span>"));
                   finalHtml = finalHtml.replace(/__NEED_SAVE_MARKER__/g, '<span style="font-size:12px;opacity:.6;background:var(--bg2);padding:2px 8px;border-radius:4px;display:inline-block;margin:4px 0;color:var(--primary);">💾 项目资产已解析并保存到系统及项目文件</span>').replace(/__INTERACTIVE_MARKER__/g, '<span style="font-size:12px;opacity:.6;background:var(--bg2);padding:2px 8px;border-radius:4px;display:inline-block;margin:4px 0;">✨ 交互选项卡片已生成</span>');
                   el.innerHTML = finalHtml;
                   let isAtB2 = E("chatArea").scrollHeight - E("chatArea").scrollTop <= E("chatArea").clientHeight + 150;
