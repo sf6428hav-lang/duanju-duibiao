@@ -388,9 +388,14 @@ SKILL1_PROMPT = """你是一个短篇爆款小说拆解专家（Skill 1）。
 ```json
 {
   "questions": [
-    "A. 爆款复刻拆解（提取爽点、冲突、节奏、付费点）",
-    "B. 剧情结构拆解（提取人物关系、主线、反转）",
-    "C. 创作参考拆解（提取可迁移写法）"
+    {
+      "question": "请选择拆解方向：",
+      "options": [
+        "A. 爆款复刻拆解",
+        "B. 剧情结构拆解",
+        "C. 创作参考拆解"
+      ]
+    }
   ]
 }
 ```
@@ -504,7 +509,12 @@ SKILL2_PROMPT = """你是短篇爆文策划助手（Skill 2：爆款迭代与创
 请在此处输出互动 JSON 以供前端渲染选项按钮（此时不要输出后续的详细大纲）：
 ```json
 {
-  "questions": ["A：方案一", "B：方案二", "C：方案三"]
+  "questions": [
+    {
+      "question": "请选择想发展的方向：",
+      "options": ["A：方案一", "B：方案二", "C：方案三"]
+    }
+  ]
 }
 ```
 
@@ -1075,6 +1085,13 @@ async def chat(req: ChatRequest, authorization: Optional[str] = Header(None)):
     url = req.api_url or req.apiurl or "https://yunwu.ai/v1"
     wmode = req.work_mode or req.workmode or "通用"
     uinput = req.user_input or req.userinput or ""
+    
+    if not uinput and req.messages:
+        for m in reversed(req.messages):
+            if m.get("role") == "user":
+                uinput = m.get("content", "")
+                break
+
     dtext = req.doc_text or req.doctext or ""
     
     user = get_current_user_info(req.token, authorization)
