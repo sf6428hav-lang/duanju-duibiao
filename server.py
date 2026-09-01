@@ -1138,7 +1138,6 @@ async def chat(req: ChatRequest, authorization: Optional[str] = Header(None)):
         elif is_design or (is_creation and not dtext) or (wmode == "短剧对标" and any(k in uinput for k in ["仿写", "创新", "改编"])):
             sys_p = SKILL2_PROMPT
             try:
-                import os
                 base_dir = os.path.dirname(os.path.abspath(__file__))
                 with open(os.path.join(base_dir, "知识库_调用规则.md"), "r", encoding="utf-8") as f_r:
                     r_txt = f_r.read()
