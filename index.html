@@ -1387,7 +1387,7 @@
 
     function formatScript() {
         var ed = document.getElementById('editorContent');
-        if (!ed || ed.contentEditable === 'false') return;
+        if (!ed) return;
         var text = ed.innerText;
         
         var lines = text.split('\n');
