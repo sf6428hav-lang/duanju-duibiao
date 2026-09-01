@@ -1,0 +1,45 @@
+<div class="modal-overlay" id="settingsModal" style="display:none;" onclick="if(event.target===this)closeSettings()">
+    <div class="modal-card" style="width: 400px; max-height: 80vh; overflow-y: auto;">
+      <div class="modal-header">
+        <span>⚙️ 创作工坊设置</span>
+        <button class="btn sm" onclick="closeSettings()">✕</button>
+      </div>
+      <div class="modal-body" id="settingsModalBody" style="display:flex; flex-direction:column; gap:20px;">
+        
+        <div>
+          <h4>👤 账号状态</h4>
+          <div id="userBadge" style="margin-bottom:0;padding:8px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;display:flex;justify-content:space-between;align-items:center;">
+      <span id="userNameShow" style="font-size:13px;font-weight:600;">👤 未登录</span>
+      <button id="userAuthActionBtn" class="btn xs" onclick="openAuthModal()">登录/注册</button>
+    </div>
+        </div>
+        <hr style="border:none; border-top:1px solid var(--border);" />
+        <div>
+      <div class="row" style="justify-content:space-between;margin-bottom:6px;">
+        <h4>⚙️ API 设置</h4>
+        <span id="apiStatus" class="status-tag warn">⚪ 未连接</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <input type="password" id="apiKey" class="input-box" placeholder="API Key (sk-...)" onchange="svs()">
+        <input type="text" id="apiUrl" class="input-box" placeholder="API URL" value="https://yunwu.ai/v1" onchange="svs()">
+        <div class="row">
+          <select id="modelSelect" style="flex:1;" onchange="svs()"></select>
+          <button class="btn sm" onclick="svs()">💾 保存</button>
+        </div>
+        <input type="text" id="customModel" class="input-box" placeholder="或手动输入模型ID" onchange="svs()">
+        <button class="btn primary full" onclick="fetchModels()">🔄 拉取可用模型</button>
+      </div>
+    </div>
+        <hr style="border:none; border-top:1px solid var(--border);" />
+        <div>
+          <h4>🎨 主题偏好</h4>
+          
+      <select id="themeSelect" class="w-full bg-transparent text-sm outline-none" onchange="switchTheme(this.value)">
+        <option value="绿野仙踪">🍵 静心抹茶</option>
+        <option value="暗夜狂欢">🌙 护眼暗色</option>
+        <option value="纯净极简">⚪ 极简留白</option>
+      </select>
+        </div>
+
+      </div>
+    </div>

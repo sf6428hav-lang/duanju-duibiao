@@ -1,0 +1,20 @@
+          if (newWidth > 600) newWidth = 600;
+          sidebar.style.width = newWidth + 'px';
+          sidebar.style.flexBasis = newWidth + 'px';
+          sidebar.style.minWidth = newWidth + 'px';
+          sidebar.style.maxWidth = newWidth + 'px';
+        });
+
+        document.addEventListener('mouseup', function(e) {
+          if (isDragging) {
+            isDragging = false;
+            resizer.classList.remove('dragging');
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+          }
+        });
+    }
+</script>
+<button id="quoteBtn" class="btn primary" onclick="handleQuote()" style="display:none; position:fixed; z-index:9999; box-shadow:0 4px 12px rgba(0,0,0,0.15); border-radius:6px; font-size:12px; padding:6px 12px; cursor:pointer;">❝ 引用</button>
+</body>
+</html>

@@ -1,0 +1,19 @@
+<div class="main">
+    <div class="top-bar">
+            <div id="topBar" style="display:flex; justify-content:flex-end; width:100%; align-items:center; gap:12px; padding: 0 12px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <button class="btn primary sm" onclick="newChat()">+ 新建对话</button>
+          <select id="historySelect" style="padding:4px 8px; border-radius:6px; border:1px solid var(--border); max-width:150px;" onchange="swChat(this.value)"></select>
+          <button class="btn sm" onclick="openHistory()">📋 历史列表</button>
+        </div>
+        <div id="historyList" style="display:none;"></div>
+      </div>
+    </div>
+
+    <!-- ====== 对标流程步骤条 DOM ====== -->
+    <div id="benchStepsBar" class="bench-steps-bar">
+      <div id="benchStepsInner" class="bench-steps-inner"></div>
+    </div>
+
+    <!-- chat-area 带有 min-height: 0 防 flex 塌缩 -->
+    

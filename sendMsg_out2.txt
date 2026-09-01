@@ -1,0 +1,39 @@
+var reader = r.body.getReader(), dec = new TextDecoder(), buf = '', full = '';
+        while (true) {
+          var rdv = await reader.read(); if (rdv.done) break;
+          buf += dec.decode(rdv.value, { stream: true });
+          var lines = buf.split('\n'); buf = lines.pop() || '';
+          for (var li = 0; li < lines.length; li++) {
+            var l = lines[li]; if (!l.startsWith('data: ')) continue;
+            try {
+              var d = JSON.parse(l.slice(6));
+              if (d.token) {
+                full += d.token;
+                var m = chat.msgs.find(function (x) { return x.id === pid; });
+                if (m) m.content = full;
+                var el = E("msg_" + pid);
+                if (el) {
+                                    var noThink = full.replace(/<(?:think|thinking|thought)>[\s\S]*?(?:<\/(?:think|thinking|thought)>|$)/gi, '');
+                  var finalHtml = renderMarkdown(noThink.replace(/\[TEMPLATEJSON\][\s\S]*?(?:\[\/TEMPLATEJSON\]|$)/g, "").replace(/```json[\s\S]*?(?:```|$)/g, "<span style=\"font-size:12px;opacity:.6;background:var(--bg2);padding:2px 8px;border-radius:4px;display:inline-block;margin:4px 0;\">✨ 正在生成并解析系统数据...</span>"));
+                  finalHtml = finalHtml.replace(/__NEED_SAVE_MARKER__/g, '<span style="font-size:12px;opacity:.6;background:var(--bg2);padding:2px 8px;border-radius:4px;display:inline-block;margin:4px 0;color:var(--primary);">💾 项目资产已解析并保存到系统及项目文件</span>').replace(/__INTERACTIVE_MARKER__/g, '<span style="font-size:12px;opacity:.6;background:var(--bg2);padding:2px 8px;border-radius:4px;display:inline-block;margin:4px 0;">✨ 交互选项卡片已生成</span>');
+                  el.innerHTML = finalHtml;
+                  let isAtB2 = E("chatArea").scrollHeight - E("chatArea").scrollTop <= E("chatArea").clientHeight + 150;
+                  if(isAtB2) E("chatArea").scrollTop = E("chatArea").scrollHeight;
+                  rP();
+                } else {
+                  rd();
+                }
+              } else if (d.type === 'done') {
+                var m = chat.msgs.find(function (x) { return x.id === pid; });
+                if (m) { delete m.s; delete m.id; m.content = full; }
+
+                var sdir = d.session_dir || d.sessiondir;
+                if (sdir) S.sd = sdir;
+
+                if (S.mode === '短剧对标' && S.benchStep === 3) {
+                  advanceBenchStep(4);
+                  S.s4 = false;
+                }
+
+                S.step4Questions = null;
+                if (d.template_json) {

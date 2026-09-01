@@ -1,0 +1,25 @@
+2671: sv(); rd(); listFiles();
+2672: if (d.saved_file && window.currentPreviewFile && window.currentPreviewFile.endsWith(d.saved_file)) {
+2673: pv(window.currentPreviewFile);
+2674: }
+2675: } else if (d.type === 'error') {
+2676: var m = chat.msgs.find(function (x) { return x.id === pid; });
+2677: if (m) { m.content = d.message; m.er = true; delete m.s; delete m.id; }
+2678: rd();
+2679: }
+2680: } catch (e) {
+2681: if (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
+2682: alert('🚨 警告：浏览器本地存储空间已满！可能是您上传的文件过大或聊天记录过多。刷新页面将会丢失本次对话，请先备份重要内容！');
+2683: }
+2684: }
+2685: }
+2686: }
+2687: } catch (e) {
+2688: var m = chat.msgs.find(function (x) { return x.id === pid; });
+2689: if (e.name !== 'AbortError') {
+2690: if (m) { m.content = '请求失败：' + e.message; m.er = true; delete m.s; delete m.id; }
+2691: } else {
+2692: if (m) { m.content += '\n\n[用户停止了生成]'; delete m.s; delete m.id; }
+2693: }
+2694: }
+2695: 

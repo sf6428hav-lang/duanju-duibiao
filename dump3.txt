@@ -1,0 +1,60 @@
+2571: }
+2572: if (!isRegen && (fullTxt || pendingImages.length > 0)) {
+2573: var msgObj = { role: 'user', content: fullTxt || '' };
+2574: if (pendingImages.length > 0) {
+2575: msgObj.images = pendingImages.slice();
+2576: pendingImages = [];
+2577: renderPendingImages();
+2578: }
+2579: if (!chat.msgs.length || chat.msgs[chat.msgs.length - 1].content !== fullTxt || msgObj.images) {
+2580: chat.msgs.push(msgObj);
+2581: }
+2582: }
+2583: sv(); rd();
+2584: 
+2585: var docT = '';
+2586: if (S.doc && (S.mode === '短剧对标' || S.mode === '剧本创作' || S.mode === '短篇创作')) {
+2587: docT = S.doc;
+2588: }
+2589: 
+2590: if (S.mode === '短剧对标') {
+2591: if (S.benchStep === 1 && txt.indexOf('已上传') !== -1) advanceBenchStep(2);
+2592: else if (S.benchStep === 2 && (txt.indexOf('拆解') !== -1 || txt.indexOf('拉片') !== -1)) advanceBenchStep(3);
+2593: }
+2594: 
+2595: S.gen = true; S.ab = new AbortController();
+2596: E('genStatus').innerHTML = '<button class="btn danger" onclick="stopGen()">⏹ 停止生成</button>';
+2597: E('chatInput').disabled = true;
+2598: 
+2599: var pid = 'm' + Date.now();
+2600: chat.msgs.push({ role: 'assistant', content: '', s: true, id: pid });
+2601: rd();
+2602: 
+2603: try {
+2604: var r = await fetch(B + '/api/chat', {
+2605: method: 'POST',
+2606: headers: Object.assign({ 'Content-Type': 'application/json' }, getAuthHeaders()),
+2607: body: JSON.stringify({
+2608: api_key: k, api_url: gU(), model: gM(), work_mode: S.mode || '通用',
+2609: messages: chat.msgs.filter(function (m) { return !m.s; }).map(function (m) { return { role: m.role, content: m.content, images: m.images }; }),
+2610: user_input: "", doc_text: docT, session_id: S.cid, token: getToken()
+2611: }),
+2612: signal: S.ab.signal
+2613: });
+2614: 
+2615: var reader = r.body.getReader(), dec = new TextDecoder(), buf = '', full = '';
+2616: while (true) {
+2617: var rdv = await reader.read(); if (rdv.done) break;
+2618: buf += dec.decode(rdv.value, { stream: true });
+2619: var lines = buf.split('\n'); buf = lines.pop() || '';
+2620: for (var li = 0; li < lines.length; li++) {
+2621: var l = lines[li]; if (!l.startsWith('data: ')) continue;
+2622: try {
+2623: var d = JSON.parse(l.slice(6));
+2624: if (d.token) {
+2625: full += d.token;
+2626: var m = chat.msgs.find(function (x) { return x.id === pid; });
+2627: if (m) m.content = full;
+2628: var el = E("msg_" + pid);
+2629: if (el) {
+2630: var noThink = full.replace(/<(?:think|thinking|thought)>[\s\S]*?(?:<\/(?:think|thinking|thought)>|$)/gi, '');

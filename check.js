@@ -1,0 +1,1 @@
+var esprima = require('./esprima.js'); var fs = require('fs'); var code = fs.readFileSync('test.js', 'utf8'); try { esprima.parseScript(code); console.log('OK'); } catch (e) { console.log(e); }

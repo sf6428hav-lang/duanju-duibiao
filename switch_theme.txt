@@ -1,0 +1,53 @@
+function switchTheme(n) {
+      var t = TH[n] || TH["☁️ 软萌玉桂"], r = document.documentElement.style;
+      r.setProperty('--bg', t.bg); r.setProperty('--bg2', t.bg2); r.setProperty('--text', t.text);
+      r.setProperty('--primary', t.primary); r.setProperty('--card', t.card); r.setProperty('--border', t.border);
+      r.setProperty('--shadow', t.shadow); r.setProperty('--radius', t.radius); r.setProperty('--err-bg', t.eb);
+      r.setProperty('--err-border', t.ebd); r.setProperty('--dot', t.dot);
+      r.setProperty('--step-done', t.stepDone); r.setProperty('--step-active', t.stepActive); r.setProperty('--step-pending', t.stepPending);
+      r.setProperty('--bg-img', t.bgImg || 'none');
+      localStorage.setItem('theme', n);
+    }
+
+    // ====== 对标流程步骤条 ======
+    function renderBenchSteps() {
+      var bar = E('benchStepsBar'), inner = E('benchStepsInner');
+      if (S.mode !== '短剧对标') { bar.classList.remove('show'); return; }
+      bar.classList.add('show');
+      var h = '';
+      for (var i = 0; i < BENCH_STEPS.length; i++) {
+        var s = BENCH_STEPS[i], cls = 'pending';
+        if (s.id < S.benchStep) cls = 'done';
+        else if (s.id === S.benchStep) cls = 'active';
+
+        h += '<div class="step-item ' + cls + '" onclick="goBenchStep(' + s.id + ')" title="点击查看此步骤说明">';
+        h += '<span class="step-num">' + (cls === 'done' ? '✓' : s.id) + '</span>';
+        h += '<span>' + s.icon + ' ' + s.label + '</span>';
+        h += '<span class="step-tip">' + getStepTip(s.id) + '</span>';
+        h += '</div>';
+
+        if (i < BENCH_STEPS.length - 1) {
+          h += '<div class="step-connector' + (s.id < S.benchStep ? ' done' : '') + '"></div>';
+        }
+      }
+      inner.innerHTML = h;
+    }
+
+    function getStepTip(id) {
+      var tips = {
+        1: '上传参考剧本（.docx或粘贴文本）',
+        2: 'AI逐集拆解情节节拍与钩子',
+        3: '提取可复用的结构模板',
+        4: '确认仿写方案与改编方案',
+        5: '基于模板生成仿写大纲',
+        6: '审核并确认分集大纲',
+        7: '设定剧本输出格式',
+        8: '开始逐集生成完整剧本'
+      };
+      return tips[id] || '';
+    }
+
+    function goBenchStep(n) {
+      if (n < S.benchStep) {
+        var p = STEP_PROMPTS[n];
+        if (p) { E('chatInput').value = p; E('chatInput').focus(); }

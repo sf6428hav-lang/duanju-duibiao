@@ -1,0 +1,3 @@
+            h += '<div class="msg user"><div class="role">👤 你（编辑中）</div><textarea class="edit-textarea" id="editArea" style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);">' + esc(m.content) + '</textarea><div class="actions" style="margin-top:4px;"><button class="btn sm primary" onclick="cfEd(' + i + ')">确认</button><button class="btn sm" onclick="S.edi=null;rd()">取消</button></div></div>';
+            h += '<div class="msg user"><div class="role" style="display:flex;justify-content:space-between"><span>👤 你</span><button class="btn xs" onclick="S.edi=' + i + ';rd()" style="opacity:.4">✏️</button></div><div class="content">' + renderMarkdown(m.content) + '</div></div>';
+        h += '<div class="msg assistant"><div class="role">🤖 助手</div>';

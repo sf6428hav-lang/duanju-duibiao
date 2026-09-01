@@ -1,0 +1,28 @@
+1983: function tryParseS4() {
+1984: var curC = CC();
+1985: var msgs = curC.msgs;
+1986: if (!msgs || !msgs.length) return null;
+1987: 
+1988: // 每次只解析最后一条 AI 助手的消息！
+1989: var lastM = null;
+1990: for (var i = msgs.length - 1; i >= 0; i--) {
+1991: if (msgs[i].role === 'assistant' && !msgs[i].er) {
+1992: lastM = msgs[i];
+1993: break;
+1994: }
+1995: }
+1996: 
+1997: if (!lastM || !lastM.content) return null;
+1998: // 如果该条消息已点击处理过，避免显示旧卡片
+1999: if (lastM.handled) return null;
+2000: 
+2001: // 🔴 剥离 AI 内部思考标签 <thinking>...</thinking>，防止将思考过程解析为面板卡片
+2002: var txt = stripThinking(lastM.content);
+2003: if (!txt) return null;
+2004: 
+2005: var d = extractTJ(txt);
+2006: if (d) {
+2007: if (d.step4_questions || d.questions || d.step === 'step4_ready' || d.step === 'create_qa_ready') {
+2008: var qs = d.step4_questions || d.questions;
+2009: if (qs && qs.length) {
+2010: return { step: 'create_qa_ready', questions: qs, step4_questions: qs, msgId: lastM.id };

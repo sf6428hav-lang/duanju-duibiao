@@ -1,0 +1,79 @@
+1072: @app.post("/api/chat")
+1073: async def chat(req: ChatRequest, authorization: Optional[str] = Header(None)):
+1074: key = req.api_key or req.apikey
+1075: url = req.api_url or req.apiurl or "https://yunwu.ai/v1"
+1076: wmode = req.work_mode or req.workmode or "通用"
+1077: uinput = req.user_input or req.userinput or ""
+1078: dtext = req.doc_text or req.doctext or ""
+1079: 
+1080: user = get_current_user_info(req.token, authorization)
+1081: username = user["username"]
+1082: 
+1083: if wmode == "短剧对标":
+1084: sys_p = BENCH_PROMPT
+1085: elif wmode == "剧本创作":
+1086: sys_p = CREATE_PROMPT.replace(SCRIPT_FORMAT_RULE + OUTPUT_CLEAN_RULE, "") + "\n\n" + GENERAL_SCRIPT_LOGIC + "\n\n" + OUTLINE_BIO_PROMPT + "\n\n" + SCRIPT_FORMAT_RULE + OUTPUT_CLEAN_RULE
+1087: elif wmode == "短篇创作":
+1088: # 强制路由规则 (Task Router - Skill -1)
+1089: analysis_keywords = ["分析", "拆解", "研究", "学习", "模仿", "结构", "看看这篇", "提取", "套路"]
+1090: creation_keywords = ["写一个", "创作一个", "生成一个", "我要写", "新写", "帮我写", "构思"]
+1091: revision_keywords = ["改一下", "润色", "降低ai感", "重写", "修改"]
+1092: continue_keywords = ["继续写", "接着写", "下一章"]
+1093: 
+1094: is_revision = any(k in uinput for k in revision_keywords)
+1095: is_continue = any(k in uinput for k in continue_keywords)
+1096: is_creation = any(k in uinput for k in creation_keywords)
+1097: is_analysis = any(k in uinput for k in analysis_keywords) or (bool(dtext) and not is_creation)
+1098: 
+1099: # 扩展的 V6 强制路由规则
+1100: is_design = any(k in uinput for k in ["设计大纲", "故事方案", "故事大纲", "写大纲", "做大纲"])
+1101: is_outline = any(k in uinput for k in ["章节规划", "分集大纲", "细纲", "章纲"])
+1102: 
+1103: if is_revision:
+1104: sys_p = SKILL6_PROMPT
+1105: elif is_continue or any(k in uinput for k in ["写正文", "开始写", "撰写"]):
+1106: sys_p = SKILL4_PROMPT
+1107: elif is_outline:
+1108: sys_p = SKILL3_PROMPT
+1109: elif is_design or (is_creation and not dtext):
+1110: sys_p = SKILL2_PROMPT
+1111: elif is_analysis:
+1112: sys_p = SKILL1_PROMPT
+1113: else:
+1114: sys_p = SKILL0_PROMPT
+1115: else:
+1116: sys_p = "你是专业高效的AI创作助手。"
+1117: 
+1118: if dtext:
+1119: sys_p = f"【用户已上传待分析脚本（{len(dtext)}字）】\n\n{dtext}\n\n---\n{sys_p}"
+1120: 
+1121: api_messages = [{"role": "system", "content": sys_p}]
+1122: for m in req.messages:
+1123: if m.get("role") in ("system", "user", "assistant"):
+1124: if m.get("images") and len(m["images"]) > 0:
+1125: content = []
+1126: if m.get("content"):
+1127: content.append({"type": "text", "text": m["content"]})
+1128: for img_url in m["images"]:
+1129: content.append({"type": "image_url", "image_url": {"url": img_url}})
+1130: api_messages.append({"role": m["role"], "content": content})
+1131: else:
+1132: api_messages.append({"role": m["role"], "content": m["content"]})
+1133: if uinput:
+1134: api_messages.append({"role": "user", "content": uinput})
+1135: 
+1136: client = OpenAI(api_key=key, base_url=url, timeout=300.0)
+1137: 
+1138: def generate():
+1139: full_response = ""
+1140: try:
+1141: response = client.chat.completions.create(
+1142: model=req.model, messages=api_messages, stream=True, timeout=300.0
+1143: )
+1144: for chunk in response:
+1145: if not chunk.choices or len(chunk.choices) == 0:
+1146: continue
+1147: delta = chunk.choices[0].delta
+1148: if delta.content is not None:
+1149: full_response += delta.content
+1150: yield f"data: {json.dumps({'token': delta.content})}\n\n"

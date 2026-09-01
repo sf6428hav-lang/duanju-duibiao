@@ -1,0 +1,17 @@
+.msg {
+      margin-left: 12px;
+      margin-bottom: 0 !important;
+      width: calc(100% - 30px);
+    }
+.msg .content {
+      padding: 10px 14px;
+      font-size: 14px;
+      line-height: 1.6;
+      word-break: break-word;
+      width: 100%;
+    }
+.msg.user {
+      align-self: flex-end;
+      max-width: 85%;
+      margin-left: auto;
+    }

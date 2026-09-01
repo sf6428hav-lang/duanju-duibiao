@@ -1,0 +1,40 @@
+          signal: S.ab.signal
+        });
+
+        var reader = r.body.getReader(), dec = new TextDecoder(), buf = '', full = '';
+        while (true) {
+          var rdv = await reader.read(); if (rdv.done) break;
+          buf += dec.decode(rdv.value, { stream: true });
+          var lines = buf.split('\n'); buf = lines.pop() || '';
+          for (var li = 0; li < lines.length; li++) {
+            var l = lines[li]; if (!l.startsWith('data: ')) continue;
+            try {
+              var d = JSON.parse(l.slice(6));
+              if (d.token) {
+                full += d.token;
+                var m = chat.msgs.find(function (x) { return x.id === pid; });
+                if (m) m.content = full;
+                var el = E("msg_" + pid);
+                if (el) {
+                                    var noThink = full.replace(/<(?:think|thinking|thought)>[\s\S]*?(?:<\/(?:think|thinking|thought)>|$)/gi, '');
+                  el.innerHTML = renderMarkdown(noThink.replace(/\[TEMPLATEJSON\][\s\S]*?(?:\[\/TEMPLATEJSON\]|$)/g, ""));
+                  let isAtB2 = E("chatArea").scrollHeight - E("chatArea").scrollTop <= E("chatArea").clientHeight + 150;
+                  if(isAtB2) E("chatArea").scrollTop = E("chatArea").scrollHeight;
+                  rP();
+                } else {
+                  rd();
+                }
+              } else if (d.type === 'done') {
+                var m = chat.msgs.find(function (x) { return x.id === pid; });
+                if (m) { delete m.s; delete m.id; m.content = full; }
+
+                var sdir = d.session_dir || d.sessiondir;
+                if (sdir) S.sd = sdir;
+
+                if (S.mode === '短剧对标' && S.benchStep === 3) {
+                  advanceBenchStep(4);
+                  S.s4 = false;
+                }
+
+                S.step4Questions = null;
+                if (d.template_json) {

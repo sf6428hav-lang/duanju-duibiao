@@ -1,0 +1,25 @@
+  </div>
+
+  
+  <div class="resizer" id="resizer"></div>
+  <div id="editorPane" class="editor-pane">
+    <div class="top-bar">
+      <div style="font-weight: 600; font-size: 15px; display: flex; align-items: center; gap: 8px;">
+        📄 <span id="editorFileName">未命名文档</span>
+      </div>
+      <div>
+        <button class="btn primary sm" onclick="saveEditorContent()">💾 保存</button>
+        <button class="btn sm" onclick="closeEditor()">✕ 关闭</button>
+      </div>
+    </div>
+    <div id="editorContent" class="editor-content" contenteditable="false" oninput="updateWordCount()"><p style="color:#999; text-align:center; margin-top:100px;">👈 在左侧选择或上传文件，开始编辑...</p></div>
+    <div class="editor-bottom">
+      <span id="editorWordCountStr">字数：0</span>
+      <span id="editorSaveStatus">已保存</span>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="top-bar">
+            <div id="topBar" style="display:flex; justify-content:flex-end; width:100%; align-items:center; gap:12px; padding: 0 12px;">
+        <div style="display:flex; align-items:center; gap:8px;">

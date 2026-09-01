@@ -1,0 +1,177 @@
+<body>
+
+  <!-- 用户登录注册弹窗 -->
+  
+  <!-- 全局设置弹窗 -->
+  <div class="modal-overlay" id="settingsModal" style="display:none;" onclick="if(event.target===this)closeSettings()">
+    <div class="modal-card" style="width: 400px; max-height: 80vh; overflow-y: auto;">
+      <div class="modal-header">
+        <span>⚙️ 创作工坊设置</span>
+        <button class="btn sm" onclick="closeSettings()">✕</button>
+      </div>
+      <div class="modal-body" id="settingsModalBody" style="display:flex; flex-direction:column; gap:20px;">
+        
+        <div>
+          <h4>👤 账号状态</h4>
+          <div id="userBadge" style="margin-bottom:0;padding:8px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;display:flex;justify-content:space-between;align-items:center;">
+      <span id="userNameShow" style="font-size:13px;font-weight:600;">👤 未登录</span>
+      <button id="userAuthActionBtn" class="btn xs" onclick="openAuthModal()">登录/注册</button>
+    </div>
+        </div>
+        <hr style="border:none; border-top:1px solid var(--border);" />
+        <div>
+      <div class="row" style="justify-content:space-between;margin-bottom:6px;">
+        <h4>⚙️ API 设置</h4>
+        <span id="apiStatus" class="status-tag warn">⚪ 未连接</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <input type="password" id="apiKey" class="input-box" placeholder="API Key (sk-...)" onchange="svs()">
+        <input type="text" id="apiUrl" class="input-box" placeholder="API URL" value="https://yunwu.ai/v1" onchange="svs()">
+        <div class="row">
+          <select id="modelSelect" style="flex:1;" onchange="svs()"></select>
+          <button class="btn sm" onclick="svs()">💾 保存</button>
+        </div>
+        <input type="text" id="customModel" class="input-box" placeholder="或手动输入模型ID" onchange="svs()">
+        <button class="btn primary full" onclick="fetchModels()">🔄 拉取可用模型</button>
+      </div>
+    </div>
+        <hr style="border:none; border-top:1px solid var(--border);" />
+        <div>
+          <h4>🎨 主题偏好</h4>
+          
+      <select id="themeSelect" class="w-full bg-transparent text-sm outline-none" onchange="switchTheme(this.value)">
+        <option value="绿野仙踪">🍵 静心抹茶</option>
+        <option value="暗夜狂欢">🌙 护眼暗色</option>
+        <option value="纯净极简">⚪ 极简留白</option>
+      </select>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div id="authModal" class="auth-overlay" style="display:none !important;">
+    <div class="auth-card">
+      <button class="modal-close-btn" onclick="document.getElementById('authModal').style.display='none'" style="position: absolute; right: 16px; top: 16px;">&times;</button>
+      <div style="text-align:center;margin-bottom:16px;">
+        <h3 style="font-size:20px;margin-bottom:4px;">🎬 创作工坊用户系统</h3>
+        <p style="font-size:12px;opacity:0.7;">登入专属账号，自动隔离与多端同步您的短剧资产</p>
+      </div>
+
+      <div class="auth-tabs">
+        <div id="authTabLogin" class="auth-tab-btn active" onclick="switchAuthTab('login')">🔑 账号登录</div>
+        <div id="authTabRegister" class="auth-tab-btn" onclick="switchAuthTab('register')">✨ 注册新账号</div>
+      </div>
+
+      <div id="authErrMsg" style="display:none;color:#ef4444;background:#fee2e2;padding:8px 12px;border-radius:8px;font-size:12px;margin-bottom:12px;"></div>
+
+      <div class="auth-input-group">
+        <label>用户名 / 账号</label>
+        <input type="text" id="authUsername" class="input-box" placeholder="请输入用户名 (如: admin)" autocomplete="off">
+      </div>
+
+      <div class="auth-input-group">
+        <label>密码</label>
+        <input type="password" id="authPassword" class="input-box" placeholder="请输入密码" autocomplete="off" onkeydown="if(event.key==='Enter') submitAuth()">
+      </div>
+
+      <button id="authSubmitBtn" class="btn primary full" style="margin-top:16px;padding:10px;font-size:14px;" onclick="submitAuth()">立即登录</button>
+      <div style="text-align:center;margin-top:12px;font-size:12px;opacity:0.6;">初始密码已在后台随机生成，请查看终端输出或配置 .env</div>
+    </div>
+  </div>
+
+
+  <div class="sidebar">
+    <h3>🎬 创作工坊</h3>
+
+    
+
+    
+
+    
+
+
+
+
+    
+
+    <div>
+      <h4>📁 参考脚本上传 (.docx)</h4>
+      <input type="file" id="fileInput" accept=".docx" multiple style="display:none" onchange="handleFileUpload(this)">
+      <button class="btn full" onclick="E('fileInput').click()">选择文件 (支持Ctrl/Cmd多选)</button>
+      <div id="fileInfo" style="font-size:12px;opacity:.7;margin-top:6px;">未选择文件</div>
+    </div>
+
+    <div>
+      <h4>📁 生成文件</h4>
+      <div id="projectFiles" style="font-size:12px;max-height:140px;overflow-y:auto;">暂无</div>
+    </div>
+  </div>
+
+  
+  <div id="editorPane" class="editor-pane">
+    <div class="top-bar">
+      <div style="font-weight: 600; font-size: 15px; display: flex; align-items: center; gap: 8px;">
+        📄 <span id="editorFileName">未命名文档</span>
+      </div>
+      <div>
+        <button class="btn primary sm" onclick="saveEditorContent()">💾 保存</button>
+        <button class="btn sm" onclick="closeEditor()">✕ 关闭</button>
+      </div>
+    </div>
+    <div id="editorContent" class="editor-content" contenteditable="true" oninput="updateWordCount()"><p style="color:#999; text-align:center; margin-top:100px;">👈 在左侧选择或上传文件，开始编辑...</p></div>
+    <div class="editor-bottom">
+      <span id="editorWordCountStr">字数：0</span>
+      <span id="editorSaveStatus">已保存</span>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="top-bar">
+            <div id="topBar" style="display:flex; justify-content:flex-end; width:100%; align-items:center; gap:12px; padding: 0 12px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <button class="btn primary sm" onclick="newChat()">+ 新建对话</button>
+          <select id="historySelect" style="padding:4px 8px; border-radius:6px; border:1px solid var(--border); max-width:150px;" onchange="swChat(this.value)"></select>
+          <button class="btn sm" onclick="openHistory()">📋 历史列表</button>
+        </div>
+        <div id="historyList" style="display:none;"></div>
+      </div>
+    </div>
+
+    <!-- ====== 对标流程步骤条 DOM ====== -->
+    <div id="benchStepsBar" class="bench-steps-bar">
+      <div id="benchStepsInner" class="bench-steps-inner"></div>
+    </div>
+
+    <!-- chat-area 带有 min-height: 0 防 flex 塌缩 -->
+    <div class="chat-area" id="chatArea"></div>
+
+    <!-- 独立稳固面板区域 -->
+    <div id="createPanel" style="padding:0 20px;"></div>
+    <div id="step4Panel" style="padding:0 20px;"></div>
+    <div id="step7Panel" style="padding:0 20px;"></div>
+    <div id="batchPanel" style="padding:0 20px;"></div>
+
+    <!-- 对标 / 创作 按钮在 <main> 最底部的 .bottom-bar 里 -->
+    <div class="input-area bottom-bar">
+      <button id="btnBench" class="btn" onclick="toggleMode('短剧对标')">对标</button>
+      <button id="btnCreate" class="btn" onclick="toggleMode('剧本创作')">创作</button>
+      <textarea id="chatInput" rows="2" placeholder="在通用模式下输入指令..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg();}"></textarea>
+      <button class="btn primary" onclick="sendMsg()" style="padding:0 20px;">发送</button>
+    </div>
+  </div>
+
+  
+
+  <!-- 历史弹窗 -->
+  <div class="modal-overlay" id="historyModal" onclick="if(event.target===this)closeHistory()">
+    <div class="modal-card">
+      <div class="modal-header">
+        <span>💬 历史对话记录</span>
+        <button class="btn sm" onclick="closeHistory()">✕</button>
+      </div>
+      <div class="modal-body" id="historyModalList"></div>
+    </div>
+  </div>
+
+  

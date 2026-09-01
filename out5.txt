@@ -1,0 +1,199 @@
+<script>
+    var B = (window.location.origin === 'file://' || window.location.origin === 'null') ? 'http://localhost:8000' : window.location.origin;
+    var TH = {
+      "🍑 蜜桃乌龙": { bg: "#faf7f5", bg2: "#ffffff", text: "#332927", primary: "#e07a5f", card: "#ffffff", border: "#f0e6e1", shadow: "0 4px 16px rgba(224,122,95,0.08)", radius: "12px", eb: "#fdf2f2", ebd: "#f8b4b4", dot: "#e07a5f", stepDone: "#10b981", stepActive: "#e07a5f", stepPending: "#d1d5db" },
+      "🌿 薄荷暗色": { bg: "#1e2328", bg2: "#161a1e", text: "#d0d6d8", primary: "#68b893", card: "#262c32", border: "#353d45", shadow: "0 4px 20px rgba(0,0,0,0.25)", radius: "10px", eb: "#3a1a1a", ebd: "#ff6b6b", dot: "#68b893", stepDone: "#34d399", stepActive: "#68b893", stepPending: "#4b5563" },
+      "🫐 蓝莓暗夜": { bg: "#1a1d2e", bg2: "#141726", text: "#c8cddb", primary: "#7c8ce0", card: "#232740", border: "#353b58", shadow: "0 4px 20px rgba(0,0,0,0.30)", radius: "10px", eb: "#3a1a1a", ebd: "#ff6b6b", dot: "#7c8ce0", stepDone: "#34d399", stepActive: "#7c8ce0", stepPending: "#4b5563" },
+      "🖤 曜石极简": { bg: "#111111", bg2: "#0a0a0a", text: "#cccccc", primary: "#eeeeee", card: "#1a1a1a", border: "#333333", shadow: "0 4px 20px rgba(0,0,0,0.40)", radius: "4px", eb: "#3a1a1a", ebd: "#ff6b6b", dot: "#eeeeee", stepDone: "#22c55e", stepActive: "#eeeeee", stepPending: "#555555" },
+      "🍷 醉红香槟": { bg: "#fdfbf7", bg2: "#ffffff", text: "#2d2424", primary: "#c05621", card: "#ffffff", border: "#f3ebd9", shadow: "0 4px 16px rgba(192,86,33,0.08)", radius: "12px", eb: "#fff5f5", ebd: "#feb2b2", dot: "#c05621", stepDone: "#38a169", stepActive: "#c05621", stepPending: "#cbd5e0" },
+      "🌌 极光深空": { bg: "#0f172a", bg2: "#0b1120", text: "#e2e8f0", primary: "#38bdf8", card: "#1e293b", border: "#334155", shadow: "0 4px 20px rgba(0,0,0,0.35)", radius: "10px", eb: "#451a1a", ebd: "#f87171", dot: "#38bdf8", stepDone: "#34d399", stepActive: "#38bdf8", stepPending: "#64748b" },
+      "🍵 静心抹茶": { bg: "#f4f7f4", bg2: "#ffffff", text: "#243224", primary: "#48bb78", card: "#ffffff", border: "#e2ebe2", shadow: "0 4px 16px rgba(72,187,120,0.08)", radius: "12px", eb: "#fff5f5", ebd: "#feb2b2", dot: "#48bb78", stepDone: "#38a169", stepActive: "#48bb78", stepPending: "#cbd5e0" },
+      "🍊 焦糖琥珀": { bg: "#fefcf9", bg2: "#ffffff", text: "#3c2a1e", primary: "#dd6b20", card: "#ffffff", border: "#fbd5c0", shadow: "0 4px 16px rgba(221,107,32,0.08)", radius: "12px", eb: "#fff5f5", ebd: "#feb2b2", dot: "#dd6b20", stepDone: "#38a169", stepActive: "#dd6b20", stepPending: "#cbd5e0" },
+      "🌃 霓虹夜幕": { bg: "#13111c", bg2: "#0d0b14", text: "#dcd7ec", primary: "#a855f7", card: "#1c182b", border: "#2e2844", shadow: "0 4px 20px rgba(0,0,0,0.35)", radius: "10px", eb: "#3b1219", ebd: "#f43f5e", dot: "#a855f7", stepDone: "#10b981", stepActive: "#a855f7", stepPending: "#6b7280" },
+      "🩶 莫兰迪灰": { bg: "#f0f2f5", bg2: "#ffffff", text: "#2c3e50", primary: "#64748b", card: "#ffffff", border: "#cbd5e1", shadow: "0 4px 16px rgba(100,116,139,0.08)", radius: "8px", eb: "#fef2f2", ebd: "#fca5a5", dot: "#64748b", stepDone: "#10b981", stepActive: "#64748b", stepPending: "#94a3b8" }
+    };
+
+    
+    let currentPreviewFile = "";
+
+    function updateWordCount() {
+      var text = E('editorContent').innerText || "";
+      var count = text.replace(/\s/g, '').length;
+      E('editorWordCountStr').innerText = '字数：' + count;
+      E('editorSaveStatus').innerText = '未保存';
+      E('editorSaveStatus').style.color = '#ef4444';
+    }
+
+    async function saveEditorContent() {
+      if(!currentPreviewFile) return;
+      var text = E('editorContent').innerText;
+      E('editorSaveStatus').innerText = '保存中...';
+      try {
+        var r = await fetch(B + '/api/save_file', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': localStorage.getItem('sdt_token') || '' },
+          body: JSON.stringify({ filepath: currentPreviewFile, content: text })
+        });
+        var d = await r.json();
+        if (d.status === 'ok') {
+          E('editorSaveStatus').innerText = '已保存';
+          E('editorSaveStatus').style.color = '#10b981';
+          showToast('保存成功');
+        } else {
+          alert('保存失败: ' + d.error);
+        }
+      } catch(e) {
+        alert('保存失败: ' + e.message);
+      }
+    }
+
+    function closeEditor() {
+      
+      currentPreviewFile = "";
+    }
+
+    // 对标流程 8 步定义
+    var BENCH_STEPS = [
+      { id: 1, icon: '📤', label: '上传参考' },
+      { id: 2, icon: '🔍', label: '拆解分析' },
+      { id: 3, icon: '📋', label: '提取模板' },
+      { id: 4, icon: '🎯', label: '仿写方案' },
+      { id: 5, icon: '📝', label: '生成大纲' },
+      { id: 6, icon: '✅', label: '大纲确认' },
+      { id: 7, icon: '📐', label: '格式确认' },
+      { id: 8, icon: '🎬', label: '生成剧本' }
+    ];
+
+    // 每步的预设 prompt
+    var STEP_PROMPTS = {
+      1: '请帮我对标分析我上传的参考剧本，先确认已收到并阅读完毕。',
+      2: '请对参考剧本进行逐集拆解分析（拉片），提取每集的情节节拍、钩子设计、情绪曲线、节奏量化指标。',
+      3: '请基于拆解结果，提取可复用的结构模板，包括：剧情节拍公式、人物弧光模式、每集钩子位置与类型、付费留客悬念设计。',
+      4: null,
+      5: '请基于确认的仿写方案，生成仿写短剧的分集大纲。',
+      6: null,
+      7: null,
+      8: '请按照确认的格式，开始逐集生成完整剧本。'
+    };
+
+    var S = { cid: 'c' + Date.now(), mode: null, chats: [], doc: '', s4: false, s7: false, cstr: false, qaHandled: false, cardsVisible: true, bi: 0, tb: 0, gen: false, ab: null, sd: null, edi: null, step4Questions: null, createStage: '头脑风暴', benchStep: 1 };
+
+    function E(id) { return document.getElementById(id); }
+    function esc(s) { return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+    function showToast(msg) {
+      var t = document.createElement('div');
+      t.className = 'toast-msg';
+      t.innerText = msg;
+      document.body.appendChild(t);
+      setTimeout(function() { if (t.parentNode) t.parentNode.removeChild(t); }, 2000);
+    }
+
+    function sv() {
+      var curC = CC();
+      curC.step4Questions = S.step4Questions;
+      curC.cstr = S.cstr;
+      curC.qaHandled = S.qaHandled;
+      curC.cardsVisible = (S.cardsVisible !== false);
+      localStorage.setItem('app', JSON.stringify({ v: 'v55', cid: S.cid, mode: S.mode, chats: S.chats, s4: S.s4, s7: S.s7, cstr: S.cstr, qaHandled: S.qaHandled, cardsVisible: S.cardsVisible, bi: S.bi, tb: S.tb, sd: S.sd, createStage: S.createStage, benchStep: S.benchStep }));
+    }
+
+    function ld() {
+      try {
+        var raw = localStorage.getItem('app');
+        if (raw) {
+          var d = JSON.parse(raw);
+          if (d) {
+            S.cid = d.cid || S.cid; S.mode = d.mode; S.chats = d.chats || []; S.s4 = d.s4 || false; S.s7 = d.s7 || false; S.cstr = d.cstr || false; S.qaHandled = d.qaHandled || false; S.cardsVisible = (d.cardsVisible !== false); S.bi = d.bi || 0; S.tb = d.tb || 0; S.sd = d.sd; S.createStage = d.createStage || '头脑风暴'; S.benchStep = d.benchStep || 1;
+            var curC = S.chats.find(function(x){ return x.id === S.cid; });
+            S.step4Questions = curC ? (curC.step4Questions || null) : null;
+          }
+        }
+      } catch (e) { }
+    }
+
+    function svs() {
+      var mVal = E('customModel').value.trim() || E('modelSelect').value;
+      localStorage.setItem('apis', JSON.stringify({ k: E('apiKey').value, u: E('apiUrl').value, m: mVal }));
+      updateApiStatus();
+    }
+
+    function lds() {
+      try {
+        var d = JSON.parse(localStorage.getItem('apis'));
+        if (d) {
+          if (d.k !== undefined) E('apiKey').value = d.k;
+          if (d.u !== undefined) E('apiUrl').value = d.u || 'https://yunwu.ai/v1';
+          if (d.m) {
+            var opts = E('modelSelect').options, has = false;
+            for (var i = 0; i < opts.length; i++) {
+              if (opts[i].value === d.m) { E('modelSelect').value = d.m; has = true; break; }
+            }
+            if (!has) E('customModel').value = d.m;
+          }
+        }
+      } catch (e) { }
+      updateApiStatus();
+    }
+
+    function updateApiStatus() {
+      var k = E('apiKey').value.trim(), st = E('apiStatus');
+      if (!k) { st.className = 'status-tag err'; st.innerHTML = '🔴 未设置Key'; }
+      else { st.className = 'status-tag ok'; st.innerHTML = '🟢 已准备'; }
+    }
+
+    function gM() { return E('customModel').value.trim() || E('modelSelect').value || 'gpt-4o'; }
+    function gK() { return E('apiKey').value.trim(); }
+    function gU() { return E('apiUrl').value.trim() || 'https://yunwu.ai/v1'; }
+
+    
+    function toggleMultiSelect() {
+      S.multiSelectMode = !S.multiSelectMode;
+      S.selectedMsgs = {};
+      rd();
+    }
+    
+    function toggleSelectMsg(idx) {
+      S.selectedMsgs[idx] = !S.selectedMsgs[idx];
+      rd();
+    }
+    
+    function deleteSelectedMsgs() {
+      var c = CC();
+      var toDelete = Object.keys(S.selectedMsgs).filter(function(k) { return S.selectedMsgs[k]; }).map(Number);
+      if (toDelete.length === 0) {
+        alert("请先选择要删除的消息");
+        return;
+      }
+      if (!confirm("确定要删除选中的 " + toDelete.length + " 条消息吗？删除后AI将丢失这段记忆。")) return;
+      
+      toDelete.sort(function(a,b) { return b - a; });
+      for (var i = 0; i < toDelete.length; i++) {
+        c.msgs.splice(toDelete[i], 1);
+      }
+      S.multiSelectMode = false;
+      S.selectedMsgs = {};
+      sv(); rd();
+    }
+
+    function CC() {
+      if (!S.chats) S.chats = [];
+      var c = S.chats.find(function (x) { return x.id === S.cid; });
+      if (!c) {
+        c = { id: S.cid, title: '新对话', msgs: [], sd: null, mode: S.mode, benchStep: 1, step4Questions: null, cstr: false, qaHandled: false, cardsVisible: true };
+        S.chats.unshift(c);
+      }
+      return c;
+    }
+
+    function cleanEmptyChats() {
+      if (!S.chats) return;
+      S.chats = S.chats.filter(function (c) {
+        return (c.id === S.cid) || (c.msgs && c.msgs.length > 0);
+      });
+    }
+
+    function newChat() {
+      var curC = CC();
+      if (curC.msgs && curC.msgs.length) {
+        var f = curC.m

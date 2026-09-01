@@ -1,0 +1,175 @@
+function rd(preserveScroll) {
+      var chat = CC(), area = E('chatArea'), h = '', msgs = chat.msgs;
+      if (!msgs || !msgs.length) {
+        h += '<div style="margin-bottom:12px;background:#dcfce7;border:1px solid #86efac;color:#166534;padding:8px 14px;border-radius:10px;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:space-between;"><span>✨ 当前已处于全新空白对话 (ID: ' + esc(S.cid) + ')</span><button class="btn xs" onclick="newChat()">清空重置</button></div>';
+        if (S.mode === '短剧对标') {
+          h += renderBenchGuide();
+        } else if (S.mode === '短篇创作') {
+          h += '<div class="guide-msg"><div class="guide-title">🚀 短篇生产工作流 (V6)</div><p>按照 V6 规范，请根据当前项目资产选择下一步操作：</p>';
+          h += '<div class="preset-btns" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;">';
+          if (S.docInfos && S.docInfos.length > 0) {
+             h += '<span class="preset-btn" onclick="E(\'chatInput\').value=\'深度拆解爆文结构\';E(\'sendBtn\').click();">📖 深度拆解 (Skill 1)</span>';
+          }
+          if (S.sd && Object.keys(S.sd).length > 0) {
+             h += '<span class="preset-btn" onclick="E(\'chatInput\').value=\'设计全新故事大纲\';E(\'sendBtn\').click();">🎨 设计大纲 (Skill 2)</span>';
+             h += '<span class="preset-btn" onclick="E(\'chatInput\').value=\'规划章节细纲\';E(\'sendBtn\').click();">📜 规划章节 (Skill 3)</span>';
+             h += '<span class="preset-btn" onclick="E(\'chatInput\').value=\'撰写正文\';E(\'sendBtn\').click();">✍️ 撰写正文 (Skill 4)</span>';
+             h += '<span class="preset-btn" onclick="E(\'chatInput\').value=\'请对上一段文本进行润色修改\';E(\'sendBtn\').click();">✨ 润色修改 (Skill 6)</span>';
+          }
+          if (!(S.docInfos && S.docInfos.length > 0) && (!S.sd || Object.keys(S.sd).length === 0)) {
+              h += '<span style="font-size:12px;opacity:.7;">请在左侧上传对标爆文，或在下方直接输入创作需求。</span>';
+          }
+          h += '</div></div>';
+        } else if (S.mode === '剧本创作' || !S.mode || S.mode === '通用') {
+          h += '<div class="guide-msg"><div class="guide-title">🎨 剧本创作模式 · 智能分析与追问体验</div><p>请在下方聊天框直接输入你的创作想法或概述（如："我想写一部女扮男装的宫廷追女爽剧..."），发送后 AI 将深入分析并向你提出定向选项卡片供你确认方案。</p></div>';
+        } else {
+          h += '<div style="text-align:center;padding:60px 0;opacity:.4;font-size:14px;">👆 点击底部「对标」或「创作」开始或在输入框中自由对话 ✨</div>';
+        }
+        
+      if (S.multiSelectMode) {
+        var selCount = Object.keys(S.selectedMsgs).filter(function(k){return S.selectedMsgs[k];}).length;
+        h += '<div class="batch-bar"><span style="font-size:12px;font-weight:600">已选 ' + selCount + ' 条</span><button class="btn sm danger" onclick="deleteSelectedMsgs()">删除</button><button class="btn sm" onclick="toggleMultiSelect()">取消</button></div>';
+      }
+      area.innerHTML = h;
+        return;
+      }
+
+      // 🔴 方案 1 性能优化：消息超过 15 条时，开启 UI 视口切片渲染（不影响文件资产存盘与后端全量保存）
+      var batchBtn = '';
+      if (!S.multiSelectMode && msgs.length > 0) {
+        batchBtn = '<div style="text-align:right; margin-bottom:10px;"><button class="btn xs" onclick="toggleMultiSelect()">批量管理</button></div>';
+      }
+      /* h += batchBtn; MOVED TO BOTTOM */
+      var maxVisible = S.showAllMsgs ? msgs.length : 15;
+      var startIdx = Math.max(0, msgs.length - maxVisible);
+
+      if (startIdx > 0) {
+        var hiddenCount = startIdx;
+        h += '<div style="text-align:center;margin:6px 0 12px 0;"><button class="btn xs" onclick="S.showAllMsgs=true;rd();" style="background:var(--bg2);border:1px solid var(--border);color:var(--primary);font-weight:600;padding:6px 14px;border-radius:20px;">📜 已折叠更早的 ' + hiddenCount + ' 条历史消息 (点击加载全部对话)</button></div>';
+      } else if (S.showAllMsgs && msgs.length > 15) {
+        h += '<div style="text-align:center;margin:6px 0 12px 0;"><button class="btn xs" onclick="S.showAllMsgs=false;rd();" style="opacity:.6;padding:4px 10px;border-radius:14px;">收起更早消息</button></div>';
+      }
+
+      for (var i = startIdx; i < msgs.length; i++) {
+        var m = msgs[i];
+        if (!S.selectedMsgs) S.selectedMsgs = {};
+        h += '<div class="msg-wrap ' + (m.role === 'user' ? 'is-user ' : '') + (S.multiSelectMode ? 'multi-select' : '') + '">';
+        if (S.multiSelectMode) {
+          h += '<input type="checkbox" class="msg-checkbox" ' + (S.selectedMsgs[i] ? 'checked' : '') + ' onclick="toggleSelectMsg(' + i + ')">';
+        }
+        if (m.role === 'user') {
+          var imgHtml = '';
+          if (m.images && m.images.length) {
+              imgHtml = '<div style="margin-bottom:8px; display:flex; gap:8px; flex-wrap:wrap;">' + m.images.map(function(img){ return '<img src="'+img+'" style="max-height:150px; border-radius:8px; border:1px solid var(--border); box-shadow:0 2px 8px rgba(0,0,0,0.05);">'; }).join('') + '</div>';
+          }
+          if (S.edi === i) {
+            h += '<div class="msg user" style="width: 100%; max-width: 600px;"><div class="role" style="display:flex;justify-content:flex-end;margin-bottom:4px;font-size:12px;opacity:0.6;">编辑中...</div>' + imgHtml + '<textarea class="edit-textarea" id="editArea" style="width:100%; min-height:80px; padding:12px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text); font-family:inherit; resize:vertical; box-shadow: 0 2px 8px rgba(0,0,0,0.05);" oninput="this.style.height=\'auto\'; this.style.height=(this.scrollHeight)+\'px\';">' + esc(m.content) + '</textarea><div class="actions" style="margin-top:8px;display:flex;justify-content:flex-end;gap:8px;"><button class="btn sm primary" onclick="cfEd(' + i + ')">确认</button><button class="btn sm" onclick="S.edi=null;rd(true)">取消</button></div></div>';
+          } else {
+            h += '<div class="msg user"><div class="role" style="display:flex;justify-content:flex-end;margin-bottom:4px;"><button class="btn xs" onclick="S.edi=' + i + ';rd(true)" style="opacity:.4">✏️修改</button></div><div class="content">' + imgHtml + renderMarkdown(m.content) + '</div></div>';
+          }
+          h += '</div>'; // close msg-wrap
+          continue;
+        }
+        if (m.er) {
+          h += '<div class="err-box"><div style="font-weight:600;margin-bottom:4px;">生成失败</div><div>' + esc(m.content) + '</div>';
+          if (i === msgs.length - 1 && !S.gen) h += '<div style="margin-top:6px;"><button class="btn sm" onclick="rgn(' + i + ')">重新生成</button></div>';
+          h += '</div>';
+          h += '</div>'; // close msg-wrap
+          continue;
+        }
+
+        var rawContent = m.content || '';
+        var disp = rawContent;
+        if (S.mode === '剧本创作' || !S.mode || S.mode === '通用' || true) {
+          disp = disp.replace(/\[TEMPLATEJSON\][\s\S]*?\[\/TEMPLATEJSON\]/g, '');
+          // Hide V6 options JSON block & Save Project Memory
+          disp = disp.replace(/```json\s*(\{[\s\S]*?"(?:需要确认|step4_questions|create_questions|questions|need_save)"[\s\S]*?\})\s*```/g, function(match, inner) {
+             if (inner.indexOf('"need_save"') !== -1) {
+                 try {
+                     var parsed = JSON.parse(inner);
+                     if (parsed.need_save && i === msgs.length - 1 && !S.gen) {
+                         if (!S.sd) S.sd = {};
+                         Object.assign(S.sd, parsed);
+                         sv(); // Background save
+                     }
+                 } catch(e) {}
+                 return '__NEED_SAVE_MARKER__';
+             }
+             return '__INTERACTIVE_MARKER__';
+          });
+          disp = disp.replace(/(\{[\s\S]*?"(?:需要确认|step4_questions|create_questions|questions)"[\s\S]*?\})/g, function(match) {
+             if (match.indexOf('```') !== -1) return match; // skip if wrapped in code block
+             return '__INTERACTIVE_MARKER__';
+          });
+        } else {
+          disp = disp.replace(/\[TEMPLATEJSON\][\s\S]*?\[\/TEMPLATEJSON\]/g, '<span style="font-size:11px;opacity:.6;background:var(--bg);padding:1px 6px;border-radius:4px;display:inline-block;margin:2px 0;">📋 (模板数据已解析)</span>');
+        }
+
+        var thR = /<(?:think|thinking|thought)>([\s\S]*?)(?:<\/(?:think|thinking|thought)>|$)/gi, thH = '', tm;
+        while ((tm = thR.exec(disp)) !== null) {
+          if (tm[1]) thH += tm[1] + '\n';
+        }
+        disp = disp.replace(/<(?:think|thinking|thought)>[\s\S]*?(?:<\/(?:think|thinking|thought)>|$)/gi, '').trim();
+
+        var isGenerating = m.s || (S.gen && i === msgs.length - 1);
+
+        h += '<div class="msg assistant"><div class="role">🤖 助手</div>';
+        if (thH.trim()) h += '<details class="think-box"><summary>🧠 思考过程 (点击展开/折叠)</summary><div style="margin-top:6px;opacity:.95;">' + renderMarkdown(thH.trim()) + '</div></details>';
+        if (isGenerating) h += '<div class="think-box">🤔 AI 正在思考中<div class="dots"><span></span><span></span><span></span></div></div>';
+        var panelHtml = '';
+        // INLINE PANEL
+        if (i === msgs.length - 1 && !m.s && !S.gen && !m.handled) {
+            var pData = tryParseS4();
+            if (pData && (pData.step === 'create_qa_ready' || pData.step4_questions || pData.questions)) {
+                var pQs = pData.step4_questions || pData.questions;
+                if (pQs && pQs.length) {
+                    panelHtml += '<div class="panel scroll-panel" style="background:var(--bg2); border:1px solid var(--primary); border-radius:12px; padding:16px; margin-top:16px; box-shadow:var(--shadow); max-height:none;">';
+                    panelHtml += '<div style="font-weight:600;font-size:14px;color:var(--primary);margin-bottom:12px;display:flex;align-items:center;gap:6px;">⏸️ 💬 需要你的确认</div>';
+                    for (var qi = 0; qi < pQs.length; qi++) {
+                      var q = pQs[qi];
+                      panelHtml += '<div class="q-block" style="margin-bottom:12px;"><div style="font-weight:600;font-size:13px;margin:6px 0;color:var(--text);">' + esc(q.question) + '</div>';
+                      if (q.options && q.options.length) {
+                        for (var oi = 0; oi < q.options.length; oi++) {
+                          var opt = q.options[oi], sel = (oi === 0);
+                          panelHtml += '<div class="q-opt ' + (sel ? 'selected' : '') + '" onclick="selectOpt(this, ' + qi + ', \'' + esc(opt).replace(/'/g, "\\'") + '\')" style="background:var(--card);border:1px solid ' + (sel ? 'var(--primary)' : 'var(--border)') + ';margin-bottom:6px;"><input type="radio" name="cq_' + qi + '" value="' + esc(opt).replace(/"/g, '&quot;') + '" ' + (sel ? 'checked' : '') + '> <span>' + esc(opt) + '</span></div>';
+                        }
+                      }
+                      panelHtml += '<input type="text" class="input-box q-custom" id="q_custom_' + qi + '" placeholder="请输入你的自定义要求..." style="display:none;margin-top:6px;"></div>';
+                    }
+                    panelHtml += '<button class="btn primary full" onclick="confirmCreateQA()" style="margin-top:10px;">确认选项，提交AI处理</button></div>';
+                }
+            }
+        }
+
+        h += '<div class="content" id="msg_' + (m.id || '') + '">' + renderMarkdown(disp).replace(/__NEED_SAVE_MARKER__/g, '<span style="font-size:12px;opacity:.6;background:var(--bg2);padding:2px 8px;border-radius:4px;display:inline-block;margin:4px 0;color:var(--primary);">💾 项目资产已解析并保存到系统及项目文件</span>').replace(/__INTERACTIVE_MARKER__/g, '<span style="font-size:12px;opacity:.6;background:var(--bg2);padding:2px 8px;border-radius:4px;display:inline-block;margin:4px 0;">✨ 交互选项卡片已生成</span>') + panelHtml + '</div>';
+
+        if (i === msgs.length - 1 && !m.s && !S.gen) {
+          h += '<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;">';
+          h += '<button class="btn sm" onclick="rgn(' + i + ')">重新生成</button>';
+          if (S.mode === '短剧对标' && S.benchStep <= 8) {
+            var nextPrompt = STEP_PROMPTS[S.benchStep];
+            if (nextPrompt) {
+              h += '<button class="btn sm primary" onclick="E(\'chatInput\').value=\'' + esc(nextPrompt).replace(/'/g, "\\'") + '\';E(\'chatInput\').focus();">继续步骤' + S.benchStep + ' →</button>';
+            }
+          }
+          h += '</div>';
+        }
+        h += '</div>'; // close msg assistant
+        h += '</div>'; // close msg-wrap
+      }
+      
+      if (S.multiSelectMode) {
+        var selCount = Object.keys(S.selectedMsgs).filter(function(k){return S.selectedMsgs[k];}).length;
+        h += '<div class="batch-bar"><span style="font-size:12px;font-weight:600">已选 ' + selCount + ' 条</span><button class="btn sm danger" onclick="deleteSelectedMsgs()">删除</button><button class="btn sm" onclick="toggleMultiSelect()">取消</button></div>';
+      }
+      var oldScroll = area.scrollTop;
+      area.innerHTML = h;
+      if (preserveScroll === true) {
+        area.scrollTop = oldScroll;
+      } else {
+        area.scrollTop = area.scrollHeight;
+      }
+      rP();
+    }
+
+    

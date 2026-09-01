@@ -1,0 +1,17 @@
+function rd() {
+      var chat = CC(), area = E('chatArea'), h = '', msgs = chat.msgs;
+      if (!msgs || !msgs.length) {
+        h += '<div style="margin-bottom:12px;background:#dcfce7;border:1px solid #86efac;color:#166534;padding:8px 14px;border-radius:10px;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:space-between;"><span>✨ 当前已处于全新空白对话 (ID: ' + esc(S.cid) + ')</span><button class="btn xs" onclick="newChat()">清空重置</button></div>';
+        if (S.mode === '短剧对标') {
+          h += renderBenchGuide();
+        } else if (S.mode === '剧本创作') {
+          h += '<div class="guide-msg"><div class="guide-title">🎨 剧本创作模式 · 智能分析与追问体验</div><p>请在下方聊天框直接输入你的创作想法或概述（如："我想写一部女扮男装的宫廷追女爽剧..."），发送后 AI 将深入分析并向你提出定向选项卡片供你确认方案。</p></div>';
+        } else {
+          h += '<div style="text-align:center;padding:60px 0;opacity:.4;font-size:14px;">👆 点击底部「对标」或「创作」开始或在输入框中自由对话 ✨</div>';
+        }
+        
+      if (S.multiSelectMode) {
+        var selCount = Object.keys(S.selectedMsgs).filter(function(k){return S.selectedMsgs[k];}).length;
+        h += '<div class="batch-bar"><span style="font-size:12px;font-weight:600">已选 ' + selCount + ' 条</span><button class="btn sm danger" onclick="deleteSelectedMsgs()">删除</button><button class="btn sm" onclick="toggleMultiSelect()">取消</button></div>';
+      }
+      area.innerHTML = h;

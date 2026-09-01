@@ -1,0 +1,35 @@
+2636: rP();
+2637: } else {
+2638: rd();
+2639: }
+2640: } else if (d.type === 'done') {
+2641: var m = chat.msgs.find(function (x) { return x.id === pid; });
+2642: if (m) { delete m.s; delete m.id; m.content = full; }
+2643: 
+2644: var sdir = d.session_dir || d.sessiondir;
+2645: if (sdir) S.sd = sdir;
+2646: 
+2647: if (S.mode === '短剧对标' && S.benchStep === 3) {
+2648: advanceBenchStep(4);
+2649: S.s4 = false;
+2650: }
+2651: 
+2652: S.step4Questions = null;
+2653: if (d.template_json) {
+2654: S.step4Questions = d.template_json;
+2655: var curC = CC();
+2656: curC.step4Questions = d.template_json;
+2657: var s = d.template_json.step;
+2658: if (s === 'step4_ready') S.s4 = false;
+2659: else if (s === 'step7_format') S.s7 = false;
+2660: else if (s === 'batch_complete') { S.bi = d.template_json.batch_index || 1; S.tb = d.template_json.total_batches || 0; }
+2661: }
+2662: 
+2663: var dyn = tryParseS4();
+2664: if (dyn && (dyn.step === 'step4_ready' || dyn.step4_questions || dyn.questions)) {
+2665: if (S.mode === '短剧对标') {
+2666: S.s4 = false;
+2667: advanceBenchStep(4);
+2668: }
+2669: }
+2670: 

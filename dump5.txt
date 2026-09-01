@@ -1,0 +1,60 @@
+2471: }
+2472: panelHtml += '<button class="btn primary full" onclick="confirmCreateQA()" style="margin-top:10px;">确认选项，提交AI处理</button></div>';
+2473: }
+2474: }
+2475: }
+2476: 
+2477: h += '<div class="content" id="msg_' + (m.id || '') + '">' + renderMarkdown(disp).replace(/__NEED_SAVE_MARKER__/g, '<span style="font-size:12px;opacity:.6;background:var(--bg2);padding:2px 8px;border-radius:4px;display:inline-block;margin:4px 0;color:var(--primary);">💾 项目资产已解析并保存到系统及项目文件</span>').replace(/__INTERACTIVE_MARKER__/g, '<span style="font-size:12px;opacity:.6;background:var(--bg2);padding:2px 8px;border-radius:4px;display:inline-block;margin:4px 0;">✨ 交互选项卡片已生成</span>') + panelHtml + '</div>';
+2478: 
+2479: if (i === msgs.length - 1 && !m.s && !S.gen) {
+2480: h += '<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;">';
+2481: h += '<button class="btn sm" onclick="rgn(' + i + ')">重新生成</button>';
+2482: if (S.mode === '短剧对标' && S.benchStep <= 8) {
+2483: var nextPrompt = STEP_PROMPTS[S.benchStep];
+2484: if (nextPrompt) {
+2485: h += '<button class="btn sm primary" onclick="E(\'chatInput\').value=\'' + esc(nextPrompt).replace(/'/g, "\\'") + '\';E(\'chatInput\').focus();">继续步骤' + S.benchStep + ' →</button>';
+2486: }
+2487: }
+2488: h += '</div>';
+2489: }
+2490: h += '</div>'; // close msg assistant
+2491: h += '</div>'; // close msg-wrap
+2492: }
+2493: 
+2494: if (S.multiSelectMode) {
+2495: var selCount = Object.keys(S.selectedMsgs).filter(function(k){return S.selectedMsgs[k];}).length;
+2496: h += '<div class="batch-bar"><span style="font-size:12px;font-weight:600">已选 ' + selCount + ' 条</span><button class="btn sm danger" onclick="deleteSelectedMsgs()">删除</button><button class="btn sm" onclick="toggleMultiSelect()">取消</button></div>';
+2497: }
+2498: var oldScroll = area.scrollTop;
+2499: area.innerHTML = h;
+2500: if (preserveScroll === true) {
+2501: area.scrollTop = oldScroll;
+2502: } else {
+2503: area.scrollTop = area.scrollHeight;
+2504: }
+2505: rP();
+2506: }
+2507: 
+2508: function renderBenchGuide() {
+2509: var h = '<div class="guide-msg">';
+2510: h += '<div class="guide-title">🔬 短剧对标模式 · 8步流程</div>';
+2511: h += '<p style="margin-bottom:8px;">此模式将引导你完成：上传参考剧本 → 拆解分析 → 提取模板 → 仿写方案 → 生成仿写剧本。</p>';
+2512: h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;font-size:12px;">';
+2513: for (var i = 0; i < BENCH_STEPS.length; i++) {
+2514: var s = BENCH_STEPS[i], isCurrent = (s.id === S.benchStep);
+2515: h += '<div style="padding:4px 0;' + (isCurrent ? 'color:var(--primary);font-weight:700;' : 'opacity:.7;') + '">' + (isCurrent ? '👉 ' : '') + s.icon + ' Step' + s.id + ': ' + s.label + '</div>';
+2516: }
+2517: h += '</div>';
+2518: h += '<div style="margin-top:10px;padding-top:8px;border-top:1px solid #e5e7eb;">';
+2519: h += '<span style="font-weight:600;">📍 当前：Step ' + S.benchStep + ' - ' + BENCH_STEPS[S.benchStep - 1].label + '</span> ';
+2520: h += '<span style="font-size:12px;opacity:.7;">— ' + getStepTip(S.benchStep) + '</span>';
+2521: h += '<div class="preset-btns">';
+2522: if (S.benchStep === 1) {
+2523: h += '<span class="preset-btn" onclick="E(\'fileInput\').click()">📁 上传参考剧本</span>';
+2524: h += '<span class="preset-btn" onclick="E(\'chatInput\').value=\'请帮我对标分析我上传的参考剧本，先确认已收到并阅读完毕。\';E(\'chatInput\').focus();">📤 已上传，开始分析</span>';
+2525: } else {
+2526: var p = STEP_PROMPTS[S.benchStep];
+2527: if (p) h += '<span class="preset-btn" onclick="E(\'chatInput\').value=\'' + esc(p).replace(/'/g, "\\'") + '\';E(\'chatInput\').focus();">🚀 执行 Step ' + S.benchStep + '</span>';
+2528: }
+2529: h += '</div></div></div>';
+2530: return h;

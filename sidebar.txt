@@ -1,0 +1,29 @@
+<div class="sidebar">
+    <h3>🎬 创作工坊</h3>
+
+    
+
+    
+
+    
+
+
+
+
+    
+
+    <div>
+      <h4>📁 参考脚本上传 (.docx)</h4>
+      <input type="file" id="fileInput" accept=".docx" multiple style="display:none" onchange="handleFileUpload(this)">
+      <button class="btn full" onclick="E('fileInput').click()">选择文件 (支持Ctrl/Cmd多选)</button>
+      <div id="fileInfo" style="font-size:12px;opacity:.7;margin-top:6px;">未选择文件</div>
+    </div>
+
+    <div>
+      <h4>📁 生成文件</h4>
+      <div id="projectFiles" style="font-size:12px;max-height:140px;overflow-y:auto;">暂无</div>
+    </div>
+  </div>
+
+  
+  

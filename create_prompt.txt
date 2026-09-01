@@ -1,0 +1,740 @@
+CREATE_PROMPT = r'''
+你是顶级竖屏短剧编剧智能体。必须严格按以下方法论从零到一完成短剧剧本创作。
+
+核心理论：
+情绪ABC短剧变形：情绪 = 视觉符号(B) + 冲击动作(A) + 秒级节奏(T)
+🔴【全流程创作标准化 4 步工作流】：
+- Step 1: 【需求与核心人设确认】-> 互动面板梳理人物设定、矛盾冲突与故事主线；
+- Step 2: 【规格与参数强制确认（关键步骤）】-> 在进入正文创作前，必须向用户确认【目标总集数】、【单集时长与字数规格】、【制作与画面格式(如真人实拍/AI仿真人等)】，并输出 [TEMPLATEJSON] 规格确认交互选项卡！
+- Step 3: 【分集大纲与前十集集纲规划】-> 规划整体故事脉络与付费卡点；
+- Step 4: 【逐轮分批正文生成】-> 严格按用户确认的规格参数（集数/字数/时长/格式），每轮 5 集分批产出高质量剧本正文。
+
+🔴【不同制作格式的差异化创作规则（严格遵守）】：
+在 Step 2 确认了用户的制作格式后，后续大纲和正文创作必须严格遵循以下差异化要求：
+【如果用户选择“真人实拍剧”】：
+- 走“情绪驱动”路线，剧本可以适当“留白”。
+- 只需要写意图和台词，把表演空间留给演员，例如写“她强忍着没哭”或“两人对视”，不必逐帧描述微表情。
+- 潜台词、情绪起伏靠演员二度创作，台词可以碎片化、口语化、带语气词，对手戏允许即兴火花。
+- 物理镜头语言是真实的，复杂调度（长镜头、多人走位）完全可行。
+
+【如果用户选择“AI仿真人剧 (AIGC/数字人)”】：
+- 走“视觉指令”路线，剧本必须“写死”！
+- AI没有“现场”且不会自动补戏，没写就=没有！
+- 把“潜台词”全部翻译成可见动作：绝不能写“她内心绝望”，必须写“她盯着地上的碎片，缓缓蹲下，指尖抖着去捡”。
+- 情绪转折必须外化标注清楚（如：平静->愤怒），否则AI生成结果平淡。
+- 镜头设计必须稳定（必须多用固定/慢推/近景表情戏），一定要避开快速运镜、复杂肢体、精细手部动作、多人打斗交互（AI容易崩）。
+- 一致性是最大命门：角色造型、服装、场景必须在剧本里反复固化描述，给生成工具当“锚点”。
+
+🔴【交互面板卡片自问清单与铁律（按需精准触发）】：
+在决定是否输出 [TEMPLATEJSON] 面板前，请严格按以下顺序自问：
+1. 这个信息我能从已有上下文推断吗？ → 能，就不问。
+2. 这个决策有明显更优的默认答案吗？ → 有，就用默认值并告知，不问。
+3. 选项是否少于三个的琐碎小事？ → 是，直接替用户决定，不问。
+4. 这个动作不可逆或影响面大（改动>3个文件/覆盖/重构）吗？ → 是，弹确认卡片（需要授权）。
+5. 任务步骤多（≥3步）、跨多文件且需要展示进度吗？ → 是，弹进度面板。
+6. 剩下还在纠结的、真正需要用户拍板的分叉（方案选一、缺少必需信息、方案成型需点头） → 才弹【提问弹窗】。
+
+满足上述【需要提问或确认】的条件时：
+1. 必须在回答输出 [TEMPLATEJSON] 面板供用户交互，严禁干巴巴地光提问！
+2. 每一个要确认的问题，写为 questions 数组中的一个独立元素，配备具体的选项（options）以及“其他(自定义输入)”选项。
+3. 不弹面板的情况（静默执行）：有合理默认值、1-2步能完成的单点修改、用户已说明的信息。
+4. 🔴【严禁隔离铁律】：[TEMPLATEJSON] 内部绝对禁止包含任何总结性文字！总结性文字只能写在外部。
+
+通用规格确认 [TEMPLATEJSON] 范例（供 Step 2 参考）：
+[TEMPLATEJSON]
+{
+  "step": "create_qa_ready",
+  "questions": [
+    {
+      "field": "total_episodes",
+      "question": "1. 目标总集数确认：你计划创作多少集的短剧？(单选)",
+      "options": [
+        "60集 (标准短剧快节奏)",
+        "80集 (爆款推荐：1-10期待-11-60压抑-61-80爆发)",
+        "100集 (长篇爆款杠杆)",
+        "其他 (请在下方输入框补充说明)"
+      ]
+    },
+    {
+      "field": "episode_length",
+      "question": "2. 单集时长与字数规格：你希望每集的字数与时长标准是？(单选)",
+      "options": [
+        "每集1分钟 (400-500字，高频爽点快节奏)",
+        "每集1.5-2分钟 (600-800字，信息量充沛/漫剧标配)",
+        "每集2-3分钟 (1000-1200字，长镜头戏份)",
+        "其他 (请在下方输入框补充说明)"
+      ]
+    },
+    {
+      "field": "production_format",
+      "question": "3. 制作与画面格式：该剧本将采用哪种形式制作？(这决定了剧本的描写颗粒度)",
+      "options": [
+        "真人实拍剧 (注重情绪留白，给演员表演空间)",
+        "AI仿真人剧/AIGC (动作写死，情绪外化，近景为主)",
+        "解说漫/动态漫",
+        "其他 (请在下方输入框补充说明)"
+      ]
+    }
+  ]
+}
+[/TEMPLATEJSON]
+''' + SCRIPT_FORMAT_RULE + OUTPUT_CLEAN_RULE
+
+BENCH_PROMPT = r"""
+你是顶级短剧对标与仿写智能体，擅长爆款短剧的结构拆解、套路分析、节奏把控与精准仿写。
+
+=== Step 1-2：逐集深度拆解 ===
+
+对每一集，用表格覆盖以下全部24个维度（缺一不可）：
+
+集数 场景 主要出场人物 大事件 小事件 主线付费卡点 本集钩子 台词亮点 人物塑造 亮点 本集作用 情绪类型 情绪强度(1-10) 爽点类型 爽点强度(1-10) 冲突类型 悬念设置 反转标记(是/否) 信息密度(高/中/低) 节奏评估 名场面标记(是/否) 完播率预测因子(1-10) 正文字数 台词字数 画面描述字数
+
+=== Step 3：提取7类可复用模板 ===
+
+拆解完成后，必须提取以下7类模板（每类至少3-5行具体内容）：
+1.钩子节奏模板 2.爽点节奏模板 3.情绪曲线模板 4.卡点位置模板 5.冲突升级模板 6.人设建立模板 7.反转设计模板
+
+=== Step 4：仿写思考 -> 深度绑定本剧剧情的个性化结构提问 ===
+
+你必须先输出「仿写思考」(200-300字纯文本)。末尾必须输出 [TEMPLATEJSON] 标签块！
+
+=== Step 5：改编方案 ===
+=== Step 6：大纲+小传+梗概 ===
+=== Step 7：剧本格式确认 ===
+=== Step 8：分批生成剧本（硬性要求）===
+""" + SCRIPT_FORMAT_RULE + OUTPUT_CLEAN_RULE
+
+def extract_template_json(text: str):
+    m = re.search(r'\[TEMPLATEJSON\]\s*(.*?)\s*\[/TEMPLATEJSON\]', text, re.DOTALL)
+    if m:
+        try: return json.loads(m.group(1))
+        except: pass
+    m2 = re.search(r'```json\s*(.*?)\s*```', text, re.DOTALL)
+    if m2:
+        try: return json.loads(m2.group(1))
+        except: pass
+    return None
+
+def extract_smart_filename(content: str, messages: list = None, user_input: str = "", wmode: str = "") -> str:
+    drama_title = ""
+    
+    # Clean think blocks first to avoid extracting titles from internal thoughts
+    clean_content = re.sub(r'<thinking>[\s\S]*?(?:</thinking>|$)', '', content, flags=re.DOTALL | re.IGNORECASE)
+    clean_content = re.sub(r'<think>[\s\S]*?(?:</think>|$)', '', clean_content, flags=re.DOTALL | re.IGNORECASE).strip()
+    
+    # Strategy 1: Look for explicit Markdown headers containing 《》
+    header_match = re.search(r'^#+\s*.*?《([^》]+)》', clean_content, re.MULTILINE)
+    if header_match:
+        drama_title = header_match.group(1)
+        
+    # Strategy 2: Look for explicit naming declarations
+    if not drama_title:
+        explicit = re.search(r'(?:剧名|片名|项目名称|剧本名称)[\s:：]*《([^》]+)》', clean_content)
+        if explicit:
+            drama_title = explicit.group(1)
+            
+    # Strategy 3: Fallback to the first 《》 in the clean generated content that is NOT the example title
+    if not drama_title:
+        title_matches = re.findall(r'《([^》]+)》', clean_content)
+        if title_matches:
+            # If the user explicitly provided an example in their input like "参考《xxx》", we should ignore it
+            ignore_titles = []
+            if user_input:
+                ig_match = re.findall(r'(?:参考|仿照|例子|示例)[^《]*《([^》]+)》', str(user_input))
+                ignore_titles.extend(ig_match)
+            
+            for tm in title_matches:
+                if tm not in ignore_titles:
+                    drama_title = tm
+                    break
+            
+            if not drama_title:
+                drama_title = title_matches[0]
+
+    # Strategy 4: Fallback to user input
+    if not drama_title and user_input:
+        tm = re.findall(r'《([^》]+)》', str(user_input))
+        if tm:
+            drama_title = tm[-1] # User usually puts their target title last
+
+    # Strategy 5: Fallback to history
+    if not drama_title and messages:
+        for m in reversed(messages):
+            mc = m.get("content", "") if isinstance(m, dict) else str(m)
+            tm = re.findall(r'《([^》]+)》', mc)
+            if tm:
+                drama_title = tm[-1]
+                break
+
+    if drama_title:
+        drama_title = re.sub(r'[\\/:*?"<>|\r\n\t]', '', drama_title).strip()
+    return drama_title
+
+def process_document_saving(content: str, session_dir: str, messages: list = None, user_input: str = "", wmode: str = "") -> Optional[str]:
+    if not content:
+        return None
+
+    # 1. 彻底去除 <thinking>...</thinking> 与 <think>...</think>
+    text = re.sub(r'<thinking>[\s\S]*?(?:</thinking>|$)', '', content, flags=re.DOTALL | re.IGNORECASE).strip()
+    text = re.sub(r'<think>[\s\S]*?(?:</think>|$)', '', text, flags=re.DOTALL | re.IGNORECASE).strip()
+    text = re.sub(r'\[TEMPLATEJSON\][\s\S]*?(?:\[/TEMPLATEJSON\]|$)', '', text, flags=re.DOTALL | re.IGNORECASE).strip()
+    text = re.sub(r'```json[\s\S]*?```', '', text, flags=re.DOTALL | re.IGNORECASE).strip()
+
+    # 2. 严格识别正式资产头部
+    has_script = bool(re.search(r'^(?:#+.*|【.*)?(?:第[一二三四五六七八九十0-9]+集|1-5集剧本|6-10集剧本|分集剧本正文)', text, re.MULTILINE))
+    has_character = bool(re.search(r'^(?:#+.*|【.*)?(?:人物小传|角色设定|人设小传|角色小传)', text, re.MULTILINE))
+    has_outline = bool(re.search(r'^(?:#+.*|【.*)?(?:故事大纲|剧情大纲|三幕式大纲)', text, re.MULTILINE))
+    has_ep_outline = bool(re.search(r'^(?:#+.*|【.*)?(?:前十集集纲|分集集纲|前10集集纲)', text, re.MULTILINE))
+    has_analysis = bool(re.search(r'^(?:#+.*|【.*)?(?:对标拆解分析方案|Step1-3拆解分析|Step5-6方案大纲|对标拆解报告)', text, re.MULTILINE))
+
+    doc_type = ""
+    label_suffix = ""
+
+    if has_script and ("场次：" in text or "场次" in text or "▲" in text or "第一集" in text or "第1集" in text):
+        doc_type = "script"
+        ep_range = re.findall(r'(?:第|\b)([0-9]+-[0-9]+)(?:集|\b)', text)
+        if ep_range:
+            label_suffix = f"第{ep_range[0]}集剧本正文"
+        else:
+            label_suffix = "剧本正文"
+    elif has_ep_outline:
+        doc_type = "episode_outline"
+        label_suffix = "前十集集纲"
+    elif has_outline:
+        doc_type = "outline"
+        label_suffix = "故事大纲"
+    elif has_character:
+        doc_type = "character"
+        label_suffix = "人物小传与角色设定"
+    elif has_analysis:
+        doc_type = "analysis"
+        label_suffix = "对标拆解分析方案"
+
+    if not doc_type:
+        return None
+
+    lines = text.splitlines()
+    clean_lines = []
+    in_body = False
+
+    for line in lines:
+        stripped = line.strip()
+        if not in_body:
+            if re.search(r'^(?:#+.*|【.*)?(?:第[0-9一二三四五六七八九十]+集|第一集|第1集|人物小传|角色小传|角色设定|故事大纲|前十集集纲|对标拆解|Step)', stripped):
+                in_body = True
+
+        if in_body:
+            if any(k in stripped for k in ["集要点:", "集要点：", "字数自算", "在1000以内", "你先审", "告诉我你的想法", "选完（或告诉我", "我立刻按同样", "写完", "感觉对吗", "埋点说明", "说明：", "接下来", "还需要", "字数约", "以上就是", "符合你的", "第六集写完", "调整后的", "修改后的", "修改说明", "三重收获", "需要我"]): break
+            if stripped == "---" or stripped.startswith("--- "): break
+            if any(stripped.startswith(k) for k in ["数一下字数", "符合要求", "请确认是否", "你定一下", "请在下方说明"]):
+                continue
+            clean_lines.append(line)
+
+    cleaned_body = "\n".join(clean_lines).strip()
+    if len(cleaned_body) < 150:
+        return None
+
+    drama_title = extract_smart_filename(content, messages, user_input, wmode)
+    if drama_title and label_suffix:
+        final_filename = f"{drama_title}_{label_suffix}"
+    elif drama_title:
+        final_filename = f"{drama_title}_{label_suffix or '创作文档'}"
+    else:
+        final_filename = f"短剧_{label_suffix or '创作文档'}"
+
+    safe_name = re.sub(r'[\\/:*?"<>|\r\n\t\s]+', '_', final_filename).strip('_')
+    filepath = os.path.join(session_dir, f"{safe_name}.docx")
+    md_filepath = os.path.join(session_dir, f"{safe_name}.md")
+
+    try:
+        with open(md_filepath, 'w', encoding='utf-8') as f:
+            f.write(cleaned_body)
+
+        doc = docx.Document()
+        doc.add_heading(final_filename, 0)
+        for p in cleaned_body.split('\n'):
+            if p.strip():
+                doc.add_paragraph(p.strip())
+        doc.save(filepath)
+        return safe_name + ".docx"
+    except Exception as e:
+        print("Save docx error:", e)
+        return None
+
+def parse_docx(file_bytes: bytes) -> str:
+    try:
+        doc = docx.Document(io.BytesIO(file_bytes))
+        paras = [p.text for p in doc.paragraphs if p.text.strip()]
+        if not paras:
+            for table in doc.tables:
+                for row in table.rows:
+                    rt = " ".join([c.text.strip() for c in row.cells if c.text.strip()])
+                    if rt: paras.append(rt)
+        return "\n".join(paras)
+    except Exception:
+        return ""
+
+class TokenRequest(BaseModel):
+    token: str
+
+class SyncRequest(BaseModel):
+    token: str
+    chats: List[dict]  # 接收完整的旧版 S.chats 列表
+
+class GenerateResponse(BaseModel):
+    messages: List[dict]
+    title: str = "新对话"
+    api_key: Optional[str] = ""
+    apikey: Optional[str] = ""
+    api_url: Optional[str] = "https://yunwu.ai/v1"
+    apiurl: Optional[str] = ""
+    model: str = "gpt-4o"
+
+class ChatRequest(BaseModel):
+    token: Optional[str] = ""
+    api_key: Optional[str] = ""
+    apikey: Optional[str] = ""
+    api_url: Optional[str] = "https://yunwu.ai/v1"
+    apiurl: Optional[str] = ""
+    model: str = "gpt-4o"
+    work_mode: Optional[str] = "通用"
+    workmode: Optional[str] = "通用"
+    messages: list = []
+    user_input: Optional[str] = ""
+    userinput: Optional[str] = ""
+    doc_text: Optional[str] = ""
+    doctext: Optional[str] = ""
+    session_id: Optional[str] = ""
+    sessionid: Optional[str] = ""
+    cid: Optional[str] = ""
+
+class FetchModelsRequest(BaseModel):
+    api_key: Optional[str] = ""
+    apikey: Optional[str] = ""
+    api_url: Optional[str] = "https://yunwu.ai/v1"
+    apiurl: Optional[str] = ""
+
+# 注册与登录 API
+@app.post("/api/auth/register")
+async def register(req: AuthRequest):
+    u = req.username.strip().lower()
+    p = req.password.strip()
+    if not u or not p:
+        return {"status": "error", "message": "用户名和密码不能为空"}
+    if len(u) < 3 or len(p) < 4:
+        return {"status": "error", "message": "用户名至少3位，密码至少4位"}
+    
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    try:
+        pw_h = hash_pw(p)
+        c.execute("INSERT INTO users (username, password_hash, created_at) VALUES (?, ?, ?)",
+                  (u, pw_h, int(time.time())))
+        user_id = c.lastrowid
+        token = secrets.token_hex(16)
+        c.execute("INSERT INTO user_tokens (token, user_id, username, created_at) VALUES (?, ?, ?, ?)",
+                  (token, user_id, u, int(time.time())))
+        conn.commit()
+        conn.close()
+        return {"status": "ok", "token": token, "username": u, "user_id": user_id}
+    except sqlite3.IntegrityError:
+        conn.close()
+        return {"status": "error", "message": "该用户名已存在，请直接登录"}
+
+@app.post("/api/auth/login")
+async def login(req: AuthRequest):
+    u = req.username.strip().lower()
+    p = req.password.strip()
+    pw_h = hash_pw(p)
+    
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("SELECT id, username FROM users WHERE username = ? AND password_hash = ?", (u, pw_h))
+    row = c.fetchone()
+    if not row:
+        conn.close()
+        return {"status": "error", "message": "用户名或密码错误"}
+    
+    user_id = row[0]
+    username = row[1]
+    token = secrets.token_hex(16)
+    c.execute("INSERT INTO user_tokens (token, user_id, username, created_at) VALUES (?, ?, ?, ?)",
+              (token, user_id, username, int(time.time())))
+    conn.commit()
+    conn.close()
+    return {"status": "ok", "token": token, "username": username, "user_id": user_id}
+
+@app.get("/api/auth/me")
+async def get_me(token: Optional[str] = Query(None), authorization: Optional[str] = Header(None)):
+    user = get_current_user_info(token, authorization)
+    return {"status": "ok", "user": user}
+
+@app.post("/api/history/delete/{session_id}")
+async def delete_history(session_id: str, req: TokenRequest, authorization: Optional[str] = Header(None)):
+    user = get_current_user_info(req.token, authorization)
+    username = user["username"]
+    
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("DELETE FROM user_sessions WHERE session_id = ? AND username = ?", (session_id, username))
+    conn.commit()
+    conn.close()
+    
+    session_dir, _ = get_user_session_dir(username, session_id)
+    if os.path.exists(session_dir):
+        import shutil
+        shutil.rmtree(session_dir, ignore_errors=True)
+        
+    return {"status": "ok"}
+
+@app.post("/api/history/sync")
+async def sync_history(req: SyncRequest, authorization: Optional[str] = Header(None)):
+    user = get_current_user_info(req.token, authorization)
+    username = user["username"]
+    user_id = user["user_id"]
+    
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    
+    success_count = 0
+    for chat in req.chats:
+        session_id = chat.get("id")
+        title = chat.get("title", "对话")
+        mode = chat.get("mode", "")
+        msgs = chat.get("msgs", [])
+        if not session_id or not msgs:
+            continue
+            
+        session_dir, safe_session = get_user_session_dir(username, session_id)
+        os.makedirs(session_dir, exist_ok=True)
+        history_file = os.path.join(session_dir, "history.json")
+        
+        try:
+            with open(history_file, 'w', encoding='utf-8') as f:
+                json.dump(msgs, f, ensure_ascii=False, indent=2)
+                
+            c.execute('''
+            INSERT OR REPLACE INTO user_sessions (session_id, user_id, username, title, mode, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?)
+            ''', (safe_session, user_id, username, title, mode, int(time.time())))
+            success_count += 1
+        except Exception as e:
+            print(f"Sync error for {session_id}: {e}")
+            
+    conn.commit()
+    conn.close()
+    return {"status": "ok", "synced_count": success_count}
+
+@app.get("/api/history/list")
+async def list_history_sessions(token: Optional[str] = Query(None), authorization: Optional[str] = Header(None)):
+    user = get_current_user_info(token, authorization)
+    username = user["username"]
+    
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("SELECT session_id, title, mode, updated_at FROM user_sessions WHERE username = ? ORDER BY updated_at DESC", (username,))
+    rows = c.fetchall()
+    conn.close()
+    
+    sessions = []
+    for r in rows:
+        sessions.append({
+            "session_id": r[0],
+            "title": r[1] or "短剧对标会话",
+            "mode": r[2] or "通用",
+            "updated_at": r[3]
+        })
+    return {"status": "ok", "sessions": sessions}
+
+@app.get("/api/history/detail/{session_id}")
+async def get_history_detail(session_id: str, token: Optional[str] = Query(None), authorization: Optional[str] = Header(None)):
+    user = get_current_user_info(token, authorization)
+    username = user["username"]
+    
+    session_dir, safe_session = get_user_session_dir(username, session_id)
+    history_file = os.path.join(session_dir, "history.json")
+    
+    chat_messages = []
+    if os.path.exists(history_file):
+        try:
+            with open(history_file, 'r', encoding='utf-8') as f:
+                chat_messages = json.load(f)
+        except Exception:
+            chat_messages = []
+            
+    files = []
+    if os.path.exists(session_dir):
+        all_f = os.listdir(session_dir)
+        all_f.sort(key=lambda f: os.path.getmtime(os.path.join(session_dir, f)), reverse=True)
+        for f in all_f:
+            if f.endswith('.docx') or f.endswith('.txt'):
+                if not any(k in f for k in ["Step1-3", "Step5-6", "拆解分析", "大纲方案"]):
+                    files.append({"name": f, "path": f"{username}/{safe_session}/{f}"})
+                    
+    return {"status": "ok", "session_id": safe_session, "messages": chat_messages, "files": files}
+
+@app.post("/api/upload")
+async def upload_file(file: UploadFile = File(...)):
+    if not file.filename.lower().endswith('.docx'):
+        return {"error": "仅支持 .docx 文件"}
+    content = await file.read()
+    text = parse_docx(content)
+    return {"filename": file.filename, "word_count": len(text), "text": text}
+
+@app.post("/api/fetch-models")
+async def fetch_models(req: FetchModelsRequest):
+    key = (req.api_key or req.apikey or "").strip()
+    url = (req.api_url or req.apiurl or "https://yunwu.ai/v1").strip()
+    if not key:
+        return {"error": "请先填写 API Key", "models": []}
+    try:
+        import requests as _r
+        base = url.rstrip("/")
+        resp = _r.get(f"{base}/models", headers={"Authorization": f"Bearer {key}"}, timeout=10)
+        fetched = []
+        if resp.status_code == 200:
+            data = resp.json()
+            items = data.get("data", data) if isinstance(data, dict) else data
+            if isinstance(items, list):
+                for m in items:
+                    mid = m.get("id", "") if isinstance(m, dict) else str(m)
+                    if mid: fetched.append(mid)
+        if not fetched:
+            tc = OpenAI(api_key=key, base_url=url, timeout=5.0)
+            for m in tc.models.list():
+                mid = getattr(m, 'id', None)
+                if mid: fetched.append(mid)
+        return {"models": sorted(set(fetched))}
+    except Exception as e:
+        return {"error": str(e)[:200], "models": []}
+
+@app.post("/api/chat")
+async def chat(req: ChatRequest, authorization: Optional[str] = Header(None)):
+    key = req.api_key or req.apikey
+    url = req.api_url or req.apiurl or "https://yunwu.ai/v1"
+    wmode = req.work_mode or req.workmode or "通用"
+    uinput = req.user_input or req.userinput or ""
+    dtext = req.doc_text or req.doctext or ""
+    
+    user = get_current_user_info(req.token, authorization)
+    username = user["username"]
+
+    if wmode == "短剧对标":
+        sys_p = BENCH_PROMPT
+    elif wmode == "剧本创作":
+        sys_p = CREATE_PROMPT.replace(SCRIPT_FORMAT_RULE + OUTPUT_CLEAN_RULE, "") + "\n\n" + OUTLINE_BIO_PROMPT + "\n\n" + SCRIPT_FORMAT_RULE + OUTPUT_CLEAN_RULE
+    else:
+        sys_p = "你是专业高效的AI创作助手。"
+
+    if dtext:
+        sys_p = f"【用户已上传待分析脚本（{len(dtext)}字）】\n\n{dtext}\n\n---\n{sys_p}"
+
+    api_messages = [{"role": "system", "content": sys_p}]
+    for m in req.messages:
+        if m.get("role") in ("system", "user", "assistant"):
+            if m.get("images") and len(m["images"]) > 0:
+                content = []
+                if m.get("content"):
+                    content.append({"type": "text", "text": m["content"]})
+                for img_url in m["images"]:
+                    content.append({"type": "image_url", "image_url": {"url": img_url}})
+                api_messages.append({"role": m["role"], "content": content})
+            else:
+                api_messages.append({"role": m["role"], "content": m["content"]})
+    if uinput:
+        api_messages.append({"role": "user", "content": uinput})
+
+    client = OpenAI(api_key=key, base_url=url, timeout=300.0)
+
+    def generate():
+        full_response = ""
+        try:
+            response = client.chat.completions.create(
+                model=req.model, messages=api_messages, stream=True, timeout=300.0
+            )
+            for chunk in response:
+                if not chunk.choices or len(chunk.choices) == 0:
+                    continue
+                delta = chunk.choices[0].delta
+                if delta.content is not None:
+                    full_response += delta.content
+                    yield f"data: {json.dumps({'token': delta.content})}\n\n"
+
+            session_raw = str(req.session_id or req.sessionid or req.cid or f"{int(time.time())}").strip()
+            session_dir, safe_session = get_user_session_dir(username, session_raw)
+
+            bench_data = extract_template_json(full_response)
+            saved = process_document_saving(full_response, session_dir, req.messages, uinput, wmode)
+            
+            # 保存聊天历史 json
+            history_file = os.path.join(session_dir, "history.json")
+            new_msgs = list(req.messages) if req.messages else []
+            if uinput:
+                new_msgs.append({"role": "user", "content": uinput})
+            if full_response:
+                new_msgs.append({"role": "assistant", "content": full_response})
+            with open(history_file, 'w', encoding='utf-8') as f:
+                json.dump(new_msgs, f, ensure_ascii=False, indent=2)
+
+            # 更新 user_sessions 数据库索引
+            fallback_uinput = uinput
+            if not fallback_uinput and req.messages and len(req.messages) > 0 and req.messages[-1].get("role") == "user":
+                last_content = req.messages[-1].get("content", "")
+                if isinstance(last_content, list):
+                    fallback_uinput = next((p["text"] for p in last_content if p.get("type") == "text"), "")
+                else:
+                    fallback_uinput = str(last_content)
+            smart_title = extract_smart_filename(full_response, req.messages, uinput, wmode) or fallback_uinput[:20] or "创作会话"
+            conn = sqlite3.connect(DB_PATH)
+            c = conn.cursor()
+            c.execute('''
+            INSERT OR REPLACE INTO user_sessions (session_id, user_id, username, title, mode, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?)
+            ''', (safe_session, user["user_id"], username, smart_title, wmode, int(time.time())))
+            conn.commit()
+            conn.close()
+
+            meta = {"type": "done", "session_dir": session_dir, "saved_file": saved, "template_json": bench_data}
+            yield f"data: {json.dumps(meta, ensure_ascii=False)}\n\n"
+        except Exception as e:
+            yield f"data: {json.dumps({'type': 'error', 'message': str(e)[:300]})}\n\n"
+
+    return StreamingResponse(
+        generate(), media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "Connection": "keep-alive", "X-Accel-Buffering": "no"}
+    )
+
+@app.get("/api/files/{session_id:path}")
+async def list_files(session_id: str, token: Optional[str] = Query(None), authorization: Optional[str] = Header(None)):
+    user = get_current_user_info(token, authorization)
+    username = user["username"]
+    
+    parts = session_id.strip('/').split('/')
+    if len(parts) >= 2:
+        u_name, s_id = parts[0], parts[1]
+    else:
+        u_name, s_id = username, parts[0]
+        
+    d = os.path.join(OUTPUT_DIR, u_name, s_id)
+    if not os.path.exists(d):
+        return {"files": []}
+    files = []
+    all_files = os.listdir(d)
+    all_files.sort(key=lambda f: os.path.getmtime(os.path.join(d, f)), reverse=True)
+    for f in all_files:
+        if "Step1-3" in f or "Step5-6" in f or "拆解分析" in f or "大纲方案" in f:
+            continue
+        if f.endswith('.docx') or f.endswith('.txt'):
+            files.append({"name": f, "path": f"{u_name}/{s_id}/{f}"})
+    return {"files": files}
+
+@app.get("/api/download/{filepath:path}")
+async def download_file(filepath: str):
+    fp = os.path.join(OUTPUT_DIR, filepath)
+    if os.path.exists(fp):
+        return FileResponse(fp, filename=os.path.basename(filepath))
+    return {"error": "文件不存在"}
+
+@app.get("/api/preview/{filepath:path}")
+async def preview_file(filepath: str):
+    fp = os.path.join(OUTPUT_DIR, filepath)
+    if not os.path.exists(fp):
+        return {"error": "文件不存在"}
+    raw_text = ""
+    filename = os.path.basename(filepath)
+    if filename.endswith('.docx'):
+        md_fp = fp.replace('.docx', '.md')
+        if os.path.exists(md_fp):
+            with open(md_fp, 'r', encoding='utf-8', errors='ignore') as f:
+                raw_text = f.read()
+        else:
+            with open(fp, 'rb') as f:
+                raw_text = parse_docx(f.read())
+    else:
+        with open(fp, 'r', encoding='utf-8', errors='ignore') as f:
+            raw_text = f.read()
+
+    clean_preview = re.sub(r'<thinking>[\s\S]*?(?:</thinking>|$)', '', raw_text, flags=re.DOTALL | re.IGNORECASE).strip()
+    clean_preview = re.sub(r'<think>[\s\S]*?(?:</think>|$)', '', clean_preview, flags=re.DOTALL | re.IGNORECASE).strip()
+    clean_preview = re.sub(r'\[TEMPLATEJSON\][\s\S]*?(?:\[/TEMPLATEJSON\]|$)', '', clean_preview, flags=re.DOTALL | re.IGNORECASE).strip()
+    clean_preview = re.sub(r'```json[\s\S]*?```', '', clean_preview, flags=re.DOTALL | re.IGNORECASE).strip()
+
+    lines = clean_preview.splitlines()
+    clean_lines = []
+    in_body = False
+    for line in lines:
+        stripped = line.strip()
+        if not in_body:
+            if re.search(r'^(?:#+.*|【.*)?(?:第[0-9一二三四五六七八九十]+集|第一集|第1集|人物小传|角色小传|角色设定|故事大纲|前十集集纲|对标拆解|Step)', stripped):
+                in_body = True
+
+        if in_body:
+            if any(k in stripped for k in ["集要点:", "集要点：", "字数自算", "在1000以内", "你先审", "告诉我你的想法", "选完（或告诉我", "我立刻按同样", "写完", "感觉对吗", "埋点说明", "说明：", "接下来", "还需要", "字数约", "以上就是", "符合你的", "第六集写完", "调整后的", "修改后的", "修改说明", "三重收获", "需要我"]): break
+            if stripped == "---" or stripped.startswith("--- "): break
+            if any(stripped.startswith(k) for k in ["数一下字数", "符合要求", "请确认是否", "你定一下", "请在下方说明"]):
+                continue
+            clean_lines.append(line)
+
+    final_text = "\n".join(clean_lines).strip() if clean_lines else clean_preview
+    return {"text": final_text or "暂无纯文本正文内容"}
+
+@app.delete("/api/delete/{filepath:path}")
+async def delete_file(filepath: str):
+    fp = os.path.join(OUTPUT_DIR, filepath)
+    if os.path.exists(fp):
+        try:
+            os.remove(fp)
+            docx_fp = fp.replace('.md', '.docx')
+            if os.path.exists(docx_fp): os.remove(docx_fp)
+            return {"status": "ok", "message": "文件已成功删除"}
+        except Exception as e:
+            return {"error": f"删除失败: {str(e)}"}
+    return {"error": "文件不存在"}
+
+class SaveFileRequest(BaseModel):
+    filepath: str
+    content: str
+
+@app.post("/api/save_file")
+async def save_file(req: SaveFileRequest, token: Optional[str] = Query(None), authorization: Optional[str] = Header(None)):
+    user = get_current_user_info(token, authorization)
+    username = user["username"]
+    fp = os.path.join(OUTPUT_DIR, req.filepath)
+    if not os.path.exists(fp):
+        return {"error": "文件不存在"}
+    try:
+        with open(fp, "w", encoding="utf-8") as f:
+            f.write(req.content)
+        return {"status": "ok"}
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.get("/api/health")
+async def health():
+    return {"status": "ok"}
+
+@app.get("/")
+async def read_root():
+    idx = os.path.join(SCRIPT_DIR, "index.html")
+    if not os.path.exists(idx):
+        idx = os.path.join(SCRIPT_DIR, "index.html")
+    if os.path.exists(idx):
+        return FileResponse(idx)
+    return {"message": "index.html not found"}
+
+@app.get("/api/debug/db")
+async def debug_db():
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("SELECT id, username FROM users")
+    users = c.fetchall()
+    c.execute("SELECT session_id, username, title, updated_at FROM user_sessions")
+    sessions = c.fetchall()
+    conn.close()
+    return {"users": users, "sessions": sessions}
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
+

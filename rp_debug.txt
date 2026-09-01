@@ -1,0 +1,56 @@
+    function rP() {
+      var cp = E('createPanel'), s4 = E('step4Panel'), s7 = E('step7Panel'), bp = E('batchPanel');
+
+      // 🔴 剧本创作模式交互面板：只要 AI 输出 TEMPLATEJSON 或导引问题，动态展示选择面板
+      if (S.mode === '剧本创作') {
+        var chat = CC();
+        var msgs = chat.msgs || [];
+        var lastM = msgs.length ? msgs[msgs.length - 1] : null;
+
+        if (S.gen || (lastM && lastM.role === 'user')) {
+          cp.style.display = 'none';
+          return;
+        }
+
+        var data = tryParseS4();
+        if (data && (data.step === 'create_qa_ready' || data.step4_questions || data.questions)) {
+          var qs = data.step4_questions || data.questions;
+          if (qs && qs.length) {
+            cp.style.display = 'block';
+            var h = '<div class="panel scroll-panel" style="max-height:300px;overflow-y:auto;"><div style="font-weight:600;font-size:14px;color:var(--primary);margin-bottom:8px;position:sticky;top:0;background:var(--card);padding:4px 0;z-index:5;">🎨 💬 剧本创作 · 需求与方向确认 (请勾选创作倾向)</div>';
+            for (var qi = 0; qi < qs.length; qi++) {
+              var q = qs[qi];
+              h += '<div class="q-block" style="margin-bottom:12px;"><div style="font-weight:600;font-size:13px;margin:6px 0;color:var(--text);">' + esc(q.question) + '</div>';
+              if (q.options && q.options.length) {
+                for (var oi = 0; oi < q.options.length; oi++) {
+                  var opt = q.options[oi], sel = (oi === 0);
+                  h += '<div class="q-opt ' + (sel ? 'selected' : '') + '" onclick="selectOpt(this, ' + qi + ', \'' + esc(opt).replace(/'/g, "\\'") + '\')"><input type="radio" name="cq_' + qi + '" value="' + esc(opt) + '" ' + (sel ? 'checked' : '') + '> <span>' + esc(opt) + '</span></div>';
+                }
+              }
+              h += '<input type="text" class="input-box q-custom" id="q_custom_' + qi + '" placeholder="请输入你的自定义要求..." style="display:none;margin-top:6px;"></div>';
+            }
+            h += '<button class="btn primary full" onclick="confirmCreateQA()" style="margin-top:10px;position:sticky;bottom:0;z-index:5;">确认选项，提交AI处理</button></div>';
+            cp.innerHTML = h;
+            return;
+          }
+        }
+
+        cp.style.display = 'none';
+        cp.innerHTML = '';
+        return;
+      } else {
+        cp.style.display = 'none';
+      }
+
+      // 2. 短剧对标 Step 4 面板 (完全不受影响)
+      if (S.mode === '短剧对标' && !S.s4) {
+        var data = tryParseS4();
+        if (data && (data.step === 'step4_ready' || data.step4_questions || data.questions)) {
+          s4.style.display = 'block';
+          var h = '<div class="panel scroll-panel" style="max-height:300px;overflow-y:auto;"><div style="font-weight:600;font-size:14px;color:var(--primary);margin-bottom:8px;position:sticky;top:0;background:var(--card);padding:4px 0;z-index:5;">⚡ 💬 基于本剧深度思考提取的核心确认选项 (点击选项高亮)</div>';
+          var qs = data.step4_questions || data.questions;
+          if (qs && qs.length) {
+            for (var qi = 0; qi < qs.length; qi++) {
+              var q = qs[qi];
+              h += '<div class="q-block" style="margin-bottom:12px;"><div style="font-weight:600;font-size:13px;margin:6px 0;color:var(--text);">' + esc(q.question) + '</div>';
+              if (q.options && q.options.length) {

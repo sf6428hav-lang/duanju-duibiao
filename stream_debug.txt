@@ -1,0 +1,20 @@
+2621:                 var m = chat.msgs.find(function (x) { return x.id === pid; });
+2622:                 if (m) m.content = full;
+2623:                 var el = E("msg_" + pid);
+2624:                 if (el) {
+2625:                                     var noThink = full.replace(/<(?:think|thinking|thought)>[\s\S]*?(?:<\/(?:think|thinking|thought)>|$)/gi, '');
+2626:                   var finalHtml = renderMarkdown(noThink.replace(/\[TEMPLATEJSON\][\s\S]*?(?:\[\/TEMPLATEJSON\]|$)/g, ""));
+2627:                   finalHtml = finalHtml.replace(/__NEED_SAVE_MARKER__/g, '<span style="font-size:12px;opacity:.6;background:var(--bg2);padding:2px 8px;border-radius:4px;display:inline-block;margin:4px 0;color:var(--primary);">💾 项目资产已解析并保存到系统及项目文件</span>').replace(/__INTERACTIVE_MARKER__/g, '<span style="font-size:12px;opacity:.6;background:var(--bg2);padding:2px 8px;border-radius:4px;display:inline-block;margin:4px 0;">✨ 交互选项卡片已生成</span>');
+2628:                   el.innerHTML = finalHtml;
+2629:                   let isAtB2 = E("chatArea").scrollHeight - E("chatArea").scrollTop <= E("chatArea").clientHeight + 150;
+2630:                   if(isAtB2) E("chatArea").scrollTop = E("chatArea").scrollHeight;
+2631:                   rP();
+2632:                 } else {
+2633:                   rd();
+2634:                 }
+2635:               } else if (d.type === 'done') {
+2636:                 var m = chat.msgs.find(function (x) { return x.id === pid; });
+2637:                 if (m) { delete m.s; delete m.id; m.content = full; }
+2638: 
+2639:                 var sdir = d.session_dir || d.sessiondir;
+2640:                 if (sdir) S.sd = sdir;

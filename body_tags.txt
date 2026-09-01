@@ -1,0 +1,86 @@
+<div class="modal-overlay" id="settingsModal" style="display:none;" onclick="if(event.target===this)closeSettings()">
+<div class="modal-card" style="width: 400px; max-height: 80vh; overflow-y: auto;">
+<div class="modal-header">
+</div>
+<div class="modal-body" id="settingsModalBody" style="display:flex; flex-direction:column; gap:20px;">
+<div>
+<div id="userBadge" style="margin-bottom:0;padding:8px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;display:flex;justify-content:space-between;align-items:center;">
+</div>
+</div>
+<div>
+<div class="row" style="justify-content:space-between;margin-bottom:6px;">
+</div>
+<div style="display:flex;flex-direction:column;gap:8px;">
+<div class="row">
+</div>
+</div>
+</div>
+<div>
+</div>
+</div>
+</div>
+</div>
+<div id="authModal" class="auth-overlay" style="display:none !important;">
+<div class="auth-card">
+<div style="text-align:center;margin-bottom:16px;">
+</div>
+<div class="auth-tabs">
+<div id="authTabLogin" class="auth-tab-btn active" onclick="switchAuthTab('login')">🔑 账号登录</div>
+<div id="authTabRegister" class="auth-tab-btn" onclick="switchAuthTab('register')">✨ 注册新账号</div>
+</div>
+<div id="authErrMsg" style="display:none;color:#ef4444;background:#fee2e2;padding:8px 12px;border-radius:8px;font-size:12px;margin-bottom:12px;"></div>
+<div class="auth-input-group">
+</div>
+<div class="auth-input-group">
+</div>
+<div style="text-align:center;margin-top:12px;font-size:12px;opacity:0.6;">初始密码已在后台随机生成，请查看终端输出或配置 .env</div>
+</div>
+</div>
+<div class="sidebar" id="sidebar">
+<div>
+<div id="fileInfo" style="font-size:12px;opacity:.7;margin-top:6px;">未选择文件</div>
+</div>
+<div>
+<div id="projectFiles" style="font-size:12px;max-height:140px;overflow-y:auto;">暂无</div>
+</div>
+<div style="margin-top: auto; padding-top: 16px;">
+</div>
+</div>
+<div class="resizer" id="resizer"></div>
+<div id="editorPane" class="editor-pane">
+<div class="top-bar">
+<div style="font-weight: 600; font-size: 15px; display: flex; align-items: center; gap: 8px;">
+</div>
+<div>
+</div>
+</div>
+<div id="editorContent" class="editor-content" contenteditable="false" oninput="updateWordCount()"><p style="color:#999; text-align:center; margin-top:100px;">👈 在左侧选择或上传文件，开始编辑...</p></div>
+<div class="editor-bottom">
+</div>
+</div>
+<div class="main">
+<div class="top-bar">
+<div id="topBar" style="display:flex; justify-content:flex-end; width:100%; align-items:center; gap:12px; padding: 0 12px;">
+<div style="display:flex; align-items:center; gap:8px;">
+</div>
+<div id="historyList" style="display:none;"></div>
+</div>
+</div>
+<div id="benchStepsBar" class="bench-steps-bar">
+<div id="benchStepsInner" class="bench-steps-inner"></div>
+</div>
+<div class="chat-area" id="chatArea"></div>
+<div id="createPanel" style="padding:0 20px;"></div>
+<div id="step4Panel" style="padding:0 20px;"></div>
+<div id="step7Panel" style="padding:0 20px;"></div>
+<div id="batchPanel" style="padding:0 20px;"></div>
+<div class="input-area bottom-bar">
+</div>
+</div>
+<div class="modal-overlay" id="historyModal" onclick="if(event.target===this)closeHistory()">
+<div class="modal-card">
+<div class="modal-header">
+</div>
+<div class="modal-body" id="historyModalList"></div>
+</div>
+</div>

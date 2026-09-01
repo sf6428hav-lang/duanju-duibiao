@@ -1256,8 +1256,7 @@
     </div>
   </div>
 
-  <div class="resizer" id="resizerRight"></div>
-  <div class="resizer" id="resizerRight"></div>
+  <div class="resizer" id="mainResizer"></div>
   <div class="main">
     <div class="top-bar">
             <div id="topBar" style="display:flex; justify-content:flex-end; width:100%; align-items:center; gap:12px; padding: 0 12px;">
@@ -1458,7 +1457,7 @@
       E("editorContent").innerHTML = '<p style="color:#999; text-align:center; margin-top:100px; user-select:none; pointer-events:none;">👈 在左侧选择或上传文件，开始编辑...</p>';
       updateWordCount();
       
-      
+      var rr = E('resizerRight'); if(rr) rr.style.display = 'none';
     }
 
     // 对标流程 8 步定义
@@ -2633,16 +2632,8 @@
                   var finalHtml = renderMarkdown(noThink.replace(/\[TEMPLATEJSON\][\s\S]*?(?:\[\/TEMPLATEJSON\]|$)/g, "").replace(/```json[\s\S]*?(?:```|$)/g, "<span style=\"font-size:12px;opacity:.6;background:var(--bg2);padding:2px 8px;border-radius:4px;display:inline-block;margin:4px 0;\">✨ 正在生成并解析系统数据...</span>"));
                   finalHtml = finalHtml.replace(/__NEED_SAVE_MARKER__/g, '<span style="font-size:12px;opacity:.6;background:var(--bg2);padding:2px 8px;border-radius:4px;display:inline-block;margin:4px 0;color:var(--primary);">💾 项目资产已解析并保存到系统及项目文件</span>').replace(/__INTERACTIVE_MARKER__/g, '<span style="font-size:12px;opacity:.6;background:var(--bg2);padding:2px 8px;border-radius:4px;display:inline-block;margin:4px 0;">✨ 交互选项卡片已生成</span>');
                   el.innerHTML = finalHtml;
-                  let ca = E("chatArea");
-                  let isAtB2 = ca.scrollHeight - ca.scrollTop <= ca.clientHeight + 80;
-                  if(isAtB2) {
-                      if (!window._scrollT) {
-                          window._scrollT = setTimeout(function() {
-                              ca.scrollTop = ca.scrollHeight;
-                              window._scrollT = null;
-                          }, 50);
-                      }
-                  }
+                  let isAtB2 = E("chatArea").scrollHeight - E("chatArea").scrollTop <= E("chatArea").clientHeight + 20;
+                  if(isAtB2) E("chatArea").scrollTop = E("chatArea").scrollHeight;
                   rP();
                 } else {
                   rd();
@@ -2798,7 +2789,8 @@
     function viewUploadedDoc() {
         var ep = document.getElementById('editorPane');
         
-        
+        var rr = document.getElementById('resizerRight');
+        if(rr) rr.style.display = 'block';
         
         document.getElementById('editorFileName').innerText = '当前上传的参考文件';
         document.getElementById('editorContent').contentEditable = 'false';
@@ -2815,7 +2807,7 @@
         
         
           var ep = document.getElementById('editorPane'); 
-          var rr = document.getElementById('resizerRight'); 
+          var rr = document.getElementById('resizerRight'); if(rr) rr.style.display = 'block';
 E('editorFileName').innerText = '加载中...';
           E('editorContent').contentEditable = 'true';
         E('editorContent').innerText = '正在读取文件内容，请稍候...';

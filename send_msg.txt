@@ -1,0 +1,161 @@
+async function sendMsg(isRegen) {
+      if (typeof isRegen !== 'boolean') isRegen = false;
+      var inp = E('chatInput'), txt = inp.value.trim();
+      
+      var chat = CC();
+      var lastM = chat.msgs && chat.msgs.length ? chat.msgs[chat.msgs.length - 1] : null;
+      if (S.gen && (!lastM || !lastM.s)) {
+        S.gen = false;
+      }
+
+      if ((!txt && !isRegen && pendingImages.length === 0 && !(window.S && S.pendingQuote)) || S.gen) return;
+
+      if (S.mode === '' || !S.mode || S.mode === '' || true) {
+        S.cardsVisible = false;
+        chat.cardsVisible = false;
+      }
+
+      if (!isRegen) { inp.value = ''; inp.style.height = 'auto'; }
+      var k = gK(); if (!k) { alert('API Key'); return; }
+
+      var fullTxt = txt;
+      if (!isRegen && window.S && S.pendingQuote) {
+          fullTxt = S.pendingQuote.split('\n').map(function(l) { return '> ' + l; }).join('\n') + '\n\n' + txt;
+          clearQuote();
+      }
+
+      if (isRegen) {
+      if (chat.msgs.length > 0 && chat.msgs[chat.msgs.length - 1].role === 'assistant') {
+          chat.msgs.pop();
+      }
+    }
+    if (!isRegen && (fullTxt || pendingImages.length > 0)) {
+        var msgObj = { role: 'user', content: fullTxt || '' };
+        if (pendingImages.length > 0) {
+            msgObj.images = pendingImages.slice();
+            pendingImages = [];
+            renderPendingImages();
+        }
+        if (!chat.msgs.length || chat.msgs[chat.msgs.length - 1].content !== fullTxt || msgObj.images) {
+             chat.msgs.push(msgObj);
+        }
+      }
+      sv(); rd();
+
+      var docT = '';
+      if (S.doc && (S.mode === '' || S.mode === '' || S.mode === '')) {
+        docT = S.doc;
+      }
+
+      if (S.mode === '') {
+        if (S.benchStep === 1 && txt.indexOf('') !== -1) advanceBenchStep(2);
+        else if (S.benchStep === 2 && (txt.indexOf('') !== -1 || txt.indexOf('') !== -1)) advanceBenchStep(3);
+      }
+
+      S.gen = true; S.ab = new AbortController();
+      E('genStatus').innerHTML = '<button class="btn danger" onclick="stopGen()"> </button>';
+      E('chatInput').disabled = true;
+
+      var pid = 'm' + Date.now();
+      chat.msgs.push({ role: 'assistant', content: '', s: true, id: pid });
+      rd();
+
+      try {
+        var r = await fetch(B + '/api/chat', {
+          method: 'POST',
+          headers: Object.assign({ 'Content-Type': 'application/json' }, getAuthHeaders()),
+          body: JSON.stringify({
+            api_key: k, api_url: gU(), model: gM(), work_mode: S.mode || '',
+            messages: chat.msgs.filter(function (m) { return !m.s; }).map(function (m) { return { role: m.role, content: m.content, images: m.images }; }),
+            user_input: "", doc_text: docT, session_id: S.cid, token: getToken()
+          }),
+          signal: S.ab.signal
+        });
+
+        var reader = r.body.getReader(), dec = new TextDecoder(), buf = '', full = '';
+        while (true) {
+          var rdv = await reader.read(); if (rdv.done) break;
+          buf += dec.decode(rdv.value, { stream: true });
+          var lines = buf.split('\n'); buf = lines.pop() || '';
+          for (var li = 0; li < lines.length; li++) {
+            var l = lines[li]; if (!l.startsWith('data: ')) continue;
+            try {
+              var d = JSON.parse(l.slice(6));
+              if (d.token) {
+                full += d.token;
+                var m = chat.msgs.find(function (x) { return x.id === pid; });
+                if (m) m.content = full;
+                var el = E("msg_" + pid);
+                if (el) {
+                                    var noThink = full.replace(/<(?:think|thinking|thought)>[\s\S]*?(?:<\/(?:think|thinking|thought)>|$)/gi, '');
+                  var finalHtml = renderMarkdown(noThink.replace(/\[TEMPLATEJSON\][\s\S]*?(?:\[\/TEMPLATEJSON\]|$)/g, "").replace(/```json[\s\S]*?(?:```|$)/g, "<span style=\"font-size:12px;opacity:.6;background:var(--bg2);padding:2px 8px;border-radius:4px;display:inline-block;margin:4px 0;\"> ...</span>"));
+                  finalHtml = finalHtml.replace(/__NEED_SAVE_MARKER__/g, '<span style="font-size:12px;opacity:.6;background:var(--bg2);padding:2px 8px;border-radius:4px;display:inline-block;margin:4px 0;color:var(--primary);"> </span>').replace(/__INTERACTIVE_MARKER__/g, '<span style="font-size:12px;opacity:.6;background:var(--bg2);padding:2px 8px;border-radius:4px;display:inline-block;margin:4px 0;"> </span>');
+                  el.innerHTML = finalHtml;
+                  let isAtB2 = E("chatArea").scrollHeight - E("chatArea").scrollTop <= E("chatArea").clientHeight + 20;
+                  if(isAtB2) E("chatArea").scrollTop = E("chatArea").scrollHeight;
+                  rP();
+                } else {
+                  rd();
+                }
+              } else if (d.type === 'done') {
+                var m = chat.msgs.find(function (x) { return x.id === pid; });
+                if (m) { delete m.s; delete m.id; m.content = full; }
+
+                var sdir = d.session_dir || d.sessiondir;
+                if (sdir) S.sd = sdir;
+
+                if (S.mode === '' && S.benchStep === 3) {
+                  advanceBenchStep(4);
+                  S.s4 = false;
+                }
+
+                S.step4Questions = null;
+                if (d.template_json) {
+                  S.step4Questions = d.template_json;
+                  var curC = CC();
+                  curC.step4Questions = d.template_json;
+                  var s = d.template_json.step;
+                  if (s === 'step4_ready') S.s4 = false;
+                  else if (s === 'step7_format') S.s7 = false;
+                  else if (s === 'batch_complete') { S.bi = d.template_json.batch_index || 1; S.tb = d.template_json.total_batches || 0; }
+                }
+
+                var dyn = tryParseS4();
+                if (dyn && (dyn.step === 'step4_ready' || dyn.step4_questions || dyn.questions)) {
+                  if (S.mode === '') {
+                    S.s4 = false;
+                    advanceBenchStep(4);
+                  }
+                }
+
+                sv(); rd(); listFiles();
+                if (d.saved_file && window.currentPreviewFile && window.currentPreviewFile.endsWith(d.saved_file)) {
+                  pv(window.currentPreviewFile);
+                }
+              } else if (d.type === 'error') {
+                var m = chat.msgs.find(function (x) { return x.id === pid; });
+                if (m) { m.content = d.message; m.er = true; delete m.s; delete m.id; }
+                rd();
+              }
+            } catch (e) {
+        if (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
+            alert(' ');
+        }
+      }
+          }
+        }
+      } catch (e) {
+        var m = chat.msgs.find(function (x) { return x.id === pid; });
+        if (e.name !== 'AbortError') {
+          if (m) { m.content = '' + e.message; m.er = true; delete m.s; delete m.id; }
+        } else {
+          if (m) { m.content += '\n\n[]'; delete m.s; delete m.id; }
+        }
+      }
+
+      S.gen = false; S.ab = null;
+      E('genStatus').innerHTML = ''; E('chatInput').disabled = false; E('chatInput').focus();
+      rd(); sv();
+    }
+
+    

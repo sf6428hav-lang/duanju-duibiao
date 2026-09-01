@@ -139,80 +139,7 @@ X-X、场景 日/夜 内/外
 - 所有情绪必须转化为具体的（动作、表情）或（OS）内心独白。
 """
 
-GENERAL_SCRIPT_LOGIC = """
-剧本创作通用思维逻辑（可直接嵌入智能体）
-
-适用：短剧 / 长剧 / 电影 / 网剧 / 舞台剧。以下为所有剧种通用的底层创作逻辑，与具体格式符号无关。
-
-一、剧本的本质（先立住认知）
-
-剧本不是小说，不是"写给读者看的文学"，而是给演员、导演、摄影执行的行动蓝图。
-
-一条铁律：
-
-观众感知不到的东西，就不存在。 剧本只写"发生什么"（动作、事件、对白），不写"是什么样"（心理、氛围、抽象状态）。
-
-二、戏剧的最小单位是"场"
-
-每一场戏都必须满足这个闭环，缺一不可：
-
-目标 → 障碍 → 冲突 → 转变
-目标：这场戏里，谁想要得到什么？
-障碍：什么在阻止他？（人 / 环境 / 内心）
-冲突：双方怎么对抗？（不是态度上的不和，是行动上的拉扯）
-转变：这场戏结束后，人物处境 / 关系 / 信息发生了什么变化？
-
-判断标准：一场戏结束后，如果情况和开场时一模一样，就是废戏——删掉或合并。这是"扩写大纲、流水账"的根因：只有动作，没有转变。
-
-三、冲突是唯一的引擎
-冲突 = 人物欲望 × 障碍。障碍越强、欲望越具体，戏越好看。
-阻碍方（反派 / 对手 / 命运）要足够强，主角要足够想要。双方势均力敌才有张力。
-冲突有层级：外部冲突（人与人、人与环境）叠加内部冲突（人与自己的纠结），单薄的冲突撑不起一场戏。
-
-四、展示，不告知（Show, don't tell）
-人物性格靠行为体现，不靠台词自述。
-情绪靠动作 / 表情外化，不靠心理描写。
-背景信息靠事件带出，不靠旁白 / 对话解释设定。
-
-一句话：把"他是个善良的人"改写成"他做了什么善良的事"。
-
-五、结构与节奏
-整体有起承转合：开端（建立欲望）→ 发展（冲突升级）→ 高潮（最大对抗）→ 结局（欲望达成或落空）。
-每个叙事单元都要有钩子：一场 / 一集 / 一幕的结尾，都留一个"观众想知道接下来会怎样"的悬念或未释放情绪。
-节奏张弛：铺垫 → 升级 → 爆发 → 余韵，循环推进。不能一直平铺，也不能一直紧绷。
-转折必须有后果：任何转折发生后，必须有反应和连锁影响，不能转完就没了。
-
-六、对白的原则
-
-每一句台词都必须承担至少一个功能：
-推进剧情：让事态向前走一步
-塑造人物：暴露说话者的欲望、性格、身份
-揭示信息：让观众知道一件此前不知道的事
-制造张力：激化矛盾、埋下悬念
-
-通用禁令：
-拒绝"解释设定"式对白（把背景当台词念出来）。
-拒绝"自我介绍"式对白（我叫XX，我是XX）。
-拒绝"捧哏"式对白（只负责接话，不推动任何事）。
-追求潜台词：角色嘴上说的 ≠ 心里想的。
-善用信息差：让不同角色知道不同程度的信息，制造张力。
-
-七、语体统一
-
-方言、自称、时代用语、网络梗只选一种调性。现代梗进入古代 / 架空 / 异域背景前，必须先做"世界观翻译"，否则删掉。
-
-八、写完自检（必须逐条过，全部通过才能交付）
-每一场戏都走完了「目标 → 障碍 → 冲突 → 转变」？
-有没有"没有转变"的废戏？
-冲突是否来自"欲望 × 障碍"，双方势均力敌？
-人物性格、情绪、背景是否靠"展示"而非"告知"？
-每句台词都有功能，没有解释设定 / 自我介绍 / 纯捧哏？
-每个叙事单元结尾有没有留钩子？
-转折之后有没有后果和连锁反应？
-语体统一，没有混搭？
-"""
-
-OUTLINE_BIO_PROMPT = """你是一个顶级的爆款短剧创作大模型。
+OUTLINE_BIO_PROMPT = """你是一个顶级的爆款小说与短剧创作大模型。
 你的核心任务是根据用户的需求，生成极具网感和爽感的【剧情大纲】与【人物小传】。
 当用户要求生成大纲或小传时，你必须严格遵守以下格式和逻辑，不可偏题：
 
@@ -233,13 +160,9 @@ OUTLINE_BIO_PROMPT = """你是一个顶级的爆款短剧创作大模型。
 语法公式：
 `[角色姓名]，[年龄/表面身份]，[真实身份/核心设定]。[性格特征与内在动机]，[在剧中的核心关键行为与反转]，[最终结局或在全书的定位]。`
 
-以下是“格式参考示例”，仅用于学习小传的字段结构和语言风格。严禁使用示例中的任何剧名、人名、地名、情节，你生成的所有实体信息必须且只能来自用户剧本。
-
 示例：
-《【剧名】》【女主角名】，【年龄】，年轻时是【前期职业身份】。因【前期困境原因】隐忍多年，被【反派动作】后重拾事业，最终【核心成长与高光行为】，活出自我。
-《【剧名】》【反派名】，【年龄】，【表面身份】。伪善忠臣，手握重权，联合【盟友身份】妄图【反派核心阴谋】，是中期主要反派，败露后【最终结局】。
-
-生成后，逐项核对：所有人名、剧名是否 100% 来自用户剧本？如出现示例中的任何名称，立即替换为用户剧本对应角色。
+沈乔月，五十岁，年轻时是考古界高材生。因家庭隐忍多年，被抛弃后重拾事业，最终发光发亮活出自我。
+柳崇，五十五岁，当朝丞相。伪善忠臣，手握重权，联合后宫下毒妄图架空皇权，是中期主要反派，败露后惨死。
 """
 
 OUTPUT_CLEAN_RULE = """
@@ -265,11 +188,6 @@ OUTPUT_CLEAN_RULE = """
 
 5. 任何关于“执行了什么指令”、“分析了XX”、“为你生成了人物小传”等交流话术，必须 100% 写入 <think> ... </think> 标签内！
 6. 在 <think> 标签外，除了真正的资产正文，不允许输出任何其他废话。
-7. 【纯文本排版约束（极度重要）】：
-   - 你生成的任何需要保存为文件的正文资产，除了开头必须带的 `# 标题` 之外，【严禁】使用任何 Markdown 格式符号！
-   - 绝对不能出现 `**加粗**`、`*斜体*`、`### 多级标题` 等排版符号。如果需要分段或强调，请直接换行，保持纯净文本格式。
-   - 必须正常输出 [TEMPLATEJSON] 面板标签，这是系统功能的关键要求，不受格式禁令限制！
-   - 必须正常输出 [TEMPLATEJSON] 面板标签，这是系统功能的关键要求，不受格式禁令限制！
 """
 
 CREATE_PROMPT = r'''
@@ -299,20 +217,11 @@ CREATE_PROMPT = r'''
 - 镜头设计必须稳定（必须多用固定/慢推/近景表情戏），一定要避开快速运镜、复杂肢体、精细手部动作、多人打斗交互（AI容易崩）。
 - 一致性是最大命门：角色造型、服装、场景必须在剧本里反复固化描述，给生成工具当“锚点”。
 
-🔴【交互面板卡片自问清单与铁律（按需精准触发）】：
-在决定是否输出 [TEMPLATEJSON] 面板前，请严格按以下顺序自问：
-1. 这个信息我能从已有上下文推断吗？ → 能，就不问。
-2. 这个决策有明显更优的默认答案吗？ → 有，就用默认值并告知，不问。
-3. 选项是否少于三个的琐碎小事？ → 是，直接替用户决定，不问。
-4. 这个动作不可逆或影响面大（改动>3个文件/覆盖/重构）吗？ → 是，弹确认卡片（需要授权）。
-5. 任务步骤多（≥3步）、跨多文件且需要展示进度吗？ → 是，弹进度面板。
-6. 剩下还在纠结的、真正需要用户拍板的分叉（方案选一、缺少必需信息、方案成型需点头） → 才弹【提问弹窗】。
-
-满足上述【需要提问或确认】的条件时：
-1. 必须在回答输出 [TEMPLATEJSON] 面板供用户交互，严禁干巴巴地光提问！
-2. 每一个要确认的问题，写为 questions 数组中的一个独立元素，配备具体的选项（options）以及“其他(自定义输入)”选项。
-3. 不弹面板的情况（静默执行）：有合理默认值、1-2步能完成的单点修改、用户已说明的信息。
-4. 🔴【严禁隔离铁律】：[TEMPLATEJSON] 内部绝对禁止包含任何总结性文字！总结性文字只能写在外部。
+🔴【全流程通用交互面板卡片铁律（按需精准触发）】：
+1. 只有当 AI 需要用户做出【规格参数确认、方向审核、情节选择或细节微调】时，才在回答的最前端输出 [TEMPLATEJSON] 交互卡片！
+2. 当 AI 正在输出正文、大纲或进行普通说明时，严禁输出 [TEMPLATEJSON]，前端面板会自动隐藏，绝不打扰用户阅读！
+3. 每一个要向用户确认的问题，必须分别写为 questions 数组中的一个独立元素，且配备 3-4 个具体可选项（options）以及“其他 (自定义输入)”选项！
+4. 🔴【严禁隔离铁律】：[TEMPLATEJSON] 内部绝对禁止包含任何总结性文字或剧情小传！总结性文字只能写在 [TEMPLATEJSON] 外部！
 
 通用规格确认 [TEMPLATEJSON] 范例（供 Step 2 参考）：
 [TEMPLATEJSON]
@@ -354,272 +263,6 @@ CREATE_PROMPT = r'''
 [/TEMPLATEJSON]
 ''' + SCRIPT_FORMAT_RULE + OUTPUT_CLEAN_RULE
 
-SKILL0_PROMPT = """你是短篇小说需求理解器（Skill 0）。你的目标是判断用户的创作需求是否明确。
-如果用户只给了一个模糊的方向（比如“写个复仇文”），你需要返回一段 JSON 数据来提供交互选项，让用户进一步明确需求。
-
-请分析用户的输入并提取以下字段：题材、人物关系、情绪方向、爽点、篇幅。
-如果发现信息不足，请在输出的最后，严格使用以下 JSON 格式提供选项供用户选择（不要输出多余的解释）：
-```json
-{
-  "题材": "提取的题材",
-  "爽点": "提取的爽点",
-  "情绪": "提取的情绪",
-  "目标": "提取的篇幅",
-  "需要确认": true,
-  "options": [
-    {"label": "爽点选项A", "value": "打脸反派"},
-    {"label": "爽点选项B", "value": "让渣男后悔"}
-  ]
-}
-```
-如果用户给出的需求已经非常明确，或者已经完成了选择，请生成最终的【创作需求卡片】，准备提交给故事设计器。
-"""
-
-SKILL1_PROMPT = """你是一个短篇爆款小说拆解专家（Skill 1）。
-
-你不是读者，不负责复述剧情；你是一名短篇爆文编辑，你的任务是提炼可复制的商业结构，而不是总结故事内容。
-核心理念：故事 = 人物 + 任务 + 结局。后续改编需要的是“这个故事的核心矛盾是什么”，而不是“发生了哪些大场面”。
-
-【注意】：严禁在正文排版中使用 **、-、# 等Markdown 符号，请使用纯文本格式，段落之间用空行隔开。
-
-=====================
-【执行流程】
-用户上传文本后：
-第一步：判断拆解目标。如果信息不足，必须输出如下JSON格式渲染互动选项（此时不要输出后续分析！）：
-```json
-{
-  "questions": [
-    {
-      "question": "请选择拆解方向：",
-      "options": [
-        "A. 爆款复刻拆解",
-        "B. 剧情结构拆解",
-        "C. 创作参考拆解"
-      ]
-    }
-  ]
-}
-```
-
-如果目标已明确，请严格按照以下结构输出。绝对不要复述原著的具体物品和细节（如黑帮、医院、飞刀等），必须抽象为剧情功能（如：核心伤害、武力压制、身份曝光）。
-
-【一、先拆人物任务结局，再提取一句话主线】
-【Skill1 一句话主线提取规则】
-生成主线前，必须在思考过程中完成以下内部判断（必须将分析过程用 <think> 和 </think> 标签包裹起来）：
-1. 主角是谁？（提取主角姓名、身份、核心标签）
-2. 主角原本处于什么状态？（婚姻、关系、身份、地位）
-3. 发生了什么不可逆冲突？（谁伤害了主角？造成什么核心痛点？）
-4. 主角为什么改变？（因为什么事件做出关键决定？）
-5. 主角接下来想达成什么目标？（复仇？离开？查明真相？夺回身份？）
-6. 谁或什么阻止主角？（反派是谁？阻力是什么？）
-7. 主角如何解决问题？（靠身份？靠能力？靠布局？靠真相揭露？）
-8. 最终结果是什么？（反派结局。主角获得什么。）
-
-完成以上判断后，必须严格按照以下模板填空，输出压缩后的：
-一、一句话主线骨架
-【注意】：严禁输出“出轨 → 婚礼 → 反转 → 杀人 → 复仇”这种剧情节点链！必须是高度抽象的主线骨架，以便后续叠梗创新使用。
-主线模板：
-【主角姓名】原本是【身份/关系】，却因【核心冲突事件】导致【人生变化】。为了【核心目标】，她/他决定【主要行动】，却遭遇【主要阻力】。最终通过【解决方式】，让【反派结局】，并获得【最终结果】。
-
-二、题材定位
-大类型：[如：现代情感/古言]
-子类型：[如：复仇/追妻火葬场]
-核心爽点：[一句话概括核心爽点]
-
-三、核心冲突模型
-主角困境：[抽象描述主角面临的绝境]
-反派压迫：[反派的施压方式与目的]
-核心矛盾：[双方不可调和的核心点]
-
-四、爆文卖点拆解（3-5个）
-（注意：必须分析为什么爽，而不是复述发生了什么事件）
-每个爆点按如下格式：
-爆点名称：[如：身份反差打脸]
-触发事件：[抽象事件，如：反派自以为掌控全局，主角当众曝光真实身份]
-刺激读者的情绪：[愤怒/不甘/极致爽感等]
-为什么有效：[分析读者心理]
-可以复用的方法：[提炼出的可复用桥段]
-
-五、情绪曲线
-开篇：制造什么情绪
-中段：如何升级
-高潮：如何释放
-结尾：给予什么满足
-
-六、剧情结构功能
-不要复述剧情，分析具体每个阶段在商业结构上的“功能”。
-第一阶段：[作用，如：建立不可原谅的矛盾，让主角遭遇背叛切断旧关系]
-第二阶段：[作用，如：反派跳脸，主角隐忍，制造情绪低谷与期待]
-第三阶段：[作用，如：主角亮出底牌开始反击]
-高潮：[作用，如：底牌全开，完成终极清算]
-结尾：[作用，如：情绪回落，完成爽感收尾]
-
-七、付费卡点分析
-卡点位置：[如：第X章结尾]
-前面铺垫：[如：连续制造X个不可原谅事件]
-卡点事件：[如：主角决定主动反击]
-为什么读者愿意付费：[分析购买欲来源，如：想看主角从受害者转变为掌控者]
-
-八、已使用梗与复刻公式
-已使用梗：[提取该故事用到的经典梗，如：真假千金、死人文学、带球跑等]
-复刻公式：【身份】+【核心伤害】+【反击目标】+【阻力升级】+【终极清算】
-
-最后，请将抽象出的模型数据以JSON格式输出，必须包含在 ```json 与 ``` 中，结构如下：
-```json
-{
-  "need_save": true,
-  "doc_type": "analysis",
-  "one_sentence_selling_point": "[一句话主线概括]",
-  "genre": "[大类型/子类型]",
-  "explosive_engine_formula": "[复刻公式]",
-  "emotion_curve": ["[开篇]", "[中段]", "[高潮]", "[结尾]"],
-  "conflict_chain": {"cause":"", "upgrade":"", "turning":"", "climax":"", "ending":""},
-  "paywall_analysis": "[付费卡点分析]"
-}
-```
-"""
-
-
-SKILL2_PROMPT = """你是一个爆款短剧编剧（Skill 2：爆款迭代与创新）。
-
-你的任务是：基于Skill 1提取的主线，调用“短篇言情爆款梗库”进行创新组合，生成不同的改编方向。
-核心理念：梗库不是用于修补主线缺陷，而是作为创作变量，增加冲突来源、改变人物关系、提升情绪强度、制造新反转路径。
-
-================================
-【执行流程】
-
-Step1：提取原故事主线
-读取上文（Skill 1）分析结果，提取出原故事的主线。
-
-Step2：梗库调用决策层（核心机制！）
-调用梗库进行创新时，不允许随机添加梗，也不允许为了增加元素改变原故事方向。
-所有新增梗必须满足：
-1. 保留原主线核心矛盾：新增梗只能围绕原故事的核心冲突进行强化，不得替换原故事的主要矛盾。
-2. 强化原故事核心爽点：新增梗的作用是提高故事的新鲜感、反转性和情绪强度，而不是填补所谓“缺陷”。AI禁止自行判断“原故事哪里不足”，避免为了补充缺陷强行修改剧情。
-3. 新梗必须改变至少一个剧情变量，但不能改变主线结果。
-   - 可改变：背景、身份关系、反转方式、阻力来源、复仇方式。
-   - 不可改变：主角核心目标、核心冲突、最终爽点方向。
-
-每次调用梗库寻找方向前，必须将内部思考和决策过程用 <think> 和 </think> 标签包裹起来。在 <think> 标签内必须回答以下三个问题：
-【原主线核心爽点是什么？】
-【这个新梗强化了哪个爽点？】
-【如果删除这个新梗，原故事是否仍成立？】
-如果回答“只是增加设定 / 只是换背景 / 只是增加身份”，则判定为无效创新，重新寻找！
-
-Step3：生成三个创新方向
-完成决策后，严格按照以下格式，输出三个不同的创新方向（方向A、方向B、方向C）：
-
-方向A：
-【原主线】（说明保留了原故事的什么核心内容）
-【新增梗】（从梗库中提取并加入的具体梗）
-【融合逻辑】（为什么这个梗适合加入）
-【强化爽点】（增加了什么读者情绪）
-【新主线】（加入梗后的完整故事方向）
-
-方向B：
-...（同上格式）
-
-方向C：
-...（同上格式）
-
-Step4：让用户选择
-必须询问：“请选择想发展的方向：A / B / C 或继续调整”
-未获得用户确认前：禁止扩写大纲或正文！
-
-请在此处输出互动 JSON 以供前端渲染选项按钮（不要输出后续详细大纲）：
-```json
-{
-  "questions": [
-    {
-      "question": "请选择想发展的创新方向：",
-      "options": ["A：方向A名称", "B：方向B名称", "C：方向C名称"]
-    }
-  ]
-}
-```
-
-================================
-Step5：用户确认后的细化（只有当用户明确选择了A/B/C后才执行本步）
-根据用户选择的方向，扩写为详细的故事方案。包含：
-- 核心设定（人物小传、金手指/新梗设定）
-- 主线大纲（起因、发展、高潮、结局）
-- 爆点分布（前三章看点、打脸/反转高潮点）
-
-并输出存储 JSON（只有在执行Step5时才输出）：
-```json
-{
-  "need_save": true,
-  "doc_type": "story_design",
-  "title": "[生成的新故事暂定名]",
-  "characters": "[主要人物列表及身份]",
-  "main_conflict": "[核心冲突]",
-  "story_route": "[剧情主干发展]"
-}
-```
-"""
-
-
-SKILL3_PROMPT = '''你是章节规划器（Skill 3）。
-你的任务是根据已经确定的故事大纲（Story Design），将其拆解为具体的可执行的章节细纲（通常为 4-9 章）。
-
-## 【重要规则】
-✅ 每章必须有明确的核心目标（Goal）。
-✅ 必须设计具体的冲突点（Conflicts）。
-✅ 每一章结尾必须留下钩子（Hook），尤其是第4章必须设计强烈的付费卡点。
-
-# 输出格式
-
-# 📜 短篇章节规划 (分集大纲)
-
-## 第1章：[章节名]
-- **核心目标**：[本章要完成的剧情任务]
-- **具体冲突**：[发生了什么矛盾]
-- **结尾钩子**：[悬念或期待点]
-
-## 第2章：[章节名]
-- **核心目标**：[本章要完成的剧情任务]
-- **具体冲突**：[发生了什么矛盾]
-- **结尾钩子**：[悬念或期待点]
-
-*(依此类推，直到大结局。如果是一般短篇，请规划 7-9 章左右。)*
-
-## 💾 系统数据输出
-```json
-{
-  "need_save": true,
-  "doc_type": "chapter_outline",
-  "chapters": [
-    {"chapter": 1, "goal": "", "conflicts": [], "hook": ""}
-  ]
-}
-```
-'''
-
-SKILL4_PROMPT = '''你是正文撰写器（Skill 4）。
-你的任务是根据章节大纲，撰写具体的短篇小说正文。
-
-## 【写作规则】
-✅ **情绪优先**：用细节和对话渲染情绪，避免干瘪的叙述。
-✅ **节奏紧凑**：网文节奏要快，减少无关紧要的环境描写。
-✅ **强化冲突**：正反派的交锋必须充满张力。
-✅ **结尾留悬念**：严格执行大纲中设定的“结尾钩子”。
-
-# 输出要求
-直接输出小说的正文内容，使用优美的排版。不要包含任何废话，不要输出JSON（除非用户特别要求）。
-如果用户只要求写某一章，请专注写好那一章；如果用户要求“接着写”，请顺着上下文继续。
-'''
-
-SKILL6_PROMPT = '''你是短篇内容润色修改专家（Skill 6）。
-你的任务是根据用户的反馈意见，对已经写好的小说正文或大纲进行精准修改。
-
-## 【修改规则】
-✅ **精准定位**：只修改用户觉得不好的地方，保留好的部分。
-✅ **强化爽点**：如果用户觉得“不够爽”，请加大反差和打脸力度。
-✅ **降低AI感**：使用更鲜活、接地气的词汇，消除生硬的排比句和说教感。
-
-请直接输出修改后的内容，不带任何客套话。
-'''
-
 BENCH_PROMPT = r"""
 你是顶级短剧对标与仿写智能体，擅长爆款短剧的结构拆解、套路分析、节奏把控与精准仿写。
 
@@ -655,71 +298,25 @@ def extract_template_json(text: str):
         except: pass
     return None
 
-def extract_smart_filename(content: str, messages: list = None, user_input: str = "", wmode: str = "", doc_text: str = "") -> str:
+def extract_smart_filename(content: str, messages: list = None, user_input: str = "", wmode: str = "") -> str:
     drama_title = ""
-    
-    # Clean think blocks first to avoid extracting titles from internal thoughts
-    clean_content = re.sub(r'<thinking>[\s\S]*?(?:</thinking>|$)', '', content, flags=re.DOTALL | re.IGNORECASE)
-    clean_content = re.sub(r'<think>[\s\S]*?(?:</think>|$)', '', clean_content, flags=re.DOTALL | re.IGNORECASE).strip()
-    
-    # Strategy 1: Look for explicit Markdown headers containing 《》
-    header_match = re.search(r'^#+\s*.*?《([^》]+)》', clean_content, re.MULTILINE)
-    if header_match:
-        drama_title = header_match.group(1)
-        
-    # Strategy 2: Look for explicit naming declarations
-    if not drama_title:
-        explicit = re.search(r'(?:剧名|片名|项目名称|剧本名称)[\s:：]*《([^》]+)》', clean_content)
-        if explicit:
-            drama_title = explicit.group(1)
-            
-    # Strategy 3: Fallback to the first 《》 in the clean generated content that is NOT the example title
-    if not drama_title:
-        title_matches = re.findall(r'《([^》]+)》', clean_content)
-        if title_matches:
-            # If the user explicitly provided an example in their input like "参考《xxx》", we should ignore it
-            ignore_titles = []
-            if user_input:
-                ig_match = re.findall(r'(?:参考|仿照|例子|示例)[^《]*《([^》]+)》', str(user_input))
-                ignore_titles.extend(ig_match)
-            
-            for tm in title_matches:
-                if tm not in ignore_titles:
-                    drama_title = tm
-                    break
-            
-            if not drama_title:
-                drama_title = title_matches[0]
-
-    # Strategy 4: Fallback to user input
-    if not drama_title and user_input:
-        tm = re.findall(r'《([^》]+)》', str(user_input))
-        if tm:
-            drama_title = tm[-1] # User usually puts their target title last
-
-    # Strategy 5: Fallback to history
-    if not drama_title and messages:
+    title_matches = re.findall(r'《([^》]+)》', content)
+    if not title_matches and user_input:
+        title_matches = re.findall(r'《([^》]+)》', str(user_input))
+    if not title_matches and messages:
         for m in reversed(messages):
             mc = m.get("content", "") if isinstance(m, dict) else str(m)
             tm = re.findall(r'《([^》]+)》', mc)
             if tm:
-                drama_title = tm[-1]
+                title_matches = tm
                 break
 
-    # Strategy 6: Fallback to uploaded filename from doc_text
-    if not drama_title and doc_text:
-        doc_match = re.search(r'【文件\d+:\s*([^】]+)】', doc_text)
-        if doc_match:
-            fname = doc_match.group(1).strip()
-            if '.' in fname:
-                fname = fname.rsplit('.', 1)[0]
-            drama_title = fname
-
-    if drama_title:
+    if title_matches:
+        drama_title = title_matches[0]
         drama_title = re.sub(r'[\\/:*?"<>|\r\n\t]', '', drama_title).strip()
     return drama_title
 
-def process_document_saving(content: str, session_dir: str, messages: list = None, user_input: str = "", wmode: str = "", doc_text: str = "") -> Optional[str]:
+def process_document_saving(content: str, session_dir: str, messages: list = None, user_input: str = "", wmode: str = "") -> Optional[str]:
     if not content:
         return None
 
@@ -732,9 +329,9 @@ def process_document_saving(content: str, session_dir: str, messages: list = Non
     # 2. 严格识别正式资产头部
     has_script = bool(re.search(r'^(?:#+.*|【.*)?(?:第[一二三四五六七八九十0-9]+集|1-5集剧本|6-10集剧本|分集剧本正文)', text, re.MULTILINE))
     has_character = bool(re.search(r'^(?:#+.*|【.*)?(?:人物小传|角色设定|人设小传|角色小传)', text, re.MULTILINE))
-    has_outline = bool(re.search(r'^(?:#+.*|【.*)?(?:故事大纲|剧情大纲|三幕式大纲|故事设计方案)', text, re.MULTILINE))
-    has_ep_outline = bool(re.search(r'^(?:#+.*|【.*)?(?:前十集集纲|分集集纲|前10集集纲|短篇章节规划)', text, re.MULTILINE))
-    has_analysis = bool(re.search(r'^(?:#+.*|【.*)?(?:对标拆解分析方案|Step1-3拆解分析|Step5-6方案大纲|对标拆解报告|短篇爆文商业拆解报告|短篇爆文拆解报告|短篇拆解结果|一、标题与一句话主线|一、一句话主线概括)', text, re.MULTILINE))
+    has_outline = bool(re.search(r'^(?:#+.*|【.*)?(?:故事大纲|剧情大纲|三幕式大纲)', text, re.MULTILINE))
+    has_ep_outline = bool(re.search(r'^(?:#+.*|【.*)?(?:前十集集纲|分集集纲|前10集集纲)', text, re.MULTILINE))
+    has_analysis = bool(re.search(r'^(?:#+.*|【.*)?(?:对标拆解分析方案|Step1-3拆解分析|Step5-6方案大纲|对标拆解报告)', text, re.MULTILINE))
 
     doc_type = ""
     label_suffix = ""
@@ -757,7 +354,7 @@ def process_document_saving(content: str, session_dir: str, messages: list = Non
         label_suffix = "人物小传与角色设定"
     elif has_analysis:
         doc_type = "analysis"
-        label_suffix = "分析报告"
+        label_suffix = "对标拆解分析方案"
 
     if not doc_type:
         return None
@@ -769,39 +366,27 @@ def process_document_saving(content: str, session_dir: str, messages: list = Non
     for line in lines:
         stripped = line.strip()
         if not in_body:
-            if re.search(r'^(?:#+.*|【.*)?(?:第[0-9一二三四五六七八九十]+集|第一集|第1集|人物小传|角色小传|角色设定|故事大纲|前十集集纲|对标拆解|短篇|Step)', stripped):
+            if re.search(r'^(?:#+.*|【.*)?(?:第[0-9一二三四五六七八九十]+集|第一集|第1集|人物小传|角色小传|角色设定|故事大纲|前十集集纲|对标拆解|Step)', stripped):
                 in_body = True
 
         if in_body:
-            if any(k in stripped for k in ["集要点:", "集要点：", "字数自算", "在1000以内", "你先审", "告诉我你的想法", "选完（或告诉我", "我立刻按同样", "写完", "感觉对吗", "埋点说明", "说明：", "接下来", "还需要", "字数约", "以上就是", "符合你的", "第六集写完", "调整后的", "修改后的", "修改说明", "三重收获", "需要我"]): break
-            if stripped == "---" or stripped.startswith("--- "): break
+            if any(k in stripped for k in ["集要点:", "集要点：", "字数自算", "在1000以内", "你先审", "告诉我你的想法", "选完（或告诉我", "我立刻按同样"]):
+                break
             if any(stripped.startswith(k) for k in ["数一下字数", "符合要求", "请确认是否", "你定一下", "请在下方说明"]):
                 continue
             clean_lines.append(line)
 
     cleaned_body = "\n".join(clean_lines).strip()
-    # 强制物理清除所有残余的 Markdown 符号
-    cleaned_body = re.sub(r'\*\*(.*?)\*\*', r'\1', cleaned_body)
-    cleaned_body = re.sub(r'^#+\s*', '', cleaned_body, flags=re.MULTILINE)
-    cleaned_body = re.sub(r'^\s*-\s+', '', cleaned_body, flags=re.MULTILINE)
-    
     if len(cleaned_body) < 150:
         return None
 
-    drama_title = extract_smart_filename(content, messages, user_input, wmode, doc_text)
-    
-    if doc_type == "analysis":
-        if drama_title:
-            final_filename = f"分析_{drama_title}_{label_suffix}"
-        else:
-            final_filename = f"分析_{label_suffix}"
+    drama_title = extract_smart_filename(content, messages, user_input, wmode)
+    if drama_title and label_suffix:
+        final_filename = f"{drama_title}_{label_suffix}"
+    elif drama_title:
+        final_filename = f"{drama_title}_{label_suffix or '创作文档'}"
     else:
-        if drama_title and label_suffix:
-            final_filename = f"{drama_title}_{label_suffix}"
-        elif drama_title:
-            final_filename = f"{drama_title}_{label_suffix or '创作文档'}"
-        else:
-            final_filename = f"短剧_{label_suffix or '创作文档'}"
+        final_filename = f"短剧_{label_suffix or '创作文档'}"
 
     safe_name = re.sub(r'[\\/:*?"<>|\r\n\t\s]+', '_', final_filename).strip('_')
     filepath = os.path.join(session_dir, f"{safe_name}.docx")
@@ -1034,39 +619,12 @@ async def get_history_detail(session_id: str, token: Optional[str] = Query(None)
                     
     return {"status": "ok", "session_id": safe_session, "messages": chat_messages, "files": files}
 
-def parse_pdf(file_bytes: bytes) -> str:
-    try:
-        import PyPDF2
-        import io
-        pdf_reader = PyPDF2.PdfReader(io.BytesIO(file_bytes))
-        text = ""
-        for page in pdf_reader.pages:
-            page_text = page.extract_text()
-            if page_text:
-                text += page_text + "\n"
-        return text
-    except Exception as e:
-        print("Parse PDF error:", e)
-        return ""
-
 @app.post("/api/upload")
 async def upload_file(file: UploadFile = File(...)):
-    filename = file.filename.lower()
-    if not (filename.endswith('.docx') or filename.endswith('.pdf') or filename.endswith('.txt')):
-        return {"error": "仅支持 .docx, .pdf 或 .txt 文件"}
+    if not file.filename.endswith('.docx'):
+        return {"error": "仅支持 .docx 文件"}
     content = await file.read()
-    if filename.endswith('.pdf'):
-        text = parse_pdf(content)
-    elif filename.endswith('.txt'):
-        try:
-            text = content.decode('utf-8')
-        except UnicodeDecodeError:
-            try:
-                text = content.decode('gbk')
-            except UnicodeDecodeError:
-                text = content.decode('utf-8', errors='ignore')
-    else:
-        text = parse_docx(content)
+    text = parse_docx(content)
     return {"filename": file.filename, "word_count": len(text), "text": text}
 
 @app.post("/api/fetch-models")
@@ -1102,13 +660,6 @@ async def chat(req: ChatRequest, authorization: Optional[str] = Header(None)):
     url = req.api_url or req.apiurl or "https://yunwu.ai/v1"
     wmode = req.work_mode or req.workmode or "通用"
     uinput = req.user_input or req.userinput or ""
-    
-    if not uinput and req.messages:
-        for m in reversed(req.messages):
-            if m.get("role") == "user":
-                uinput = m.get("content", "")
-                break
-
     dtext = req.doc_text or req.doctext or ""
     
     user = get_current_user_info(req.token, authorization)
@@ -1117,65 +668,17 @@ async def chat(req: ChatRequest, authorization: Optional[str] = Header(None)):
     if wmode == "短剧对标":
         sys_p = BENCH_PROMPT
     elif wmode == "剧本创作":
-        sys_p = CREATE_PROMPT.replace(SCRIPT_FORMAT_RULE + OUTPUT_CLEAN_RULE, "") + "\n\n" + GENERAL_SCRIPT_LOGIC + "\n\n" + OUTLINE_BIO_PROMPT + "\n\n" + SCRIPT_FORMAT_RULE + OUTPUT_CLEAN_RULE
-    elif wmode == "短篇创作":
-        # 强制路由规则 (Task Router - Skill -1)
-        analysis_keywords = ["分析", "拆解", "研究", "学习", "模仿", "结构", "看看这篇", "提取", "套路"]
-        creation_keywords = ["写一个", "创作一个", "生成一个", "我要写", "新写", "帮我写", "构思"]
-        revision_keywords = ["改一下", "润色", "降低ai感", "重写", "修改"]
-        continue_keywords = ["继续写", "接着写", "下一章"]
-        
-        is_revision = any(k in uinput for k in revision_keywords)
-        is_continue = any(k in uinput for k in continue_keywords)
-        is_creation = any(k in uinput for k in creation_keywords)
-        is_analysis = any(k in uinput for k in analysis_keywords) or (bool(dtext) and not is_creation)
-        
-        # 扩展的 V6 强制路由规则
-        is_design = any(k in uinput for k in ["设计大纲", "故事方案", "故事大纲", "写大纲", "做大纲", "仿写", "创新", "改编", "参考这个"])
-        is_outline = any(k in uinput for k in ["章节规划", "分集大纲", "细纲", "章纲"])
-        
-        if is_revision:
-            sys_p = SKILL6_PROMPT
-        elif is_continue or any(k in uinput for k in ["写正文", "开始写", "撰写"]):
-            sys_p = SKILL4_PROMPT
-        elif is_outline:
-            sys_p = SKILL3_PROMPT
-        elif is_design or (is_creation and not dtext) or (wmode == "短剧对标" and any(k in uinput for k in ["仿写", "创新", "改编"])):
-            sys_p = SKILL2_PROMPT
-            try:
-                base_dir = os.path.dirname(os.path.abspath(__file__))
-                with open(os.path.join(base_dir, "知识库_调用规则.md"), "r", encoding="utf-8") as f_r:
-                    r_txt = f_r.read()
-                with open(os.path.join(base_dir, "知识库_短篇言情爆款梗库.md"), "r", encoding="utf-8") as f_t:
-                    t_txt = f_t.read()
-                sys_p += f"\n\n========== 以下为系统动态挂载的本地梗库数据 ==========\n\n{r_txt}\n\n{t_txt}\n==================================================\n"
-            except Exception as e:
-                print("Failed to load KB:", e)
-        
-        elif is_analysis:
-            sys_p = SKILL1_PROMPT
-        else:
-            sys_p = SKILL0_PROMPT
+        sys_p = CREATE_PROMPT + "\n\n" + OUTLINE_BIO_PROMPT
     else:
         sys_p = "你是专业高效的AI创作助手。"
 
     if dtext:
         sys_p = f"【用户已上传待分析脚本（{len(dtext)}字）】\n\n{dtext}\n\n---\n{sys_p}"
 
-    sys_p += "\n\n【强制规则】：为了呈现清晰的决策过程，你必须在回答的最开始，将内部的分析、推理、以及选梗等一切决策过程，全部用 <think> 和 </think> 标签包裹起来。在 </think> 闭合标签之后，再输出给用户的正式回复和卡片内容。"
-
     api_messages = [{"role": "system", "content": sys_p}]
     for m in req.messages:
-        if m.get("role") in ("system", "user", "assistant"):
-            if m.get("images") and len(m["images"]) > 0:
-                content = []
-                if m.get("content"):
-                    content.append({"type": "text", "text": m["content"]})
-                for img_url in m["images"]:
-                    content.append({"type": "image_url", "image_url": {"url": img_url}})
-                api_messages.append({"role": m["role"], "content": content})
-            else:
-                api_messages.append({"role": m["role"], "content": m["content"]})
+        if m.get("role") in ("role", "user", "assistant"):
+            api_messages.append({"role": m["role"], "content": m["content"]})
     if uinput:
         api_messages.append({"role": "user", "content": uinput})
 
@@ -1199,7 +702,7 @@ async def chat(req: ChatRequest, authorization: Optional[str] = Header(None)):
             session_dir, safe_session = get_user_session_dir(username, session_raw)
 
             bench_data = extract_template_json(full_response)
-            saved = process_document_saving(full_response, session_dir, req.messages, uinput, wmode, req.doc_text)
+            saved = process_document_saving(full_response, session_dir, req.messages, uinput, wmode)
             
             # 保存聊天历史 json
             history_file = os.path.join(session_dir, "history.json")
@@ -1212,14 +715,7 @@ async def chat(req: ChatRequest, authorization: Optional[str] = Header(None)):
                 json.dump(new_msgs, f, ensure_ascii=False, indent=2)
 
             # 更新 user_sessions 数据库索引
-            fallback_uinput = uinput
-            if not fallback_uinput and req.messages and len(req.messages) > 0 and req.messages[-1].get("role") == "user":
-                last_content = req.messages[-1].get("content", "")
-                if isinstance(last_content, list):
-                    fallback_uinput = next((p["text"] for p in last_content if p.get("type") == "text"), "")
-                else:
-                    fallback_uinput = str(last_content)
-            smart_title = extract_smart_filename(full_response, req.messages, uinput, wmode) or fallback_uinput[:20] or "创作会话"
+            smart_title = extract_smart_filename(full_response, req.messages, uinput, wmode) or uinput[:20] or "创作会话"
             conn = sqlite3.connect(DB_PATH)
             c = conn.cursor()
             c.execute('''
@@ -1300,12 +796,12 @@ async def preview_file(filepath: str):
     for line in lines:
         stripped = line.strip()
         if not in_body:
-            if re.search(r'^(?:#+.*|【.*)?(?:第[0-9一二三四五六七八九十]+集|第一集|第1集|人物小传|角色小传|角色设定|故事大纲|前十集集纲|对标拆解|短篇|Step)', stripped):
+            if re.search(r'^(?:#+.*|【.*)?(?:第[0-9一二三四五六七八九十]+集|第一集|第1集|人物小传|角色小传|角色设定|故事大纲|前十集集纲|对标拆解|Step)', stripped):
                 in_body = True
 
         if in_body:
-            if any(k in stripped for k in ["集要点:", "集要点：", "字数自算", "在1000以内", "你先审", "告诉我你的想法", "选完（或告诉我", "我立刻按同样", "写完", "感觉对吗", "埋点说明", "说明：", "接下来", "还需要", "字数约", "以上就是", "符合你的", "第六集写完", "调整后的", "修改后的", "修改说明", "三重收获", "需要我"]): break
-            if stripped == "---" or stripped.startswith("--- "): break
+            if any(k in stripped for k in ["集要点:", "集要点：", "字数自算", "在1000以内", "你先审", "告诉我你的想法", "选完（或告诉我", "我立刻按同样"]):
+                break
             if any(stripped.startswith(k) for k in ["数一下字数", "符合要求", "请确认是否", "你定一下", "请在下方说明"]):
                 continue
             clean_lines.append(line)

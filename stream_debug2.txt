@@ -1,0 +1,25 @@
+2591:       E('genStatus').innerHTML = '<button class="btn danger" onclick="stopGen()">⏹ 停止生成</button>';
+2592:       E('chatInput').disabled = true;
+2593: 
+2594:       var pid = 'm' + Date.now();
+2595:       chat.msgs.push({ role: 'assistant', content: '', s: true, id: pid });
+2596:       rd();
+2597: 
+2598:       try {
+2599:         var r = await fetch(B + '/api/chat', {
+2600:           method: 'POST',
+2601:           headers: Object.assign({ 'Content-Type': 'application/json' }, getAuthHeaders()),
+2602:           body: JSON.stringify({
+2603:             api_key: k, api_url: gU(), model: gM(), work_mode: S.mode || '通用',
+2604:             messages: chat.msgs.filter(function (m) { return !m.s; }).map(function (m) { return { role: m.role, content: m.content, images: m.images }; }),
+2605:             user_input: "", doc_text: docT, session_id: S.cid, token: getToken()
+2606:           }),
+2607:           signal: S.ab.signal
+2608:         });
+2609: 
+2610:         var reader = r.body.getReader(), dec = new TextDecoder(), buf = '', full = '';
+2611:         while (true) {
+2612:           var rdv = await reader.read(); if (rdv.done) break;
+2613:           buf += dec.decode(rdv.value, { stream: true });
+2614:           var lines = buf.split('\n'); buf = lines.pop() || '';
+2615:           for (var li = 0; li < lines.length; li++) {

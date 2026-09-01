@@ -1,0 +1,150 @@
+    function rd(preserveScroll) {
+      var chat = CC(), area = E('chatArea'), h = '', msgs = chat.msgs;
+      if (!msgs || !msgs.length) {
+        h += '<div style="margin-bottom:12px;background:#dcfce7;border:1px solid #86efac;color:#166534;padding:8px 14px;border-radius:10px;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:space-between;"><span>✨ 当前已处于全新空白对话 (ID: ' + esc(S.cid) + ')</span><button class="btn xs" onclick="newChat()">清空重置</button></div>';
+        if (S.mode === '短剧对标') {
+          h += renderBenchGuide();
+        } else if (S.mode === '剧本创作' || !S.mode || S.mode === '通用' || true) {
+          h += '<div class="guide-msg"><div class="guide-title">🎨 剧本创作模式 · 智能分析与追问体验</div><p>请在下方聊天框直接输入你的创作想法或概述（如："我想写一部女扮男装的宫廷追女爽剧..."），发送后 AI 将深入分析并向你提出定向选项卡片供你确认方案。</p></div>';
+        } else {
+          h += '<div style="text-align:center;padding:60px 0;opacity:.4;font-size:14px;">👆 点击底部「对标」或「创作」开始或在输入框中自由对话 ✨</div>';
+        }
+        
+      if (S.multiSelectMode) {
+        var selCount = Object.keys(S.selectedMsgs).filter(function(k){return S.selectedMsgs[k];}).length;
+        h += '<div class="batch-bar"><span style="font-size:12px;font-weight:600">已选 ' + selCount + ' 条</span><button class="btn sm danger" onclick="deleteSelectedMsgs()">删除</button><button class="btn sm" onclick="toggleMultiSelect()">取消</button></div>';
+      }
+      area.innerHTML = h;
+        return;
+      }
+
+      // 🔴 方案 1 性能优化：消息超过 15 条时，开启 UI 视口切片渲染（不影响文件资产存盘与后端全量保存）
+      var batchBtn = '';
+      if (!S.multiSelectMode && msgs.length > 0) {
+        batchBtn = '<div style="text-align:right; margin-bottom:10px;"><button class="btn xs" onclick="toggleMultiSelect()">批量管理</button></div>';
+      }
+      /* h += batchBtn; MOVED TO BOTTOM */
+      var maxVisible = S.showAllMsgs ? msgs.length : 15;
+      var startIdx = Math.max(0, msgs.length - maxVisible);
+
+      if (startIdx > 0) {
+        var hiddenCount = startIdx;
+        h += '<div style="text-align:center;margin:6px 0 12px 0;"><button class="btn xs" onclick="S.showAllMsgs=true;rd();" style="background:var(--bg2);border:1px solid var(--border);color:var(--primary);font-weight:600;padding:6px 14px;border-radius:20px;">📜 已折叠更早的 ' + hiddenCount + ' 条历史消息 (点击加载全部对话)</button></div>';
+      } else if (S.showAllMsgs && msgs.length > 15) {
+        h += '<div style="text-align:center;margin:6px 0 12px 0;"><button class="btn xs" onclick="S.showAllMsgs=false;rd();" style="opacity:.6;padding:4px 10px;border-radius:14px;">收起更早消息</button></div>';
+      }
+
+      for (var i = startIdx; i < msgs.length; i++) {
+        var m = msgs[i];
+        if (!S.selectedMsgs) S.selectedMsgs = {};
+        h += '<div class="msg-wrap ' + (m.role === 'user' ? 'is-user ' : '') + (S.multiSelectMode ? 'multi-select' : '') + '">';
+        if (S.multiSelectMode) {
+          h += '<input type="checkbox" class="msg-checkbox" ' + (S.selectedMsgs[i] ? 'checked' : '') + ' onclick="toggleSelectMsg(' + i + ')">';
+        }
+        if (m.role === 'user') {
+          if (S.edi === i) {
+            h += '<div class="msg user" style="width: 100%; max-width: 600px;"><div class="role" style="display:flex;justify-content:flex-end;margin-bottom:4px;font-size:12px;opacity:0.6;">编辑中...</div><textarea class="edit-textarea" id="editArea" style="width:100%; min-height:80px; padding:12px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text); font-family:inherit; resize:vertical; box-shadow: 0 2px 8px rgba(0,0,0,0.05);" oninput="this.style.height=\'auto\'; this.style.height=(this.scrollHeight)+\'px\';">' + esc(m.content) + '</textarea><div class="actions" style="margin-top:8px;display:flex;justify-content:flex-end;gap:8px;"><button class="btn sm primary" onclick="cfEd(' + i + ')">确认</button><button class="btn sm" onclick="S.edi=null;rd(true)">取消</button></div></div>';
+          } else {
+            h += '<div class="msg user"><div class="role" style="display:flex;justify-content:flex-end;margin-bottom:4px;"><button class="btn xs" onclick="S.edi=' + i + ';rd(true)" style="opacity:.4">✏️修改</button></div><div class="content">' + renderMarkdown(m.content) + '</div></div>';
+          }
+          h += '</div>'; // close msg-wrap
+          continue;
+        }
+        if (m.er) {
+          h += '<div class="err-box"><div style="font-weight:600;margin-bottom:4px;">生成失败</div><div>' + esc(m.content) + '</div>';
+          if (i === msgs.length - 1 && !S.gen) h += '<div style="margin-top:6px;"><button class="btn sm" onclick="rgn(' + i + ')">重新生成</button></div>';
+          h += '</div>';
+          h += '</div>'; // close msg-wrap
+          continue;
+        }
+
+        var rawContent = m.content || '';
+        var disp = rawContent;
+        if (S.mode === '剧本创作' || !S.mode || S.mode === '通用' || true) {
+          disp = disp.replace(/\[TEMPLATEJSON\][\s\S]*?\[\/TEMPLATEJSON\]/g, '');
+        } else {
+          disp = disp.replace(/\[TEMPLATEJSON\][\s\S]*?\[\/TEMPLATEJSON\]/g, '<span style="font-size:11px;opacity:.6;background:var(--bg);padding:1px 6px;border-radius:4px;display:inline-block;margin:2px 0;">📋 (模板数据已解析)</span>');
+        }
+
+        var thR = /<(?:think|thinking|thought)>([\s\S]*?)(?:<\/(?:think|thinking|thought)>|$)/gi, thH = '', tm;
+        while ((tm = thR.exec(disp)) !== null) {
+          if (tm[1]) thH += tm[1] + '\n';
+        }
+        disp = disp.replace(/<(?:think|thinking|thought)>[\s\S]*?(?:<\/(?:think|thinking|thought)>|$)/gi, '').trim();
+
+        var isGenerating = m.s || (S.gen && i === msgs.length - 1);
+
+        h += '<div class="msg assistant"><div class="role">🤖 助手</div>';
+        if (thH.trim()) h += '<details class="think-box"><summary>🧠 思考过程 (点击展开/折叠)</summary><div style="margin-top:6px;opacity:.95;">' + renderMarkdown(thH.trim()) + '</div></details>';
+        if (isGenerating) h += '<div class="think-box">🤔 AI 正在思考中<div class="dots"><span></span><span></span><span></span></div></div>';
+        h += '<div class="content" id="msg_' + (m.id || '') + '">' + renderMarkdown(disp) + '</div>';
+
+        if (i === msgs.length - 1 && !m.s && !S.gen) {
+          h += '<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;">';
+          h += '<button class="btn sm" onclick="rgn(' + i + ')">重新生成</button>';
+          if (S.mode === '短剧对标' && S.benchStep <= 8) {
+            var nextPrompt = STEP_PROMPTS[S.benchStep];
+            if (nextPrompt) {
+              h += '<button class="btn sm primary" onclick="E(\'chatInput\').value=\'' + esc(nextPrompt).replace(/'/g, "\\'") + '\';E(\'chatInput\').focus();">继续步骤' + S.benchStep + ' →</button>';
+            }
+          }
+          h += '</div>';
+        }
+        h += '</div>'; // close msg assistant
+        h += '</div>'; // close msg-wrap
+      }
+      
+      if (S.multiSelectMode) {
+        var selCount = Object.keys(S.selectedMsgs).filter(function(k){return S.selectedMsgs[k];}).length;
+        h += '<div class="batch-bar"><span style="font-size:12px;font-weight:600">已选 ' + selCount + ' 条</span><button class="btn sm danger" onclick="deleteSelectedMsgs()">删除</button><button class="btn sm" onclick="toggleMultiSelect()">取消</button></div>';
+      }
+      var oldScroll = area.scrollTop;
+      area.innerHTML = h;
+      if (preserveScroll === true) {
+        area.scrollTop = oldScroll;
+      } else {
+        area.scrollTop = area.scrollHeight;
+      }
+      rP();
+    }
+
+    function renderBenchGuide() {
+      var h = '<div class="guide-msg">';
+      h += '<div class="guide-title">🔬 短剧对标模式 · 8步流程</div>';
+      h += '<p style="margin-bottom:8px;">此模式将引导你完成：上传参考剧本 → 拆解分析 → 提取模板 → 仿写方案 → 生成仿写剧本。</p>';
+      h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;font-size:12px;">';
+      for (var i = 0; i < BENCH_STEPS.length; i++) {
+        var s = BENCH_STEPS[i], isCurrent = (s.id === S.benchStep);
+        h += '<div style="padding:4px 0;' + (isCurrent ? 'color:var(--primary);font-weight:700;' : 'opacity:.7;') + '">' + (isCurrent ? '👉 ' : '') + s.icon + ' Step' + s.id + ': ' + s.label + '</div>';
+      }
+      h += '</div>';
+      h += '<div style="margin-top:10px;padding-top:8px;border-top:1px solid #e5e7eb;">';
+      h += '<span style="font-weight:600;">📍 当前：Step ' + S.benchStep + ' - ' + BENCH_STEPS[S.benchStep - 1].label + '</span> ';
+      h += '<span style="font-size:12px;opacity:.7;">— ' + getStepTip(S.benchStep) + '</span>';
+      h += '<div class="preset-btns">';
+      if (S.benchStep === 1) {
+        h += '<span class="preset-btn" onclick="E(\'fileInput\').click()">📁 上传参考剧本</span>';
+        h += '<span class="preset-btn" onclick="E(\'chatInput\').value=\'请帮我对标分析我上传的参考剧本，先确认已收到并阅读完毕。\';E(\'chatInput\').focus();">📤 已上传，开始分析</span>';
+      } else {
+        var p = STEP_PROMPTS[S.benchStep];
+        if (p) h += '<span class="preset-btn" onclick="E(\'chatInput\').value=\'' + esc(p).replace(/'/g, "\\'") + '\';E(\'chatInput\').focus();">🚀 执行 Step ' + S.benchStep + '</span>';
+      }
+      h += '</div></div></div>';
+      return h;
+    }
+
+    function rgn(idx) {
+      var c = CC();
+      c.msgs = c.msgs.slice(0, idx);
+      sv(); rd();
+      sendMsg(true);
+    }
+
+    // ====== 发送消息与 done 强制检测逻辑 ======
+    async function sendMsg(isRegen) {
+      if (typeof isRegen !== 'boolean') isRegen = false;
+      var inp = E('chatInput'), txt = inp.value.trim();
+      
+      var chat = CC();
+      var lastM = chat.msgs && chat.msgs.length ? chat.msgs[chat.msgs.length - 1] : null;
+      if (S.gen && (!lastM || !lastM.s)) {

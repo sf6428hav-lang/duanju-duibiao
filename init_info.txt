@@ -1,0 +1,8 @@
+Line 872: <div id="authTabLogin" class="auth-tab-btn active" onclick="switchAuthTab('login')">🔑 账号登录</div>
+Line 2195: var currentAuthTab = 'login';
+Line 2218: if (tab === 'login') {
+Line 2219: document.getElementById('authTabLogin').classList.add('active');
+Line 2224: document.getElementById('authTabLogin').classList.remove('active');
+Line 2276: var endpoint = currentAuthTab === 'login' ? '/api/auth/login' : '/api/auth/register';
+Line 2287: showToast(currentAuthTab === 'login' ? '🎉 登录成功！' : '🎉 注册成功并已登录！');
+Line 2370: reader.onload = async function(e) {

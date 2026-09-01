@@ -1,0 +1,151 @@
+.msg-wrap {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 24px;
+      position: relative;
+    }
+.msg-wrap.multi-select .msg {
+      margin-left: 12px;
+      margin-bottom: 0 !important;
+      width: calc(100% - 30px);
+    }
+.msg-checkbox {
+      margin-top: 10px;
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+.msg {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      width: 100%;
+      max-width: 100%;
+      align-self: stretch;
+      animation: fadeIn 0.3s ease;
+    }
+.msg.user {
+      align-self: flex-end;
+      max-width: 85%;
+    }
+.msg.user .content {
+      background: var(--primary);
+      color: #fff;
+      border-radius: 14px 14px 2px 14px;
+    }
+.msg.assistant {
+      align-self: stretch;
+      width: 100%;
+    }
+.msg.assistant .content {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px 14px 14px 2px;
+      box-shadow: var(--shadow);
+      width: 100%;
+    }
+.msg .role {
+      font-size: 12px;
+      opacity: 0.6;
+    }
+.msg .content {
+      padding: 10px 14px;
+      font-size: 14px;
+      line-height: 1.6;
+      word-break: break-word;
+      width: 100%;
+    }
+.msgs && c.msgs.length > 0);
+      });
+    }
+
+    function newChat() {
+      var curC = CC();
+      if (curC.msgs && curC.msgs.length) {
+        var f = curC.msgs.find(function (m) { return m.role === 'user'; }
+.msgs && curC.msgs.length) {
+        var f = curC.msgs.find(function (m) { return m.role === 'user'; }
+.msgs = d.messages;
+            if (d.messages.length > 0) {
+              var f = d.messages.find(function (m) { return m.role === 'user'; }
+.msgs ? c.msgs.length : 0);
+        hc += '<div class="modal-item ' + (is ? 'active' : '') + '" onclick="swChat(\'' + c.id + '\');closeHistory();"><div style="flex:1"><div style="font-weight:600;font-size:13px;' + (is ? 'color:var(--primary)' : '') + '">' + (is ? '👉 ' : '💬 ') + esc(t) + '</div><div style="font-size:11px;opacity:.5;margin-top:2px;">' + cnt + ' 条对话</div></div><button class="btn xs" onclick="event.stopPropagation();delChat(\'' + c.id + '\');renderHistory();" style="opacity:.5;">✕</button></div>';
+      }
+      hl.innerHTML = hc || '<div style="text-align:center;padding:30px 0;opacity:.4;font-size:13px;">暂无历史对话记录</div>';
+    }
+
+    function switchTheme(n) {
+      var t = TH[n], r = document.documentElement.style;
+      r.setProperty('--bg', t.bg); r.setProperty('--bg2', t.bg2); r.setProperty('--text', t.text);
+      r.setProperty('--primary', t.primary); r.setProperty('--card', t.card); r.setProperty('--border', t.border);
+      r.setProperty('--shadow', t.shadow); r.setProperty('--radius', t.radius); r.setProperty('--err-bg', t.eb);
+      r.setProperty('--err-border', t.ebd); r.setProperty('--dot', t.dot);
+      r.setProperty('--step-done', t.stepDone); r.setProperty('--step-active', t.stepActive); r.setProperty('--step-pending', t.stepPending);
+      localStorage.setItem('theme', n);
+    }
+.msgs;
+      if (!msgs || !msgs.length) return null;
+
+      // 每次只解析最后一条 AI 助手的消息！
+      var lastM = null;
+      for (var i = msgs.length - 1; i >= 0; i--) {
+        if (msgs[i].role === 'assistant' && !msgs[i].er) {
+          lastM = msgs[i];
+          break;
+        }
+.msgs || [];
+        var lastM = msgs.length ? msgs[msgs.length - 1] : null;
+
+        if (S.gen || (lastM && lastM.role === 'user')) {
+          cp.style.display = 'none';
+          return;
+        }
+.msgs.slice().reverse().find(function (m) { return m.role === 'assistant' && !m.er; }
+.msgs && chat.msgs.length) {
+        for (var i = chat.msgs.length - 1; i >= 0; i--) {
+          if (chat.msgs[i].role === 'assistant') {
+            chat.msgs[i].handled = true;
+            break;
+          }
+.msgs;
+      if (!msgs || !msgs.length) {
+        h += '<div style="margin-bottom:12px;background:#dcfce7;border:1px solid #86efac;color:#166534;padding:8px 14px;border-radius:10px;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:space-between;"><span>✨ 当前已处于全新空白对话 (ID: ' + esc(S.cid) + ')</span><button class="btn xs" onclick="newChat()">清空重置</button></div>';
+        if (S.mode === '短剧对标') {
+          h += renderBenchGuide();
+        }
+.msgs = c.msgs.slice(0, idx);
+      sv(); rd();
+      sendMsg(true);
+    }
+
+    // ====== 发送消息与 done 强制检测逻辑 ======
+    async function sendMsg(isRegen) {
+      if (typeof isRegen !== 'boolean') isRegen = false;
+      var inp = E('chatInput'), txt = inp.value.trim();
+      
+      var chat = CC();
+      var lastM = chat.msgs && chat.msgs.length ? chat.msgs[chat.msgs.length - 1] : null;
+      if (S.gen && (!lastM || !lastM.s)) {
+        S.gen = false;
+      }
+.msgs.length || chat.msgs[chat.msgs.length - 1].content !== txt) chat.msgs.push({ role: 'user', content: txt }
+.msgs.filter(function (m) { return m.role === 'user'; }
+.msgs.push({ role: 'assistant', content: '', s: true, id: pid }
+.msgs.filter(function (m) { return !m.s; }
+.msgs.find(function (x) { return x.id === pid; }
+.msgs.find(function (x) { return x.id === pid; }
+.msgs.find(function (x) { return x.id === pid; }
+.msgs.find(function (x) { return x.id === pid; }
+.msgs[idx].content = nv; c.msgs = c.msgs.slice(0, idx + 1); }
+      S.edi = null; sv(); rd();
+    }
+
+    // ====== 文件操作与删除 ======
+    function clearDoc() {
+      S.doc = '';
+      var inp = E('fileInput'); if (inp) inp.value = '';
+      E('fileInfo').innerHTML = '未选择文件';
+      showToast('🗑️ 参考脚本已成功清除！');
+    }
+.msgs.find(function(x) { return x.id === msgId; }
+.msgs.find(function(x) { return x.id === msgId; }

@@ -1,0 +1,30 @@
+2132: var val = rad.value;
+2133: var customBox = E('q_custom_' + qi);
+2134: if (customBox && customBox.style.display !== 'none' && customBox.value.trim()) {
+2135: val = '自定义：' + customBox.value.trim();
+2136: }
+2137: sel.push('Q' + (qi + 1) + '确认: 「' + qs[qi].question + '」 ➔ 意向选择: 「' + val + '」');
+2138: }
+2139: }
+2140: }
+2141: }
+2142: 
+2143: var chat = CC();
+2144: if (chat.msgs && chat.msgs.length) {
+2145: for (var i = chat.msgs.length - 1; i >= 0; i--) {
+2146: if (chat.msgs[i].role === 'assistant') {
+2147: chat.msgs[i].handled = true;
+2148: break;
+2149: }
+2150: }
+2151: }
+2152: 
+2153: S.step4Questions = null;
+2154: chat.step4Questions = null;
+2155: sv();
+2156: 
+2157: var cp = E('createPanel');
+2158: if (cp) { cp.style.display = 'none'; cp.innerHTML = ''; }
+2159: 
+2160: var msgText = '## 确认选项\n' + (sel.join('\n') || '按最优创作方案执行');
+2161: E('chatInput').value = msgText;

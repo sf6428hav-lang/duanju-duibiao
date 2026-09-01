@@ -1,0 +1,40 @@
+    function rf() {
+      var s = E('themeSelect');
+      s.innerHTML = Object.keys(TH).map(function (t) { return '<option>' + t + '</option>'; }).join('');
+      s.value = localStorage.getItem('theme') || '🍑 蜜桃乌龙';
+      switchTheme(s.value);
+
+      var bB = E('btnBench'), bC = E('btnCreate');
+      bB.textContent = '对标' + (S.mode === '短剧对标' ? ' ✓' : '');
+      bC.textContent = '创作' + (S.mode === '剧本创作' ? ' ✓' : '');
+      bB.className = 'btn' + (S.mode === '短剧对标' ? ' primary' : '');
+      bC.className = 'btn' + (S.mode === '剧本创作' ? ' primary' : '');
+
+      var ms = JSON.parse(localStorage.getItem('fm') || '["deepseek-chat","deepseek-reasoner","gpt-4o","gpt-4o-mini"]');
+      E('modelSelect').innerHTML = ms.map(function (m) { return '<option value="' + m + '">' + m + '</option>'; }).join('');
+
+      E('genStatus').innerHTML = '';
+      rd();
+      renderBenchSteps();
+      listFiles();
+      lds();
+      renderHistory();
+      E('chatInput').placeholder = '在【' + (S.mode || '通用') + '】模式下输入指令...';
+    }
+
+    function renderMarkdown(text) {
+      if (!text) return '';
+      var s = esc(text);
+
+      s = s.replace(/\r\n/g, '\n');
+      s = s.replace(/\n{3,}/g, '\n\n');
+
+      s = s.replace(/```([\s\S]*?)```/g, function(match, code) {
+        return '<pre style="background:#f8fafc;padding:10px 12px;border-radius:8px;border:1px solid #e2e8f0;font-family:monospace;font-size:12px;overflow-x:auto;margin:6px 0;white-space:pre-wrap;"><code>' + code + '</code></pre>';
+      });
+
+      s = s.replace(/^#### (.*$)/gim, '<h5 style="font-size:13px;font-weight:700;margin:8px 0 4px 0;color:#1e293b;">$1</h5>');
+      s = s.replace(/^### (.*$)/gim, '<h4 style="font-size:14px;font-weight:700;margin:10px 0 4px 0;color:#2563eb;">$1</h4>');
+      s = s.replace(/^## (.*$)/gim, '<h3 style="font-size:15px;font-weight:700;margin:12px 0 4px 0;color:#1e293b;border-bottom:1px solid #e2e8f0;padding-bottom:4px;">$1</h3>');
+      s = s.replace(/^# (.*$)/gim, '<h2 style="font-size:16px;font-weight:700;margin:14px 0 6px 0;color:#2563eb;">$1</h2>');
+

@@ -1,0 +1,35 @@
+2446: 
+2447: var isGenerating = m.s || (S.gen && i === msgs.length - 1);
+2448: 
+2449: h += '<div class="msg assistant"><div class="role">🤖 助手</div>';
+2450: if (thH.trim()) h += '<details class="think-box"><summary>🧠 思考过程 (点击展开/折叠)</summary><div style="margin-top:6px;opacity:.95;">' + renderMarkdown(thH.trim()) + '</div></details>';
+2451: if (isGenerating) h += '<div class="think-box">🤔 AI 正在思考中<div class="dots"><span></span><span></span><span></span></div></div>';
+2452: var panelHtml = '';
+2453: // INLINE PANEL
+2454: if (i === msgs.length - 1 && !m.s && !S.gen && !m.handled) {
+2455: var pData = tryParseS4();
+2456: if (pData && (pData.step === 'create_qa_ready' || pData.step4_questions || pData.questions)) {
+2457: var pQs = pData.step4_questions || pData.questions;
+2458: if (pQs && pQs.length) {
+2459: panelHtml += '<div class="panel scroll-panel" style="background:var(--bg2); border:1px solid var(--primary); border-radius:12px; padding:16px; margin-top:16px; box-shadow:var(--shadow); max-height:none;">';
+2460: panelHtml += '<div style="font-weight:600;font-size:14px;color:var(--primary);margin-bottom:12px;display:flex;align-items:center;gap:6px;">⏸️ 💬 需要你的确认</div>';
+2461: for (var qi = 0; qi < pQs.length; qi++) {
+2462: var q = pQs[qi];
+2463: panelHtml += '<div class="q-block" style="margin-bottom:12px;"><div style="font-weight:600;font-size:13px;margin:6px 0;color:var(--text);">' + esc(q.question) + '</div>';
+2464: if (q.options && q.options.length) {
+2465: for (var oi = 0; oi < q.options.length; oi++) {
+2466: var opt = q.options[oi], sel = (oi === 0);
+2467: panelHtml += '<div class="q-opt ' + (sel ? 'selected' : '') + '" onclick="selectOpt(this, ' + qi + ', \'' + esc(opt).replace(/'/g, "\\'") + '\')" style="background:var(--card);border:1px solid ' + (sel ? 'var(--primary)' : 'var(--border)') + ';margin-bottom:6px;"><input type="radio" name="cq_' + qi + '" value="' + esc(opt).replace(/"/g, '&quot;') + '" ' + (sel ? 'checked' : '') + '> <span>' + esc(opt) + '</span></div>';
+2468: }
+2469: }
+2470: panelHtml += '<input type="text" class="input-box q-custom" id="q_custom_' + qi + '" placeholder="请输入你的自定义要求..." style="display:none;margin-top:6px;"></div>';
+2471: }
+2472: panelHtml += '<button class="btn primary full" onclick="confirmCreateQA()" style="margin-top:10px;">确认选项，提交AI处理</button></div>';
+2473: }
+2474: }
+2475: }
+2476: 
+2477: h += '<div class="content" id="msg_' + (m.id || '') + '">' + renderMarkdown(disp).replace(/__NEED_SAVE_MARKER__/g, '<span style="font-size:12px;opacity:.6;background:var(--bg2);padding:2px 8px;border-radius:4px;display:inline-block;margin:4px 0;color:var(--primary);">💾 项目资产已解析并保存到系统及项目文件</span>').replace(/__INTERACTIVE_MARKER__/g, '<span style="font-size:12px;opacity:.6;background:var(--bg2);padding:2px 8px;border-radius:4px;display:inline-block;margin:4px 0;">✨ 交互选项卡片已生成</span>') + panelHtml + '</div>';
+2478: 
+2479: if (i === msgs.length - 1 && !m.s && !S.gen) {
+2480: h += '<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;">';

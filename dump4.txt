@@ -1,0 +1,70 @@
+2381: h += '<div style="text-align:center;margin:6px 0 12px 0;"><button class="btn xs" onclick="S.showAllMsgs=true;rd();" style="background:var(--bg2);border:1px solid var(--border);color:var(--primary);font-weight:600;padding:6px 14px;border-radius:20px;">📜 已折叠更早的 ' + hiddenCount + ' 条历史消息 (点击加载全部对话)</button></div>';
+2382: } else if (S.showAllMsgs && msgs.length > 15) {
+2383: h += '<div style="text-align:center;margin:6px 0 12px 0;"><button class="btn xs" onclick="S.showAllMsgs=false;rd();" style="opacity:.6;padding:4px 10px;border-radius:14px;">收起更早消息</button></div>';
+2384: }
+2385: 
+2386: for (var i = startIdx; i < msgs.length; i++) {
+2387: var m = msgs[i];
+2388: if (!S.selectedMsgs) S.selectedMsgs = {};
+2389: h += '<div class="msg-wrap ' + (m.role === 'user' ? 'is-user ' : '') + (S.multiSelectMode ? 'multi-select' : '') + '">';
+2390: if (S.multiSelectMode) {
+2391: h += '<input type="checkbox" class="msg-checkbox" ' + (S.selectedMsgs[i] ? 'checked' : '') + ' onclick="toggleSelectMsg(' + i + ')">';
+2392: }
+2393: if (m.role === 'user') {
+2394: var imgHtml = '';
+2395: if (m.images && m.images.length) {
+2396: imgHtml = '<div style="margin-bottom:8px; display:flex; gap:8px; flex-wrap:wrap;">' + m.images.map(function(img){ return '<img src="'+img+'" style="max-height:150px; border-radius:8px; border:1px solid var(--border); box-shadow:0 2px 8px rgba(0,0,0,0.05);">'; }).join('') + '</div>';
+2397: }
+2398: if (S.edi === i) {
+2399: h += '<div class="msg user" style="width: 100%; max-width: 600px;"><div class="role" style="display:flex;justify-content:flex-end;margin-bottom:4px;font-size:12px;opacity:0.6;">编辑中...</div>' + imgHtml + '<textarea class="edit-textarea" id="editArea" style="width:100%; min-height:80px; padding:12px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text); font-family:inherit; resize:vertical; box-shadow: 0 2px 8px rgba(0,0,0,0.05);" oninput="this.style.height=\'auto\'; this.style.height=(this.scrollHeight)+\'px\';">' + esc(m.content) + '</textarea><div class="actions" style="margin-top:8px;display:flex;justify-content:flex-end;gap:8px;"><button class="btn sm primary" onclick="cfEd(' + i + ')">确认</button><button class="btn sm" onclick="S.edi=null;rd(true)">取消</button></div></div>';
+2400: } else {
+2401: h += '<div class="msg user"><div class="role" style="display:flex;justify-content:flex-end;margin-bottom:4px;"><button class="btn xs" onclick="S.edi=' + i + ';rd(true)" style="opacity:.4">✏️修改</button></div><div class="content">' + imgHtml + renderMarkdown(m.content) + '</div></div>';
+2402: }
+2403: h += '</div>'; // close msg-wrap
+2404: continue;
+2405: }
+2406: if (m.er) {
+2407: h += '<div class="err-box"><div style="font-weight:600;margin-bottom:4px;">生成失败</div><div>' + esc(m.content) + '</div>';
+2408: if (i === msgs.length - 1 && !S.gen) h += '<div style="margin-top:6px;"><button class="btn sm" onclick="rgn(' + i + ')">重新生成</button></div>';
+2409: h += '</div>';
+2410: h += '</div>'; // close msg-wrap
+2411: continue;
+2412: }
+2413: 
+2414: var rawContent = m.content || '';
+2415: var disp = rawContent;
+2416: if (S.mode === '剧本创作' || !S.mode || S.mode === '通用' || true) {
+2417: disp = disp.replace(/\[TEMPLATEJSON\][\s\S]*?\[\/TEMPLATEJSON\]/g, '');
+2418: // Hide V6 options JSON block & Save Project Memory
+2419: disp = disp.replace(/```json\s*(\{[\s\S]*?"(?:需要确认|step4_questions|create_questions|questions|need_save)"[\s\S]*?\})\s*```/g, function(match, inner) {
+2420: if (inner.indexOf('"need_save"') !== -1) {
+2421: try {
+2422: var parsed = JSON.parse(inner);
+2423: if (parsed.need_save && i === msgs.length - 1 && !S.gen) {
+2424: if (!S.sd) S.sd = {};
+2425: Object.assign(S.sd, parsed);
+2426: sv(); // Background save
+2427: }
+2428: } catch(e) {}
+2429: return '__NEED_SAVE_MARKER__';
+2430: }
+2431: return '__INTERACTIVE_MARKER__';
+2432: });
+2433: disp = disp.replace(/(\{[\s\S]*?"(?:需要确认|step4_questions|create_questions|questions)"[\s\S]*?\})/g, function(match) {
+2434: if (match.indexOf('```') !== -1) return match; // skip if wrapped in code block
+2435: return '__INTERACTIVE_MARKER__';
+2436: });
+2437: } else {
+2438: disp = disp.replace(/\[TEMPLATEJSON\][\s\S]*?\[\/TEMPLATEJSON\]/g, '<span style="font-size:11px;opacity:.6;background:var(--bg);padding:1px 6px;border-radius:4px;display:inline-block;margin:2px 0;">📋 (模板数据已解析)</span>');
+2439: }
+2440: 
+2441: var thR = /<(?:think|thinking|thought)>([\s\S]*?)(?:<\/(?:think|thinking|thought)>|$)/gi, thH = '', tm;
+2442: while ((tm = thR.exec(disp)) !== null) {
+2443: if (tm[1]) thH += tm[1] + '\n';
+2444: }
+2445: disp = disp.replace(/<(?:think|thinking|thought)>[\s\S]*?(?:<\/(?:think|thinking|thought)>|$)/gi, '').trim();
+2446: 
+2447: var isGenerating = m.s || (S.gen && i === msgs.length - 1);
+2448: 
+2449: h += '<div class="msg assistant"><div class="role">🤖 助手</div>';
+2450: if (thH.trim()) h += '<details class="think-box"><summary>🧠 思考过程 (点击展开/折叠)</summary><div style="margin-top:6px;opacity:.95;">' + renderMarkdown(thH.trim()) + '</div></details>';

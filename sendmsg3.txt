@@ -1,0 +1,60 @@
+    async function sendMsg(isRegen) {
+      if (typeof isRegen !== 'boolean') isRegen = false;
+      var inp = E('chatInput'), txt = inp.value.trim();
+      
+      var chat = CC();
+      var lastM = chat.msgs && chat.msgs.length ? chat.msgs[chat.msgs.length - 1] : null;
+      if (S.gen && (!lastM || !lastM.s)) {
+        S.gen = false;
+      }
+
+      if ((!txt && !isRegen && pendingImages.length === 0 && !(window.S && S.pendingQuote)) || S.gen) return;
+
+      if (S.mode === '剧本创作' || !S.mode || S.mode === '通用' || true) {
+        S.cardsVisible = false;
+        chat.cardsVisible = false;
+      }
+
+      if (!isRegen) { inp.value = ''; inp.style.height = 'auto'; }
+      var k = gK(); if (!k) { alert('请填写API Key'); return; }
+
+      var fullTxt = txt;
+      if (!isRegen && window.S && S.pendingQuote) {
+          fullTxt = S.pendingQuote.split('\n').map(function(l) { return '> ' + l; }).join('\n') + '\n\n' + txt;
+          clearQuote();
+      }
+
+      if (!isRegen && fullTxt) {
+        if (!chat.msgs.length || chat.msgs[chat.msgs.length - 1].content !== fullTxt) {
+             chat.msgs.push({ role: 'user', content: fullTxt });
+        }
+      }
+      sv(); rd();
+
+      var docT = '';
+      if (S.doc && (S.mode === '短剧对标' || S.mode === '剧本创作') && chat.msgs.filter(function (m) { return m.role === 'user'; }).length <= 2) {
+        docT = S.doc;
+      }
+
+      if (S.mode === '短剧对标') {
+        if (S.benchStep === 1 && txt.indexOf('已上传') !== -1) advanceBenchStep(2);
+        else if (S.benchStep === 2 && (txt.indexOf('拆解') !== -1 || txt.indexOf('拉片') !== -1)) advanceBenchStep(3);
+      }
+
+      S.gen = true; S.ab = new AbortController();
+      E('genStatus').innerHTML = '<button class="btn danger" onclick="stopGen()">⏹ 停止生成</button>';
+      E('chatInput').disabled = true;
+
+      var pid = 'm' + Date.now();
+      chat.msgs.push({ role: 'assistant', content: '', s: true, id: pid });
+      rd();
+
+      try {
+        var r = await fetch(B + '/api/chat', {
+          method: 'POST',
+          headers: Object.assign({ 'Content-Type': 'application/json' }, getAuthHeaders()),
+          body: JSON.stringify({
+            api_key: k, api_url: gU(), model: gM(), work_mode: S.mode || '通用',
+            messages: chat.msgs.filter(function (m) { return !m.s; }).map(function (m) { return { role: m.role, content: m.content }; }),
+            user_input: "", doc_text: docT, session_id: S.cid, token: getToken()
+          }),

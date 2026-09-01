@@ -1,0 +1,41 @@
+              } else if (d.type === 'done') {
+                var m = chat.msgs.find(function (x) { return x.id === pid; });
+                if (m) { delete m.s; delete m.id; m.content = full; if (d.saved_file) m.content += '\n\n---\n📁 已保存: ' + d.saved_file; }
+
+                var sdir = d.session_dir || d.sessiondir;
+                if (sdir) S.sd = sdir;
+
+                if (S.mode === '短剧对标' && S.benchStep === 3) {
+                  advanceBenchStep(4);
+                  S.s4 = false;
+                }
+
+                S.step4Questions = null;
+                if (d.template_json) {
+                  S.step4Questions = d.template_json;
+                  var curC = CC();
+                  curC.step4Questions = d.template_json;
+                  var s = d.template_json.step;
+                  if (s === 'step4_ready') S.s4 = false;
+                  else if (s === 'step7_format') S.s7 = false;
+                  else if (s === 'batch_complete') { S.bi = d.template_json.batch_index || 1; S.tb = d.template_json.total_batches || 0; }
+                }
+
+                var dyn = tryParseS4();
+                if (dyn && (dyn.step === 'step4_ready' || dyn.step4_questions || dyn.questions)) {
+                  if (S.mode === '短剧对标') {
+                    S.s4 = false;
+                    advanceBenchStep(4);
+                  }
+                }
+
+                sv(); rd(); listFiles();
+              } else if (d.type === 'error') {
+                var m = chat.msgs.find(function (x) { return x.id === pid; });
+                if (m) { m.content = d.message; m.er = true; delete m.s; delete m.id; }
+                rd();
+              }
+            } catch (e) {
+        if (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
+            alert('🚨 警告：浏览器本地存储空间已满！可能是您上传的文件过大或聊天记录过多。刷新页面将会丢失本次对话，请先备份重要内容！');
+        }

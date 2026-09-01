@@ -1,0 +1,7 @@
+function closeEditor() {
+      currentPreviewFile = "";
+      E("editorContent").contentEditable = "false";
+      E("editorContent").innerHTML = '<p style="color:#999; text-align:center; margin-top:100px; user-select:none; pointer-events:none;">👈 在左侧选择或上传文件，开始编辑...</p>';
+      updateWordCount();
+      var ep = E('editorPane'); if(ep) ep.style.display = 'none';
+      var rr = E('resizerRight'); if(
