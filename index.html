@@ -1255,7 +1255,7 @@
       <span id="editorSaveStatus">已保存</span>
     </div>
   </div>
-  <div class="resizer" id="mainResizer"></div>
+  <div class="resizer" id="resizerRight"></div>
   <div class="main">
     <div class="top-bar">
             <div id="topBar" style="display:flex; justify-content:flex-end; width:100%; align-items:center; gap:12px; padding: 0 12px;">
@@ -1456,7 +1456,7 @@
       E("editorContent").innerHTML = '<p style="color:#999; text-align:center; margin-top:100px; user-select:none; pointer-events:none;">👈 在左侧选择或上传文件，开始编辑...</p>';
       updateWordCount();
       
-      var rr = E('resizerRight'); if(rr) rr.style.display = 'none';
+      
     }
 
     // 对标流程 8 步定义
@@ -2788,8 +2788,7 @@
     function viewUploadedDoc() {
         var ep = document.getElementById('editorPane');
         if(ep) ep.style.display = 'flex';
-        var rr = document.getElementById('resizerRight');
-        if(rr) rr.style.display = 'block';
+        
         
         document.getElementById('editorFileName').innerText = '当前上传的参考文件';
         document.getElementById('editorContent').contentEditable = 'false';
@@ -2806,7 +2805,7 @@
         
         
           var ep = document.getElementById('editorPane'); if(ep) ep.style.display = 'flex';
-          var rr = document.getElementById('resizerRight'); if(rr) rr.style.display = 'block';
+          var rr = document.getElementById('resizerRight'); 
 E('editorFileName').innerText = '加载中...';
           E('editorContent').contentEditable = 'true';
         E('editorContent').innerText = '正在读取文件内容，请稍候...';
