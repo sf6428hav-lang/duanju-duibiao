@@ -899,7 +899,7 @@ def process_document_saving(content: str, session_dir: str, messages: list = Non
 
     # 2. 严格识别正式资产头部
     has_script = bool(re.search(r'^(?:#+.*|【.*)?(?:第[一二三四五六七八九十0-9]+集|1-5集剧本|6-10集剧本|分集剧本正文)', text, re.MULTILINE))
-    has_chapter = bool(re.search(r\'^(?:#+.*|[^\n]*?)?(?:第[一二三四五六七八九十0-9]+章)\', text, re.MULTILINE))
+    has_chapter = bool(re.search(r'^(?:#+.*|[^\n]*?)?(?:第[一二三四五六七八九十0-9]+章)', text, re.MULTILINE))
     has_character = bool(re.search(r'^(?:#+.*|【.*)?(?:人物小传|角色设定|人设小传|角色小传)', text, re.MULTILINE))
     has_outline = bool(re.search(r'^(?:#+.*|【.*)?(?:故事大纲|剧情大纲|三幕式大纲|故事设计方案)', text, re.MULTILINE))
     has_ep_outline = bool(re.search(r'^(?:#+.*|【.*)?(?:前十集集纲|分集集纲|前10集集纲|短篇章节规划)', text, re.MULTILINE))
