@@ -1308,6 +1308,7 @@
             <button class="btn-cap cap-tag" onclick="setMode('剧本创作')" id="cap-create">✨ 剧本创作</button>
             <button class="btn-cap cap-tag" onclick="setMode('短剧对标')" id="cap-bench">✨ 短剧对标</button>
             <button class="btn-cap cap-tag" onclick="setMode('短篇创作')" id="cap-short-story">✨ 短篇创作</button>
+            <button class="btn-cap cap-tag" onclick="setMode('去AI重写')" id="cap-rewrite">✨ 去AI重写</button>
           </div>
           <div class="toolbar-right">
             <span class="info-icon" title="选择不同的能力模型，AI会自动切换为对应的专家模式">ℹ️</span>
@@ -2232,12 +2233,14 @@
         var elCreate = document.getElementById('cap-create');
         var elBench = document.getElementById('cap-bench');
         var elShort = document.getElementById('cap-short-story');
+            var elRewrite = document.getElementById('cap-rewrite');
         var selText = document.getElementById('selectedCapText');
         
         if (elGen) elGen.className = 'btn-cap cap-tag';
         if (elCreate) elCreate.className = 'btn-cap cap-tag';
         if (elBench) elBench.className = 'btn-cap cap-tag';
         if (elShort) elShort.className = 'btn-cap cap-tag';
+            if (elRewrite) elRewrite.className = 'btn-cap cap-tag';
 
         if (currentMode === '通用') {
             if (elGen) elGen.classList.add('active');
@@ -2251,6 +2254,9 @@
         } else if (currentMode === '短篇创作') {
             if (elShort) elShort.classList.add('active');
             if (selText) selText.innerText = '✨ 短篇创作';
+        } else if (currentMode === '去AI重写') {
+            if (elRewrite) elRewrite.classList.add('active');
+            if (selText) selText.innerText = '✨ 去AI重写';
         }
       }
 
@@ -2583,7 +2589,7 @@
       sv(); rd();
 
       var docT = '';
-      if (S.doc && (S.mode === '短剧对标' || S.mode === '剧本创作' || S.mode === '短篇创作')) {
+      if (S.doc && (S.mode === '短剧对标' || S.mode === '剧本创作' || S.mode === '短篇创作' || S.mode === '去AI重写')) {
         docT = S.doc;
       }
 
