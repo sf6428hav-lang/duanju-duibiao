@@ -1382,13 +1382,59 @@ async def chat(req: ChatRequest, authorization: Optional[str] = Header(None)):
             response = client.chat.completions.create(
                 model=req.model, messages=api_messages, stream=True, timeout=300.0
             )
+            started_thinking = False
+            ended_thinking = False
             for chunk in response:
                 if not chunk.choices or len(chunk.choices) == 0:
                     continue
                 delta = chunk.choices[0].delta
+                
+                # Compatible with DeepSeek official 'reasoning_content' and Aliyun 'reasoning'
+                r_content = getattr(delta, 'reasoning_content', None)
+                if r_content is None:
+                    r_content = getattr(delta, 'reasoning', None)
+                
+                if r_content is not None:
+                    if not started_thinking:
+                        full_response += "<think>
+"
+                        yield f"data: {json.dumps({'token': '<think>
+'})}
+
+"
+                        started_thinking = True
+                    
+                    full_response += r_content
+                    yield f"data: {json.dumps({'token': r_content})}
+
+"
+                    continue
+                
                 if delta.content is not None:
+                    # If this is the first token of normal content, close <think>
+                    if started_thinking and not ended_thinking:
+                        if not full_response.endswith("
+"):
+                            full_response += "
+"
+                            yield f"data: {json.dumps({'token': '
+'})}
+
+"
+                        full_response += "</think>
+
+"
+                        yield f"data: {json.dumps({'token': '</think>
+
+'})}
+
+"
+                        ended_thinking = True
+                        
                     full_response += delta.content
-                    yield f"data: {json.dumps({'token': delta.content})}\n\n"
+                    yield f"data: {json.dumps({'token': delta.content})}
+
+"
 
             session_raw = str(req.session_id or req.sessionid or req.cid or f"{int(time.time())}").strip()
             session_dir, safe_session = get_user_session_dir(username, session_raw)
