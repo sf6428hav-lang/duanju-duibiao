@@ -721,6 +721,12 @@ SKILL4_PROMPT = """【一、任务定位】
 每一句生成前，先判断：直写好还是修辞好？动作好还是心理好？说明好还是留白好？选择最符合情境的一种。
 生成结束后，必须在 <think> 中自检是否符合以上全部规则。
 
+
+
+【十二、字数极度严格警告】
+本章正文字数必须严格控制在 1000 字左右（800~1200字之间）。
+禁止超长发挥！如果情节已经写完，立刻干脆地结束本章。写完后必须在 <think> 内部核对字数，如果发现超标，立刻精简多余的心理描写、无意义细节和冗长的对白，重新输出！
+
 【特殊 JSON 输出要求（仅限导语试写阶段）】
 如果本次任务是生成【3个导语开局】，在输出完成后必须原封不动输出以下交互卡片：
 [TEMPLATEJSON]
@@ -863,6 +869,7 @@ def process_document_saving(content: str, session_dir: str, messages: list = Non
 
     # 2. 严格识别正式资产头部
     has_script = bool(re.search(r'^(?:#+.*|【.*)?(?:第[一二三四五六七八九十0-9]+集|1-5集剧本|6-10集剧本|分集剧本正文)', text, re.MULTILINE))
+    has_chapter = bool(re.search(r\'^(?:#+.*|[^\n]*?)?(?:第[一二三四五六七八九十0-9]+章)\', text, re.MULTILINE))
     has_character = bool(re.search(r'^(?:#+.*|【.*)?(?:人物小传|角色设定|人设小传|角色小传)', text, re.MULTILINE))
     has_outline = bool(re.search(r'^(?:#+.*|【.*)?(?:故事大纲|剧情大纲|三幕式大纲|故事设计方案)', text, re.MULTILINE))
     has_ep_outline = bool(re.search(r'^(?:#+.*|【.*)?(?:前十集集纲|分集集纲|前10集集纲|短篇章节规划)', text, re.MULTILINE))
@@ -871,7 +878,14 @@ def process_document_saving(content: str, session_dir: str, messages: list = Non
     doc_type = ""
     label_suffix = ""
 
-    if has_script and ("场次：" in text or "场次" in text or "▲" in text or "第一集" in text or "第1集" in text):
+    if has_chapter:
+        doc_type = "story_chapter"
+        chap_match = re.findall(r'(?:第)([一二三四五六七八九十0-9]+)(?:章)', text)
+        if chap_match:
+            label_suffix = f"第{chap_match[0]}章"
+        else:
+            label_suffix = "正文"
+    elif has_script and ("场次：" in text or "场次" in text or "▲" in text or "第一集" in text or "第1集" in text):
         doc_type = "script"
         ep_range = re.findall(r'(?:第|\b)([0-9]+-[0-9]+)(?:集|\b)', text)
         if ep_range:
@@ -1317,7 +1331,7 @@ async def chat(req: ChatRequest, authorization: Optional[str] = Header(None)):
                 api_messages.append({"role": m["role"], "content": content})
             else:
                 api_messages.append({"role": m["role"], "content": m["content"]})
-    if uinput:
+    if uinput and (req.user_input or req.userinput):
         api_messages.append({"role": "user", "content": uinput})
 
     client = OpenAI(api_key=key, base_url=url, timeout=300.0)
@@ -1345,7 +1359,7 @@ async def chat(req: ChatRequest, authorization: Optional[str] = Header(None)):
             # 保存聊天历史 json
             history_file = os.path.join(session_dir, "history.json")
             new_msgs = list(req.messages) if req.messages else []
-            if uinput:
+            if uinput and (req.user_input or req.userinput):
                 new_msgs.append({"role": "user", "content": uinput})
             if full_response:
                 new_msgs.append({"role": "assistant", "content": full_response})
