@@ -1396,45 +1396,25 @@ async def chat(req: ChatRequest, authorization: Optional[str] = Header(None)):
                 
                 if r_content is not None:
                     if not started_thinking:
-                        full_response += "<think>
-"
-                        yield f"data: {json.dumps({'token': '<think>
-'})}
-
-"
+                        full_response += "<think>\n"
+                        yield f"data: {json.dumps({'token': '<think>\n'})}\n\n"
                         started_thinking = True
                     
                     full_response += r_content
-                    yield f"data: {json.dumps({'token': r_content})}
-
-"
+                    yield f"data: {json.dumps({'token': r_content})}\n\n"
                     continue
                 
                 if delta.content is not None:
-                    # If this is the first token of normal content, close <think>
                     if started_thinking and not ended_thinking:
-                        if not full_response.endswith("
-"):
-                            full_response += "
-"
-                            yield f"data: {json.dumps({'token': '
-'})}
-
-"
-                        full_response += "</think>
-
-"
-                        yield f"data: {json.dumps({'token': '</think>
-
-'})}
-
-"
+                        if not full_response.endswith("\n"):
+                            full_response += "\n"
+                            yield f"data: {json.dumps({'token': '\n'})}\n\n"
+                        full_response += "</think>\n\n"
+                        yield f"data: {json.dumps({'token': '</think>\n\n'})}\n\n"
                         ended_thinking = True
                         
                     full_response += delta.content
-                    yield f"data: {json.dumps({'token': delta.content})}
-
-"
+                    yield f"data: {json.dumps({'token': delta.content})}\n\n"
 
             session_raw = str(req.session_id or req.sessionid or req.cid or f"{int(time.time())}").strip()
             session_dir, safe_session = get_user_session_dir(username, session_raw)
