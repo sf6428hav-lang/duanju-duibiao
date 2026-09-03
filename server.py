@@ -1338,7 +1338,7 @@ async def chat(req: ChatRequest, authorization: Optional[str] = Header(None)):
         
         if is_revision:
             sys_p = SKILL6_PROMPT
-        elif is_continue or any(k in uinput for k in ["写正文", "开始写", "撰写"]):
+        elif is_continue or any(k in uinput for k in ["写正文", "开始写", "撰写", "试写", "导语"]):
             sys_p = SKILL4_PROMPT
         elif is_outline:
             sys_p = SKILL3_PROMPT
